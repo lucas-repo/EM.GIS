@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace EMap
+namespace EM.GIS
 {
     public static class ArrayExtension
     {

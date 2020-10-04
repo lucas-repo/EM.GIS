@@ -5,7 +5,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 
-namespace EMap
+namespace EM.GIS
 {
     public static class ResourceHelper
     {

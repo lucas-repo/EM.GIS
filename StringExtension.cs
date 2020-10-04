@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq;
 
-namespace EMap
+namespace EM.GIS
 {
     public static class StringExtension
     {
