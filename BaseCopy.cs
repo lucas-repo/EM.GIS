@@ -8,14 +8,13 @@ namespace EM.GIS
     /// 可拷贝基类
     /// </summary>
     [Serializable]
-    public abstract class BaseCopy : ICloneable
+    public abstract class BaseCopy : NotifyClass, ICloneable
     {
         #region Methods
-
         /// <summary>
-        /// Creates a duplicate of this descriptor using MemberwiseClone
+        /// 克隆
         /// </summary>
-        /// <returns>A clone of this object as a duplicate</returns>
+        /// <returns></returns>
         public object Clone()
         {
             object copy = MemberwiseClone();
