@@ -1,0 +1,32 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <LangVersion>default</LangVersion>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <OutputPath>..\bin\Debug\</OutputPath>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <OutputPath>..\bin\Release\</OutputPath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Gdal.Core" Version="2.3.0-beta-023" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\EM.GIS.Controls\EM.GIS.Controls.csproj" />
+    <ProjectReference Include="..\EM.GIS.Data\EM.GIS.Data.csproj">
+      <Private>false</Private>
+    </ProjectReference>
+    <ProjectReference Include="..\EM.GIS.Geometries\EM.GIS.Geometries.csproj">
+      <Private>false</Private>
+    </ProjectReference>
+    <ProjectReference Include="..\EM.GIS.Projection\EM.GIS.Projection.csproj" />
+  </ItemGroup>
+
+</Project>
