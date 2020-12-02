@@ -21,17 +21,17 @@ namespace EM.GIS.Data
         /// </summary>
         public static IDataFactory Default
         {
-            get 
+            get
             {
                 if (_default == null)
                 {
                     _default = new DataFactory();
-                    string directory = AppDomain.CurrentDomain.BaseDirectory;
-                    _default.GeometryFactory = AssemblyExtensions.CreateInstance<IGeometryFactory>(directory);
-                    if (_default.GeometryFactory == null)
-                    {
-                        throw new DllNotFoundException($"未找到实现{nameof(IGeometryFactory)}的dll");
-                    }
+                    //string directory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+                    //_default.GeometryFactory = AssemblyExtensions.CreateInstance<IGeometryFactory>(directory);
+                    //if (_default.GeometryFactory == null)
+                    //{
+                    //    throw new DllNotFoundException($"未找到实现{nameof(IGeometryFactory)}的dll");
+                    //}
                 }
                 return _default;
             }
@@ -44,7 +44,7 @@ namespace EM.GIS.Data
         {
             get { return _progressHandler; }
             set
-            { 
+            {
                 _progressHandler = value;
                 if (DriverFactory != null)
                 {
@@ -53,18 +53,18 @@ namespace EM.GIS.Data
             }
         }
 
-        public IDriverFactory DriverFactory {get;}
+        public IDriverFactory DriverFactory { get; }
 
         [Browsable(false)]
-        [Import(AllowRecomposition = true)]
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        [Import]
         public virtual IGeometryFactory GeometryFactory { get; set; }
 
         public DataFactory()
         {
             DriverFactory = new DriverFactory()
             {
-                ProgressHandler=ProgressHandler
+                ProgressHandler = ProgressHandler
             };
         }
     }

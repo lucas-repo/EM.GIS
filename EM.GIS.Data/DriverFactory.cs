@@ -13,8 +13,8 @@ namespace EM.GIS.Data
     public class DriverFactory : IDriverFactory
     {
         [Browsable(false)]
-        [ImportMany(AllowRecomposition = true)]
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        [ImportMany(AllowRecomposition = true)]
         public virtual IEnumerable<IDriver> Drivers { get; set; }
 
         public IEnumerable<IVectorDriver> VectorDrivers => Drivers.Where(x => x is IVectorDriver).Select(x => x as IVectorDriver);

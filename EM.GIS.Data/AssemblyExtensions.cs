@@ -29,6 +29,7 @@ namespace EM.GIS.Data
                     if (!item.IsAbstract && destType.IsAssignableFrom(item))
                     {
                         t = Activator.CreateInstance(item);
+                        break;
                     }
                 }
             }
@@ -78,6 +79,67 @@ namespace EM.GIS.Data
                 }
             }
             return t;
+        }
+        public static bool IsAssignable(Assembly assembly, Type destType)
+        {
+            bool  ret = false;
+            if (assembly != null && destType != null)
+            {
+                foreach (Type item in assembly.GetTypes())
+                {
+                    if (!item.IsAbstract && destType.IsAssignableFrom(item))
+                    {
+                        ret = true;
+                        break;
+                    }
+                }
+            }
+            return ret;
+        }
+        /// <summary>
+        /// 获取可分配指定类型的程序集
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="directory"></param>
+        /// <returns></returns>
+        public static Assembly GetAssignableAssembly<T>(string directory)
+        {
+            Assembly destAssembly = null;
+            Type destType = typeof(T);
+            Assembly[] assemblies = AppDomain.CurrentDomain.GetAssemblies();
+            foreach (var assembly in assemblies)
+            {
+                if (IsAssignable(assembly, destType))
+                {
+                    destAssembly = assembly;
+                    break;
+                }
+            }
+            if (destAssembly == null)
+            {
+                string[] dllFiles = Directory.GetFiles(directory, "*.dll", SearchOption.TopDirectoryOnly);
+                foreach (string dllFileName in dllFiles)
+                {
+                    if (assemblies.Any(x => x.Location == dllFileName))
+                    {
+                        continue;
+                    }
+                    try
+                    {
+                        Assembly assembly = Assembly.LoadFrom(dllFileName);
+                        if (IsAssignable(assembly, destType))
+                        {
+                            destAssembly = assembly;
+                            break;
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Trace.WriteLine($"GetAssignableAssembly Error!{ex}");
+                    }
+                }
+            }
+            return destAssembly;
         }
 
     }

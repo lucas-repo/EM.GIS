@@ -10,7 +10,8 @@ namespace EM.GIS.Gdals
     {
         static GdalRasterDriver()
         {
-            GdalConfiguration.ConfigureGdal();
+            OSGeo.GDAL.Gdal.AllRegister();
+            //GdalConfiguration.ConfigureGdal();
             // 为了支持中文路径，请添加下面这句代码  
             if (Encoding.Default.EncodingName == Encoding.UTF8.EncodingName && Encoding.Default.CodePage == Encoding.UTF8.CodePage)
             {

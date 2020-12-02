@@ -14,7 +14,8 @@ namespace EM.GIS.Gdals
     {
         static GdalVectorDriver()
         {
-            GdalConfiguration.ConfigureOgr();
+            OSGeo.OGR.Ogr.RegisterAll();
+            //GdalConfiguration.ConfigureOgr();
             // 为了使属性表字段支持中文，请添加下面这句  
             OSGeo.GDAL.Gdal.SetConfigOption("SHAPE_ENCODING", "");
         }

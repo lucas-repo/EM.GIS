@@ -52,10 +52,9 @@ namespace EM.GIS.Controls
         {
             AppDomain.CurrentDomain.AssemblyResolve += CurrentDomainAssemblyResolve;
             Plugins = new List<IPlugin>();
-            BaseDirectory = AppDomain.CurrentDomain.BaseDirectory;
+            BaseDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
             Directories = new List<string>
             {
-                string.Empty,
                 "Plugins"
             };
         }
@@ -72,6 +71,13 @@ namespace EM.GIS.Controls
             }
             assemblies.Add(typeof(DataFactory).Assembly);
             assemblies.Add(typeof(AppManager).Assembly);
+            #region 添加几何工厂程序集
+            Assembly geometryFactoryAssembly = AssemblyExtensions.GetAssignableAssembly<IGeometryFactory>(BaseDirectory);
+            if (geometryFactoryAssembly != null)
+            {
+                assemblies.Add(geometryFactoryAssembly);
+            }
+            #endregion
 
             foreach (var assembly in assemblies)
             {
@@ -221,7 +227,7 @@ namespace EM.GIS.Controls
 
             try
             {
-                CompositionContainer.ComposeParts(this, DataFactory.Default);
+                CompositionContainer.ComposeParts(this, DataFactory.Default, DataFactory.Default.DriverFactory);
             }
             catch (CompositionException compositionException)
             {
