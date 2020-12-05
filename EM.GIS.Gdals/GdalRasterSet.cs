@@ -117,7 +117,7 @@ namespace EM.GIS.Gdals
             Filename = fileName;
             _ignoreChangeDataset = false;
             Name = Path.GetFileNameWithoutExtension(fileName);
-            _dataset = fromDataset;
+            _dataset = fromDataset; 
             OnDatasetChanged();
         }
 

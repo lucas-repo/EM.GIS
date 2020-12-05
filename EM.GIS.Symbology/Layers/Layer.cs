@@ -16,7 +16,7 @@ namespace EM.GIS.Symbology
     [Serializable]
     public abstract class Layer : LegendItem, ILayer
     {
-        public virtual IExtent Extent { get; }
+        public virtual IExtent Extent { get; set; }
         public IProgressHandler ProgressHandler { get; set; }
         public ICategory DefaultCategory
         {
@@ -43,7 +43,21 @@ namespace EM.GIS.Symbology
         public bool UseDynamicVisibility { get; set; }
         public double MaxInverseScale { get; set; }
         public double MinInverseScale { get; set; }
-        public IDataSet DataSet { get; set; }
+        private IDataSet _dataSet;
+
+        public IDataSet DataSet
+        {
+            get { return _dataSet; }
+            set 
+            {
+                if (_dataSet == null)
+                {
+                    Extent = value?.Extent;
+                }
+                _dataSet = value; 
+            }
+        }
+
         public virtual ICategoryCollection Categories { get; }
         public virtual ISelection Selection { get; protected set; }
 

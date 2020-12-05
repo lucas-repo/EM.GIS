@@ -22,7 +22,7 @@ namespace EM.GIS.Symbology
         /// <summary>
         /// 范围
         /// </summary>
-        IExtent Extent { get;  }
+        IExtent Extent { get; set; }
 
         /// <summary>
         /// 分类集合（要素或栅格等子图层才实现）

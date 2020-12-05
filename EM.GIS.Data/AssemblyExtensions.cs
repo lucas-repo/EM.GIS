@@ -80,6 +80,12 @@ namespace EM.GIS.Data
             }
             return t;
         }
+        /// <summary>
+        /// 程序集是否可分配指定类型实例
+        /// </summary>
+        /// <param name="assembly"></param>
+        /// <param name="destType"></param>
+        /// <returns></returns>
         public static bool IsAssignable(Assembly assembly, Type destType)
         {
             bool  ret = false;
