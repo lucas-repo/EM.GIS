@@ -28,38 +28,37 @@ namespace EM.GIS.Symbology
         #endregion
 
         /// <summary>
-        /// Gets or sets the progress handler to report progress for time consuming actions.
+        /// 进度
         /// </summary>
         IProgressHandler ProgressHandler { get; set; }
 
         /// <summary>
-        /// Adds the specified fileName to the map as a new layer.
+        /// 添加图层
         /// </summary>
-        /// <param name="path">The string fileName to add as a layer.</param>
-        /// <returns>An IMapLayer that is the layer handle for the specified file.</returns>
-        ILayer AddLayer(string path);
+        /// <param name="path"></param>
+        /// <param name="isVisible"></param>
+        /// <returns></returns>
+        ILayer AddLayer(string path,bool isVisible=true);
         /// <summary>
-        /// Adds the dataset specified to the file. Depending on whether this is a featureSet,
-        /// Raster, or ImageData, this will return the appropriate layer for the map.
+        /// 添加图层
         /// </summary>
-        /// <param name="dataSet">A dataset</param>
-        /// <returns>The IMapLayer to add</returns>
-        ILayer AddLayer(IDataSet dataSet);
+        /// <param name="dataSet"></param>
+        /// <param name="isVisible"></param>
+        /// <returns></returns>
+        ILayer AddLayer(IDataSet dataSet, bool isVisible = true);
         /// <summary>
-        /// This overload automatically constructs a new MapLayer from the specified
-        /// feature layer with the default drawing characteristics and returns a valid
-        /// IMapLayer which can be further cast into a PointLayer, MapLineLayer or
-        /// a PolygonLayer, depending on the data that is passed in.
+        /// 添加图层
         /// </summary>
-        /// <param name="featureSet">Any valid IFeatureSet that does not yet have drawing characteristics</param>
-        /// <returns>A newly created valid implementation of FeatureLayer which at least gives a few more common
-        /// drawing related methods and can also be cast into the appropriate Point, Line or Polygon layer.</returns>
-        IFeatureLayer AddLayer(IFeatureSet featureSet);
+        /// <param name="featureSet"></param>
+        /// <param name="isVisible"></param>
+        /// <returns></returns>
+        IFeatureLayer AddLayer(IFeatureSet featureSet, bool isVisible = true);
         /// <summary>
-        /// Adds the specified raster as a new layer
+        /// 添加图层
         /// </summary>
-        /// <param name="raster">The raster to add as a layer</param>
-        /// <returns>the MapRasterLayer interface</returns>
-        IRasterLayer AddLayer(IRasterSet raster);
+        /// <param name="raster"></param>
+        /// <param name="isVisible"></param>
+        /// <returns></returns>
+        IRasterLayer AddLayer(IRasterSet raster, bool isVisible = true);
     }
 }

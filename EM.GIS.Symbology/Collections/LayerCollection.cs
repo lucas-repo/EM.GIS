@@ -24,7 +24,7 @@ namespace EM.GIS.Symbology
         public IProgressHandler ProgressHandler { get; set; }
 
 
-        public ILayer AddLayer(IDataSet dataSet)
+        public ILayer AddLayer(IDataSet dataSet, bool isVisible = true)
         {
             ILayer layer = null;
             //var ss = dataSet as ISelfLoadSet;
@@ -32,19 +32,16 @@ namespace EM.GIS.Symbology
 
             if (dataSet is IFeatureSet fs)
             {
-                layer = AddLayer(fs);
+                layer = AddLayer(fs, isVisible);
             }
             else if (dataSet is IRasterSet r)
             {
-                layer = AddLayer(r);
+                layer = AddLayer(r, isVisible);
             }
             return layer;
-
-            //var id = dataSet as IImageData;
-            //return id != null ? Add(id) : null;
         }
 
-        public IFeatureLayer AddLayer(IFeatureSet featureSet)
+        public IFeatureLayer AddLayer(IFeatureSet featureSet, bool isVisible = true)
         {
             IFeatureLayer res = null;
             if (featureSet == null) return null;
@@ -65,29 +62,33 @@ namespace EM.GIS.Symbology
 
             if (res != null)
             {
-                base.Add(res);
+                res.IsVisible = isVisible;
                 res.ProgressHandler = ProgressHandler;
+                base.Add(res);
             }
 
             return res;
         }
 
-        public IRasterLayer AddLayer(IRasterSet raster)
+        public IRasterLayer AddLayer(IRasterSet raster, bool isVisible = true)
         {
             IRasterLayer rasterLayer = null;
             if (raster != null)
             {
                 raster.ProgressHandler = ProgressHandler;
-                rasterLayer = new RasterLayer(raster);
+                rasterLayer = new RasterLayer(raster)
+                {
+                    IsVisible = isVisible
+                };
                 Add(rasterLayer);
             }
             return rasterLayer;
         }
 
-        public ILayer AddLayer(string path)
+        public ILayer AddLayer(string path, bool isVisible = true)
         {
             IDataSet dataSet = DataFactory.Default.DriverFactory.Open(path);
-            return AddLayer(dataSet);
+            return AddLayer(dataSet, isVisible);
         }
 
     }

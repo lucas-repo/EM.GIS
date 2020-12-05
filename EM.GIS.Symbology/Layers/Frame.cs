@@ -94,7 +94,7 @@ namespace EM.GIS.Symbology
                 _viewExtents = value;
                 if (_extentChangedSuspensionCount == 0)
                 {
-                    OnExtentsChanged(_viewExtents);
+                    OnViewExtentsChanged(_viewExtents);
                 }
             }
         }
@@ -220,7 +220,7 @@ namespace EM.GIS.Symbology
                 }
             }
 
-            var featureLayers = GetFeatureLayers().Where(x=>x.GetVisible(extent, rectangle)).Union(visibleDrawingFeatureLayers);
+            var featureLayers = GetFeatureLayers().Where(x => x.GetVisible(extent, rectangle)).Union(visibleDrawingFeatureLayers);
             var labelLayers = featureLayers.Where(x => x.LabelLayer?.GetVisible(extent, rectangle) == true).Select(x => x.LabelLayer);
             foreach (var layer in labelLayers)
             {
@@ -253,7 +253,7 @@ namespace EM.GIS.Symbology
         /// <param name="extent"></param>
         public async Task ResetBuffer(IExtent extent = null)
         {
-            await Task.Run((Action)(() =>
+            await Task.Run(() =>
             {
                 if (extent == null)
                 {
@@ -290,7 +290,7 @@ namespace EM.GIS.Symbology
                     #endregion
                 }
                 BackBuffer = tmpBuffer;
-            }));
+            });
         }
         public void Draw(Graphics g, Rectangle rectangle)
         {
@@ -370,13 +370,10 @@ namespace EM.GIS.Symbology
 
         public ILayerCollection DrawingLayers { get; }
 
-        /// <summary>
-        /// Fires the ExtentsChanged event
-        /// </summary>
-        /// <param name="ext">The new extent.</param>
-        protected virtual void OnExtentsChanged(IExtent ext)
+        protected virtual void OnViewExtentsChanged(IExtent ext)
         {
             if (_extentChangedSuspensionCount > 0) return;
+            ResetBuffer();
             ViewExtentsChanged?.Invoke(this, new ExtentArgs(ext));
         }
 
