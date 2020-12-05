@@ -3,6 +3,7 @@ using EM.GIS.Geometries;
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Linq;
@@ -44,12 +45,13 @@ namespace EM.GIS.Symbology
             }
         }
         public event EventHandler BufferChanged;
-        private void OnViewBoundsChanged()
+        public event EventHandler ViewBoundsChanged;
+        protected virtual void OnViewBoundsChanged()
         {
-            OnBufferChanged();
+            ViewBoundsChanged?.Invoke(this, new EventArgs());
         }
 
-        private void OnBufferChanged()
+        protected virtual void OnBufferChanged()
         {
             BufferChanged?.Invoke(this, new EventArgs());
         }
@@ -92,24 +94,15 @@ namespace EM.GIS.Symbology
                 IExtent ext = value.Copy();
                 ResetAspectRatio(ext);
                 _viewExtents = value;
-                if (_extentChangedSuspensionCount == 0)
-                {
-                    OnViewExtentsChanged(_viewExtents);
-                }
+                OnViewExtentsChanged(_viewExtents);
             }
         }
 
-        private Rectangle _bounds;
         public Rectangle Bounds
         {
-            get => _bounds;
-            private set
-            {
-                if (_bounds != value)
-                {
-                    _bounds = value;
-                }
-            }
+            get => new Rectangle(0, 0, _width, _height);
+            set
+            { }
         }
         private int _isBusyIndex;
         public bool IsBusy
@@ -132,7 +125,6 @@ namespace EM.GIS.Symbology
         {
             _width = width;
             _height = height;
-            _bounds = new Rectangle(0, 0, _width, _height);
             _viewBounds = new Rectangle(0, 0, _width, _height);
             DrawingLayers = new LayerCollection();
             Items.CollectionChanged += Layers_CollectionChanged;
@@ -296,10 +288,36 @@ namespace EM.GIS.Symbology
         {
             if (BackBuffer != null && g != null)
             {
-                g.DrawImage(BackBuffer, rectangle, Bounds, GraphicsUnit.Pixel);
+                Rectangle clipView = ParentToView(rectangle);
+                try
+                {
+                    lock (_lockObject)
+                    {
+                        g.DrawImage(BackBuffer, rectangle, clipView, GraphicsUnit.Pixel);
+                    }
+                }
+                catch (Exception e)
+                {
+                    Trace.WriteLine($"绘制缓存失败，{e}");
+                }
             }
         }
-
+        /// <summary>
+        /// 通过将当前视图矩形与父控件的大小进行比较，获得相对于背景图像的矩形
+        /// </summary>
+        /// <param name="clip"></param>
+        /// <returns></returns>
+        public Rectangle ParentToView(Rectangle clip)
+        {
+            Rectangle result = new Rectangle
+            {
+                X = ViewBounds.X + (clip.X * ViewBounds.Width / _width),
+                Y = ViewBounds.Y + (clip.Y * ViewBounds.Height / _height),
+                Width = clip.Width * ViewBounds.Width / _width,
+                Height = clip.Height * ViewBounds.Height / _height
+            };
+            return result;
+        }
 
         public void ResetExtents()
         {
@@ -327,23 +345,20 @@ namespace EM.GIS.Symbology
 
         public void Resize(int width, int height)
         {
-            var diff = new Point
-            {
-                X = width - _width,
-                Y = height - _height
-            };
-            var newView = new Rectangle(ViewBounds.X, ViewBounds.Y, ViewBounds.Width + diff.X, ViewBounds.Height + diff.Y);
+            var dx = width - _width;
+            var dy = height - _height;
+            var destWidth = ViewBounds.Width + dx;
+            var destHeight = ViewBounds.Height + dy;
 
             // Check for minimal size of view.
-            if (newView.Width < 5) newView.Width = 5;
-            if (newView.Height < 5) newView.Height = 5;
+            if (destWidth < 5) destWidth = 5;
+            if (destHeight < 5) destHeight = 5;
 
-            ViewBounds = newView;
+            _viewBounds = new Rectangle(ViewBounds.X, ViewBounds.Y, destWidth, destHeight);
             ResetExtents();
 
             _width = width;
             _height = height;
-            Bounds = new Rectangle(0, 0, _width, _height);
         }
 
         public void ZoomToMaxExtent()
@@ -354,7 +369,7 @@ namespace EM.GIS.Symbology
         {
             // to prevent exception when zoom to map with one layer with one point
             const double Eps = 1e-7;
-            var maxExtent = Extent.Width < Eps || Extent.Height < Eps ? new Extent(Extent.MinX - Eps, Extent.MinY - Eps, Extent.MaxX + Eps, Extent.MaxY + Eps) : Extent;
+            var maxExtent = Extent.Width < Eps || Extent.Height < Eps ? new Extent(Extent.MinX - Eps, Extent.MinY - Eps, Extent.MaxX + Eps, Extent.MaxY + Eps) : Extent.Copy();
             if (expand) maxExtent.ExpandBy(maxExtent.Width / 10, maxExtent.Height / 10);
             return maxExtent;
         }

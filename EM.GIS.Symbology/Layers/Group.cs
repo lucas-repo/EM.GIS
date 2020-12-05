@@ -2,6 +2,7 @@
 using EM.GIS.Geometries;
 using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Drawing;
 using System.IO;
 using System.Linq;
@@ -15,12 +16,40 @@ namespace EM.GIS.Symbology
     /// </summary>
     public class Group : Layer, IGroup
     {
-        public ILayerCollection Layers { get=>Items as ILayerCollection; }
+        public ILayerCollection Layers { get => Items as ILayerCollection; }
         public int LayerCount => GetLayers().Count();
         public Group()
         {
             Items = new LayerCollection();
+            Items.CollectionChanged += Items_CollectionChanged;
         }
+
+        private void Items_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            IExtent extent = new Extent();
+            switch (e.Action)
+            {
+                case NotifyCollectionChangedAction.Add:
+                    foreach (ILayer item in e.NewItems)
+                    {
+                        extent.ExpandToInclude(item.Extent);
+                    }
+                    break;
+                case NotifyCollectionChangedAction.Remove:
+                case NotifyCollectionChangedAction.Replace:
+                    foreach (var layer in GetAllLayers())
+                    {
+                        extent.ExpandToInclude(layer.Extent);
+                    }
+                    break;
+                case NotifyCollectionChangedAction.Move:
+                    return;
+                case NotifyCollectionChangedAction.Reset:
+                    break;
+            }
+            Extent = extent;
+        }
+
         protected override void OnDraw(Graphics graphics, Rectangle rectangle, IExtent extent, bool selected = false, CancellationTokenSource cancellationTokenSource = null)
         {
             var visibleLayers = GetLayers().Where(x => x.GetVisible(extent, rectangle));
@@ -50,7 +79,7 @@ namespace EM.GIS.Symbology
 
         public IEnumerable<IFeatureLayer> GetAllFeatureLayers()
         {
-            return GetLayers<IFeatureLayer>(GetLayers(),true);
+            return GetLayers<IFeatureLayer>(GetLayers(), true);
         }
         /// <summary>
         /// 从指定图层集合获取指定类型的图层
@@ -59,7 +88,7 @@ namespace EM.GIS.Symbology
         /// <param name="layers">图层集合</param>
         /// <param name="searchChildren">是否查询子图层</param>
         /// <returns></returns>
-        private IEnumerable<T> GetLayers<T>(IEnumerable<ILayer> layers,bool searchChildren) where T : ILayer
+        private IEnumerable<T> GetLayers<T>(IEnumerable<ILayer> layers, bool searchChildren) where T : ILayer
         {
             foreach (var layer in layers)
             {
@@ -73,7 +102,7 @@ namespace EM.GIS.Symbology
                         }
                     }
                 }
-                else if(layer is T t)
+                else if (layer is T t)
                 {
                     yield return t;
                 }
@@ -183,17 +212,17 @@ namespace EM.GIS.Symbology
 
         public IEnumerable<ILayer> GetAllLayers()
         {
-            return GetLayers<ILayer>(GetLayers(),true);
+            return GetLayers<ILayer>(GetLayers(), true);
         }
 
         public bool RemoveLayer(ILayer layer)
         {
-           return  Items.Remove(layer); 
+            return Items.Remove(layer);
         }
 
         public void RemoveLayerAt(int index)
         {
-             Items.RemoveAt(index);
+            Items.RemoveAt(index);
         }
 
         public void ClearLayers()
@@ -209,19 +238,6 @@ namespace EM.GIS.Symbology
         public IEnumerable<IRasterLayer> GetRasterLayers()
         {
             return GetLayers<IRasterLayer>(GetLayers(), false);
-        }
-
-        public override IExtent Extent
-        {
-            get
-            {
-                IExtent extent = new Extent();
-                foreach (var layer in GetAllLayers())
-                {
-                    extent.ExpandToInclude(layer.Extent);
-                }
-                return extent;
-            }
         }
 
     }

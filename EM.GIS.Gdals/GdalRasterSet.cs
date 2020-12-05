@@ -40,7 +40,7 @@ namespace EM.GIS.Gdals
                 OnDatasetChanged();
             }
         }
-        public override ProjectionInfo Projection 
+        public override ProjectionInfo Projection
         {
             get
             {
@@ -117,7 +117,7 @@ namespace EM.GIS.Gdals
             Filename = fileName;
             _ignoreChangeDataset = false;
             Name = Path.GetFileNameWithoutExtension(fileName);
-            _dataset = fromDataset; 
+            _dataset = fromDataset;
             OnDatasetChanged();
         }
 
@@ -305,35 +305,16 @@ namespace EM.GIS.Gdals
 
             int blockXsize = 0, blockYsize = 0;
 
-            // get the optimal block size to request gdal.
-            // if the image is stored line by line then ask for a 100px stripe.
-            int size = 64;
-            Action<Band> computeBlockSize = new Action<Band>((band) =>
-            {
-                band.GetBlockSize(out blockXsize, out blockYsize);
-                if (blockYsize == 1)
-                {
-                    blockYsize = Math.Min(size, band.YSize);
-                }
-                //if (blockYsize < size)
-                //{
-                //    blockYsize = Math.Min(size, band.YSize);
-                //}
-                //if (blockXsize < size)
-                //{
-                //    blockXsize = Math.Min(size, band.XSize);
-                //}
-            });
             if (_overview >= 0 && _overviewCount > 0)
             {
                 using (var overview = _band.GetOverview(_overview))
                 {
-                    computeBlockSize(overview);
+                    overview.ComputeBlockSize(out blockXsize, out blockYsize);
                 }
             }
             else
             {
-                computeBlockSize(_band);
+                _band.ComputeBlockSize(out blockXsize, out blockYsize);
             }
 
             int nbX, nbY;
@@ -400,72 +381,6 @@ namespace EM.GIS.Gdals
             }
             ProgressHandler?.Progress(99, $"{Name} 绘制中...");
         }
-        private unsafe Bitmap GetBitmap(int width, int height, byte[] rBuffer, byte[] gBuffer, byte[] bBuffer, byte[] aBuffer = null)
-        {
-            if (width <= 0 || height <= 0)
-            {
-                return null;
-            }
-            Bitmap result = new Bitmap(width, height, PixelFormat.Format32bppArgb);
-            BitmapData bData = result.LockBits(new Rectangle(0, 0, width, height), ImageLockMode.ReadWrite, PixelFormat.Format32bppArgb);
-            byte* scan0 = (byte*)bData.Scan0;
-            int stride = bData.Stride;
-            int dWidth = stride - width * 4;
-            int ptrIndex = -1;
-            int bufferIndex = -1;
-            if (aBuffer == null)
-            {
-                for (int row = 0; row < height; row++)
-                {
-                    ptrIndex = row * stride;
-                    bufferIndex = row * width;
-                    for (int col = 0; col < width; col++)
-                    {
-                        byte bValue = bBuffer[bufferIndex];
-                        byte gValue = gBuffer[bufferIndex];
-                        byte rValue = rBuffer[bufferIndex];
-                        byte aValue = 255;
-                        if (rValue == NoDataValue)
-                        {
-                            aValue = 0;
-                        }
-                        scan0[ptrIndex] = bValue;
-                        scan0[ptrIndex + 1] = gValue;
-                        scan0[ptrIndex + 2] = rValue;
-                        scan0[ptrIndex + 3] = aValue;
-                        ptrIndex += 4;
-                        bufferIndex++;
-                    }
-                }
-            }
-            else
-            {
-                for (int row = 0; row < height; row++)
-                {
-                    ptrIndex = row * stride;
-                    bufferIndex = row * width;
-                    for (int col = 0; col < width; col++)
-                    {
-                        byte bValue = bBuffer[bufferIndex];
-                        byte gValue = gBuffer[bufferIndex];
-                        byte rValue = rBuffer[bufferIndex];
-                        byte aValue = aBuffer[bufferIndex];
-                        if (rValue == NoDataValue)
-                        {
-                            aValue = 0;
-                        }
-                        scan0[ptrIndex] = bValue;
-                        scan0[ptrIndex + 1] = gValue;
-                        scan0[ptrIndex + 2] = rValue;
-                        scan0[ptrIndex + 3] = aValue;
-                        ptrIndex += 4;
-                        bufferIndex++;
-                    }
-                }
-            }
-            result.UnlockBits(bData);
-            return result;
-        }
         private Bitmap ReadGrayIndex(int xOffset, int yOffset, int xSize, int ySize)
         {
             Band firstBand;
@@ -480,13 +395,13 @@ namespace EM.GIS.Gdals
                 firstBand = _band;
             }
             int width, height;
-            GdalExtentions.NormalizeSizeToBand(xOffset, yOffset, xSize, ySize, firstBand, out width, out height);
-            byte[] rBuffer = GdalExtentions.ReadBand(firstBand, xOffset, yOffset, width, height);
+            GdalExtensions.NormalizeSizeToBand(xOffset, yOffset, xSize, ySize, firstBand, out width, out height);
+            byte[] rBuffer = firstBand.ReadBand( xOffset, yOffset, width, height, width, height);
             if (disposeBand)
             {
                 firstBand.Dispose();
             }
-            Bitmap result = GetBitmap(width, height, rBuffer, rBuffer, rBuffer);
+            Bitmap result = GdalExtensions.GetBitmap(width, height, rBuffer, rBuffer, rBuffer, noDataValue: NoDataValue);
             return result;
         }
         private Bitmap ReadRgb(int xOffset, int yOffset, int xSize, int ySize)
@@ -514,17 +429,63 @@ namespace EM.GIS.Gdals
             }
 
             int width, height;
-            GdalExtentions.NormalizeSizeToBand(xOffset, yOffset, xSize, ySize, rBand, out width, out height);
-            byte[] rBuffer = GdalExtentions.ReadBand(rBand, xOffset, yOffset,  width, height);
-            byte[] gBuffer = GdalExtentions.ReadBand(gBand, xOffset, yOffset,  width, height);
-            byte[] bBuffer = GdalExtentions.ReadBand(bBand, xOffset, yOffset, width, height);
+            GdalExtensions.NormalizeSizeToBand(xOffset, yOffset, xSize, ySize, rBand, out width, out height);
+            byte[] rBuffer = rBand.ReadBand(xOffset, yOffset, width, height, width, height);
+            byte[] gBuffer = gBand.ReadBand(xOffset, yOffset, width, height, width, height);
+            byte[] bBuffer = bBand.ReadBand(xOffset, yOffset, width, height, width, height);
             if (disposeBand)
             {
                 rBand.Dispose();
                 gBand.Dispose();
                 bBand.Dispose();
             }
-            Bitmap result = GetBitmap(width, height, rBuffer, gBuffer, bBuffer);
+            Bitmap result = GdalExtensions.GetBitmap(width, height, rBuffer, gBuffer, bBuffer, noDataValue: NoDataValue);
+            return result;
+        }
+        private Bitmap ReadRgba(int xOffset, int yOffset, int xSize, int ySize)
+        {
+            if (Bands.Count < 4)
+            {
+                throw new Exception("ARGB Format was indicated but there are only " + Bands.Count + " bands!");
+            }
+            Band aBand;
+            Band rBand;
+            Band gBand;
+            Band bBand;
+            var disposeBand = false;
+            if (_overview >= 0 && _overviewCount > 0)
+            {
+                rBand = (Bands[0] as GdalRasterSet<T>)._band.GetOverview(_overview);
+                gBand = (Bands[1] as GdalRasterSet<T>)._band.GetOverview(_overview);
+                bBand = (Bands[2] as GdalRasterSet<T>)._band.GetOverview(_overview);
+                aBand = (Bands[3] as GdalRasterSet<T>)._band.GetOverview(_overview);
+                disposeBand = true;
+            }
+            else
+            {
+                rBand = (Bands[0] as GdalRasterSet<T>)._band;
+                gBand = (Bands[1] as GdalRasterSet<T>)._band;
+                bBand = (Bands[2] as GdalRasterSet<T>)._band;
+                aBand = (Bands[3] as GdalRasterSet<T>)._band;
+            }
+
+            GdalExtensions.NormalizeSizeToBand(xOffset, yOffset, xSize, ySize, rBand, out int width, out int height);
+            byte[] aBuffer = aBand.ReadBand(xOffset, yOffset, width, height, width, height);
+            byte[] rBuffer = rBand.ReadBand(xOffset, yOffset, width, height, width, height);
+            byte[] gBuffer = gBand.ReadBand(xOffset, yOffset, width, height, width, height);
+            byte[] bBuffer = bBand.ReadBand(xOffset, yOffset, width, height, width, height);
+            if (disposeBand)
+            {
+                aBand.Dispose();
+                rBand.Dispose();
+                gBand.Dispose();
+                bBand.Dispose();
+            }
+            Bitmap result = GdalExtensions.GetBitmap(width, height, rBuffer, gBuffer, bBuffer, aBuffer, NoDataValue);
+            rBuffer = null;
+            gBuffer = null;
+            bBuffer = null;
+            aBuffer = null;
             return result;
         }
 
@@ -555,12 +516,11 @@ namespace EM.GIS.Gdals
                 bBand = (Bands[3] as GdalRasterSet<T>)._band;
             }
 
-            int width, height;
-            GdalExtentions.NormalizeSizeToBand(xOffset, yOffset, xSize, ySize, rBand, out width, out height);
-            byte[] aBuffer = GdalExtentions.ReadBand(aBand, xOffset, yOffset, width, height);
-            byte[] rBuffer = GdalExtentions.ReadBand(rBand, xOffset, yOffset, width, height);
-            byte[] gBuffer = GdalExtentions.ReadBand(gBand, xOffset, yOffset, width, height);
-            byte[] bBuffer = GdalExtentions.ReadBand(bBand, xOffset, yOffset,  width, height);
+            GdalExtensions.NormalizeSizeToBand(xOffset, yOffset, xSize, ySize, rBand, out int width, out int height);
+            byte[] aBuffer = aBand.ReadBand(xOffset, yOffset, width, height, width, height);
+            byte[] rBuffer = rBand.ReadBand(xOffset, yOffset, width, height, width, height);
+            byte[] gBuffer = gBand.ReadBand(xOffset, yOffset, width, height, width, height);
+            byte[] bBuffer = bBand.ReadBand(xOffset, yOffset, width, height, width, height); ;
             if (disposeBand)
             {
                 aBand.Dispose();
@@ -568,7 +528,7 @@ namespace EM.GIS.Gdals
                 gBand.Dispose();
                 bBand.Dispose();
             }
-            Bitmap result = GetBitmap(width, height, rBuffer, gBuffer, bBuffer, aBuffer);
+            Bitmap result = GdalExtensions.GetBitmap(width, height, rBuffer, gBuffer, bBuffer, aBuffer, NoDataValue);
             return result;
         }
         private Bitmap ReadPaletteBuffered(int xOffset, int yOffset, int xSize, int ySize)
@@ -608,8 +568,8 @@ namespace EM.GIS.Gdals
             }
 
             int width, height;
-            GdalExtentions.NormalizeSizeToBand(xOffset, yOffset, xSize, ySize, firstBand, out width, out height);
-            byte[] indexBuffer = GdalExtentions.ReadBand(firstBand, xOffset, yOffset, width, height);
+            GdalExtensions.NormalizeSizeToBand(xOffset, yOffset, xSize, ySize, firstBand, out width, out height);
+            byte[] indexBuffer = firstBand.ReadBand( xOffset, yOffset, width, height, width, height);
             if (disposeBand)
             {
                 firstBand.Dispose();
@@ -626,7 +586,7 @@ namespace EM.GIS.Gdals
                 gBuffer[i] = colorTable[index][2];
                 bBuffer[i] = colorTable[index][3];
             }
-            Bitmap result = GetBitmap(width, height, rBuffer, gBuffer, gBuffer, aBuffer);
+            Bitmap result = GdalExtensions.GetBitmap(width, height, rBuffer, gBuffer, gBuffer, aBuffer, NoDataValue);
             return result;
         }
         /// <summary>
@@ -655,7 +615,15 @@ namespace EM.GIS.Gdals
                         result = ReadRgb(xOffset, yOffset, xSize, ySize);
                         break;
                     default:
-                        result = ReadArgb(xOffset, yOffset, xSize, ySize);
+                        switch (_colorInterp)
+                        {
+                            case ColorInterp.GCI_RedBand:
+                                result = ReadRgba(xOffset, yOffset, xSize, ySize);
+                                break;
+                            case ColorInterp.GCI_AlphaBand:
+                                result = ReadArgb(xOffset, yOffset, xSize, ySize);
+                                break;
+                        }
                         break;
                 }
             });
@@ -736,7 +704,7 @@ namespace EM.GIS.Gdals
 
             return null;
         }
-       
+
         /// <summary>
         /// Gets the mean, standard deviation, minimum and maximum
         /// </summary>
@@ -847,7 +815,7 @@ namespace EM.GIS.Gdals
             if (_band != null)
             {
                 RasterType = _band.DataType.ToRasterType();
-                   double val;
+                double val;
                 _band.GetNoDataValue(out val, out int hasVal);
                 if (hasVal == 1)
                 {

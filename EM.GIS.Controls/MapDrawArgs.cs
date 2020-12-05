@@ -9,7 +9,7 @@ namespace EM.GIS.Controls
         #region Fields
 
         private Rectangle _clipRectangle;
-        private MapArgs _geoGraphics;
+        private MapEventArgs _geoGraphics;
         private Graphics _graphics;
 
         #endregion
@@ -25,7 +25,7 @@ namespace EM.GIS.Controls
         public MapDrawArgs(Graphics inGraphics, Rectangle clipRectangle, IFrame inMapFrame)
         {
             _graphics = inGraphics;
-            _geoGraphics = new MapArgs(clipRectangle, inMapFrame.ViewExtents);
+            _geoGraphics = new MapEventArgs(clipRectangle, inMapFrame.ViewExtents);
 
             _clipRectangle = clipRectangle;
         }
@@ -36,7 +36,7 @@ namespace EM.GIS.Controls
         /// <param name="inGraphics">The graphics object used for drawing.</param>
         /// <param name="clipRectangle">The clip rectangle.</param>
         /// <param name="inGeoGraphics">The map args.</param>
-        public MapDrawArgs(Graphics inGraphics, Rectangle clipRectangle, MapArgs inGeoGraphics)
+        public MapDrawArgs(Graphics inGraphics, Rectangle clipRectangle, MapEventArgs inGeoGraphics)
         {
             _graphics = inGraphics;
             _clipRectangle = clipRectangle;
@@ -66,7 +66,7 @@ namespace EM.GIS.Controls
         /// <summary>
         /// Gets or sets a GeoGraphics wrapper that makes it easy to draw things in geographic coordinates.
         /// </summary>
-        public virtual MapArgs GeoGraphics
+        public virtual MapEventArgs GeoGraphics
         {
             get
             {

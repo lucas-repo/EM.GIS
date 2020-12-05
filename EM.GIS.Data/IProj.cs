@@ -11,10 +11,10 @@ namespace EM.GIS.Data
         /// <summary>
         /// 范围
         /// </summary>
-        IExtent Extent { get; }
+        IExtent Extent { get; set; }
         /// <summary>
         /// 边界
         /// </summary>
-        Rectangle Bounds { get; }
+        Rectangle Bounds { get; set; }
     }
 }

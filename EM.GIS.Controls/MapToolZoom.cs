@@ -8,6 +8,9 @@ using System.Timers;
 
 namespace EM.GIS.Controls
 {
+    /// <summary>
+    /// 缩放地图工具
+    /// </summary>
     public class MapToolZoom : MapTool
     {
         #region Fields
@@ -104,11 +107,7 @@ namespace EM.GIS.Controls
 
         #region Methods
 
-        /// <summary>
-        /// Handles the actions that the tool controls during the OnMouseDown event
-        /// </summary>
-        /// <param name="e">The event args.</param>
-        protected override void OnMouseDown(GeoMouseArgs e)
+        public override void DoMouseDown(GeoMouseArgs e)
         {
             if (e.Button == MouseButtons.Middle && !_preventDrag)
             {
@@ -116,15 +115,10 @@ namespace EM.GIS.Controls
                 _source = e.Map.MapFrame.ViewBounds;
             }
 
-            base.OnMouseDown(e);
+            base.DoMouseDown(e);
         }
 
-        /// <summary>
-        /// Handles the mouse move event, changing the viewing extents to match the movements
-        /// of the mouse if the left mouse button is down.
-        /// </summary>
-        /// <param name="e">The event args.</param>
-        protected override void OnMouseMove(GeoMouseArgs e)
+        public override void DoMouseMove(GeoMouseArgs e)
         {
             if (_dragStart != Point.Empty && !_preventDrag)
             {
@@ -144,14 +138,10 @@ namespace EM.GIS.Controls
                 Map.Invalidate();
             }
 
-            base.OnMouseMove(e);
+            base.DoMouseMove(e);
         }
 
-        /// <summary>
-        /// Mouse Up
-        /// </summary>
-        /// <param name="e">The event args.</param>
-        protected override void OnMouseUp(GeoMouseArgs e)
+        public override void DoMouseUp(GeoMouseArgs e)
         {
             if (e.Button == MouseButtons.Middle && _isDragging)
             {
@@ -165,14 +155,10 @@ namespace EM.GIS.Controls
 
             _dragStart = Point.Empty;
 
-            base.OnMouseUp(e);
+            base.DoMouseUp(e);
         }
 
-        /// <summary>
-        /// Mouse Wheel
-        /// </summary>
-        /// <param name="e">The event args.</param>
-        protected override void OnMouseWheel(GeoMouseArgs e)
+        public override void DoMouseWheel(GeoMouseArgs e)
         {
             // Fix this
             _zoomTimer.Stop(); // if the timer was already started, stop it.
@@ -227,12 +213,12 @@ namespace EM.GIS.Controls
                 BusySet = true;
             }
 
-            base.OnMouseWheel(e);
+            base.DoMouseWheel(e);
         }
 
         private void Configure()
         {
-            YieldStyle = YieldStyles.Scroll;
+            MapToolMode = MapToolMode.Middle;
             _timerInterval = 100;
             _zoomTimer = new Timer
             {

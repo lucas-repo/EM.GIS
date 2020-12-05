@@ -60,7 +60,13 @@ namespace EM.GIS.Symbology
 
         public virtual ICategoryCollection Categories { get; }
         public virtual ISelection Selection { get; protected set; }
-
+        public Layer()
+        { }
+        public Layer(IDataSet dataSet)
+        {
+            _dataSet = dataSet;
+            Extent = _dataSet?.Extent;
+        }
         private void GetResolution(IExtent envelope, int pixelWidth, int pixelHeight, out double xRes, out double yRes)
         {
             double worldWidth = envelope.MaxX - envelope.MinX;

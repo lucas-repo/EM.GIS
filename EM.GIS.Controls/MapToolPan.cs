@@ -1,10 +1,15 @@
-﻿using System;
+﻿using EM.GIS.Controls.Properties;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.IO;
 using System.Text;
 
 namespace EM.GIS.Controls
 {
+    /// <summary>
+    /// 拖动地图工具
+    /// </summary>
     public class MapToolPan : MapTool
     {
         #region Fields
@@ -24,7 +29,7 @@ namespace EM.GIS.Controls
         public MapToolPan(IMap inMap)
             : base(inMap)
         {
-            YieldStyle = YieldStyles.LeftButton;
+            MapToolMode = MapToolMode.LeftButton;
             BusySet = false;
         }
 
@@ -46,29 +51,21 @@ namespace EM.GIS.Controls
 
         #region Methods
 
-        /// <summary>
-        /// Handles the actions that the tool controls during the OnMouseDown event
-        /// </summary>
-        /// <param name="e">The event args</param>
-        protected override void OnMouseDown(GeoMouseArgs e)
+        public override void DoMouseDown(GeoMouseArgs e)
         {
             if (e.Button == MouseButtons.Left && _preventDrag == false)
             {
                 _dragStart = e.Location;
                 _source = e.Map.MapFrame.ViewBounds;
+                IsDragging = true;
             }
 
-            base.OnMouseDown(e);
+            base.DoMouseDown(e);
         }
 
-        /// <summary>
-        /// Handles the mouse move event, changing the viewing extents to match the movements
-        /// of the mouse if the left mouse button is down.
-        /// </summary>
-        /// <param name="e">The event args</param>
-        protected override void OnMouseMove(GeoMouseArgs e)
+        public override void DoMouseMove(GeoMouseArgs e)
         {
-            if (_dragStart != Point.Empty && _preventDrag == false)
+            if (IsDragging)
             {
                 if (!BusySet)
                 {
@@ -76,26 +73,18 @@ namespace EM.GIS.Controls
                     BusySet = true;
                 }
 
-                IsDragging = true;
-                Point diff = new Point
-                {
-                    X = _dragStart.X - e.X,
-                    Y = _dragStart.Y - e.Y
-                };
-                e.Map.MapFrame.ViewBounds = new Rectangle(_source.X + diff.X, _source.Y + diff.Y, _source.Width, _source.Height);
+                var dx = _dragStart.X - e.X;
+                var dy = _dragStart.Y - e.Y;
+                e.Map.MapFrame.ViewBounds = new Rectangle(_source.X + dx, _source.Y + dy, _source.Width, _source.Height);
                 Map.Invalidate();
             }
 
-            base.OnMouseMove(e);
+            base.DoMouseMove(e);
         }
 
-        /// <summary>
-        /// Mouse Up
-        /// </summary>
-        /// <param name="e">The event args</param>
-        protected override void OnMouseUp(GeoMouseArgs e)
+        public override void DoMouseUp(GeoMouseArgs e)
         {
-            if (e.Button == MouseButtons.Left && IsDragging)
+            if (IsDragging)
             {
                 IsDragging = false;
 
@@ -107,8 +96,8 @@ namespace EM.GIS.Controls
             }
 
             _dragStart = Point.Empty;
-
-            base.OnMouseUp(e);
+            _source = Rectangle.Empty;
+            base.DoMouseUp(e);
         }
 
         #endregion

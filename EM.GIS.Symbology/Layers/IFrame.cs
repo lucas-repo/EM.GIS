@@ -1,4 +1,5 @@
-﻿using EM.GIS.Geometries;
+﻿using EM.GIS.Data;
+using EM.GIS.Geometries;
 using System;
 using System.Drawing;
 using System.Threading;
@@ -9,7 +10,7 @@ namespace EM.GIS.Symbology
     /// <summary>
     /// 包含图层操作的框架接口
     /// </summary>
-    public interface IFrame : IGroup
+    public interface IFrame : IGroup, IProj
     {
         /// <summary>
         /// 地图框是否忙于绘制
@@ -51,6 +52,10 @@ namespace EM.GIS.Symbology
         /// 缓存图片改变事件
         /// </summary>
         event EventHandler BufferChanged;
+        /// <summary>
+        /// 视图边界改变事件
+        /// </summary>
+        event EventHandler ViewBoundsChanged;
         /// <summary>
         /// 重绘缓存
         /// </summary>

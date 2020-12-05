@@ -7,28 +7,31 @@ using System.Text;
 
 namespace EM.GIS.Controls
 {
-    public class MapArgs : EventArgs, IProj
+    /// <summary>
+    /// 地图事件参数
+    /// </summary>
+    public class MapEventArgs : EventArgs, IProj
     {
         #region  Constructors
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="MapArgs"/> class.
+        /// Initializes a new instance of the <see cref="MapEventArgs"/> class.
         /// </summary>
         /// <param name="bufferRectangle">The buffer rectangle.</param>
         /// <param name="bufferEnvelope">The buffer envelope.</param>
-        public MapArgs(Rectangle bufferRectangle, IExtent bufferEnvelope)
+        public MapEventArgs(Rectangle bufferRectangle, IExtent bufferEnvelope)
         {
             Bounds = bufferRectangle;
             Extent = bufferEnvelope;
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="MapArgs"/> class, where the device is also specified, overriding the default buffering behavior.
+        /// Initializes a new instance of the <see cref="MapEventArgs"/> class, where the device is also specified, overriding the default buffering behavior.
         /// </summary>
         /// <param name="bufferRectangle">The buffer rectangle.</param>
         /// <param name="bufferEnvelope">The buffer envelope.</param>
         /// <param name="g">The graphics object used for drawing.</param>
-        public MapArgs(Rectangle bufferRectangle, IExtent bufferEnvelope, Graphics g)
+        public MapEventArgs(Rectangle bufferRectangle, IExtent bufferEnvelope, Graphics g)
         {
             Bounds = bufferRectangle;
             Extent = bufferEnvelope;
@@ -57,12 +60,12 @@ namespace EM.GIS.Controls
         /// <summary>
         /// Gets the geographic bounds of the content of the buffer.
         /// </summary>
-        public IExtent Extent { get; }
+        public IExtent Extent { get; set; }
 
         /// <summary>
         /// Gets the rectangle dimensions of what the buffer should be in pixels
         /// </summary>
-        public Rectangle Bounds { get; }
+        public Rectangle Bounds { get; set; }
 
         /// <summary>
         /// Gets the maximum Y value
