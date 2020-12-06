@@ -1,4 +1,5 @@
 ﻿using EM.GIS.Data;
+using EM.GIS.Gdals;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
@@ -72,18 +73,7 @@ namespace EM.GIS.Controls
             assemblies.Add(typeof(DataFactory).Assembly);
             assemblies.Add(typeof(AppManager).Assembly);
             #region 添加几何工厂程序集
-            string[] directories ={ Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),
-                AppDomain.CurrentDomain.BaseDirectory
-            };
-            foreach (var directory in directories)
-            {
-                Assembly geometryFactoryAssembly = AssemblyExtensions.GetAssignableAssembly<IGeometryFactory>(directory);
-                if (geometryFactoryAssembly != null)
-                {
-                    assemblies.Add(geometryFactoryAssembly);
-                    break;
-                }
-            }
+            assemblies.Add(typeof(GdalGeometryFactory).Assembly);
             #endregion
 
             foreach (var assembly in assemblies)

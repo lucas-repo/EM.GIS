@@ -19,7 +19,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\EM.GIS.Controls\EM.GIS.Controls.csproj" />
     <ProjectReference Include="..\EM.GIS.Data\EM.GIS.Data.csproj">
       <Private>false</Private>
     </ProjectReference>
