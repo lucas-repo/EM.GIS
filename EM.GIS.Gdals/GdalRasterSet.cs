@@ -383,6 +383,7 @@ namespace EM.GIS.Gdals
         }
         private Bitmap ReadGrayIndex(int xOffset, int yOffset, int xSize, int ySize)
         {
+            Bitmap result = null;
             Band firstBand;
             var disposeBand = false;
             if (_overview >= 0 && _overviewCount > 0)
@@ -396,16 +397,20 @@ namespace EM.GIS.Gdals
             }
             int width, height;
             GdalExtensions.NormalizeSizeToBand(xOffset, yOffset, xSize, ySize, firstBand, out width, out height);
-            byte[] rBuffer = firstBand.ReadBand( xOffset, yOffset, width, height, width, height);
+            if (width > 0 && height > 0)
+            {
+                byte[] rBuffer = firstBand.ReadBand(xOffset, yOffset, width, height, width, height);
+                result = GdalExtensions.GetBitmap(width, height, rBuffer, rBuffer, rBuffer, noDataValue: NoDataValue);
+            }
             if (disposeBand)
             {
                 firstBand.Dispose();
             }
-            Bitmap result = GdalExtensions.GetBitmap(width, height, rBuffer, rBuffer, rBuffer, noDataValue: NoDataValue);
             return result;
         }
         private Bitmap ReadRgb(int xOffset, int yOffset, int xSize, int ySize)
         {
+            Bitmap result = null;
             if (Bands.Count < 3)
             {
                 throw new Exception("RGB Format was indicated but there are only " + Bands.Count + " bands!");
@@ -430,20 +435,24 @@ namespace EM.GIS.Gdals
 
             int width, height;
             GdalExtensions.NormalizeSizeToBand(xOffset, yOffset, xSize, ySize, rBand, out width, out height);
-            byte[] rBuffer = rBand.ReadBand(xOffset, yOffset, width, height, width, height);
-            byte[] gBuffer = gBand.ReadBand(xOffset, yOffset, width, height, width, height);
-            byte[] bBuffer = bBand.ReadBand(xOffset, yOffset, width, height, width, height);
+            if (width > 0 && height > 0)
+            {
+                byte[] rBuffer = rBand.ReadBand(xOffset, yOffset, width, height, width, height);
+                byte[] gBuffer = gBand.ReadBand(xOffset, yOffset, width, height, width, height);
+                byte[] bBuffer = bBand.ReadBand(xOffset, yOffset, width, height, width, height);
+                result = GdalExtensions.GetBitmap(width, height, rBuffer, gBuffer, bBuffer, noDataValue: NoDataValue);
+            }
             if (disposeBand)
             {
                 rBand.Dispose();
                 gBand.Dispose();
                 bBand.Dispose();
             }
-            Bitmap result = GdalExtensions.GetBitmap(width, height, rBuffer, gBuffer, bBuffer, noDataValue: NoDataValue);
             return result;
         }
         private Bitmap ReadRgba(int xOffset, int yOffset, int xSize, int ySize)
         {
+            Bitmap result = null;
             if (Bands.Count < 4)
             {
                 throw new Exception("ARGB Format was indicated but there are only " + Bands.Count + " bands!");
@@ -470,10 +479,14 @@ namespace EM.GIS.Gdals
             }
 
             GdalExtensions.NormalizeSizeToBand(xOffset, yOffset, xSize, ySize, rBand, out int width, out int height);
-            byte[] aBuffer = aBand.ReadBand(xOffset, yOffset, width, height, width, height);
-            byte[] rBuffer = rBand.ReadBand(xOffset, yOffset, width, height, width, height);
-            byte[] gBuffer = gBand.ReadBand(xOffset, yOffset, width, height, width, height);
-            byte[] bBuffer = bBand.ReadBand(xOffset, yOffset, width, height, width, height);
+            if (width > 0 && height > 0)
+            {
+                byte[] aBuffer = aBand.ReadBand(xOffset, yOffset, width, height, width, height);
+                byte[] rBuffer = rBand.ReadBand(xOffset, yOffset, width, height, width, height);
+                byte[] gBuffer = gBand.ReadBand(xOffset, yOffset, width, height, width, height);
+                byte[] bBuffer = bBand.ReadBand(xOffset, yOffset, width, height, width, height);
+                result = GdalExtensions.GetBitmap(width, height, rBuffer, gBuffer, bBuffer, aBuffer, NoDataValue);
+            }
             if (disposeBand)
             {
                 aBand.Dispose();
@@ -481,16 +494,12 @@ namespace EM.GIS.Gdals
                 gBand.Dispose();
                 bBand.Dispose();
             }
-            Bitmap result = GdalExtensions.GetBitmap(width, height, rBuffer, gBuffer, bBuffer, aBuffer, NoDataValue);
-            rBuffer = null;
-            gBuffer = null;
-            bBuffer = null;
-            aBuffer = null;
             return result;
         }
 
         private Bitmap ReadArgb(int xOffset, int yOffset, int xSize, int ySize)
         {
+            Bitmap result = null;
             if (Bands.Count < 4)
             {
                 throw new Exception("ARGB Format was indicated but there are only " + Bands.Count + " bands!");
@@ -517,10 +526,14 @@ namespace EM.GIS.Gdals
             }
 
             GdalExtensions.NormalizeSizeToBand(xOffset, yOffset, xSize, ySize, rBand, out int width, out int height);
-            byte[] aBuffer = aBand.ReadBand(xOffset, yOffset, width, height, width, height);
-            byte[] rBuffer = rBand.ReadBand(xOffset, yOffset, width, height, width, height);
-            byte[] gBuffer = gBand.ReadBand(xOffset, yOffset, width, height, width, height);
-            byte[] bBuffer = bBand.ReadBand(xOffset, yOffset, width, height, width, height); ;
+            if (width > 0 && height > 0)
+            {
+                byte[] aBuffer = aBand.ReadBand(xOffset, yOffset, width, height, width, height);
+                byte[] rBuffer = rBand.ReadBand(xOffset, yOffset, width, height, width, height);
+                byte[] gBuffer = gBand.ReadBand(xOffset, yOffset, width, height, width, height);
+                byte[] bBuffer = bBand.ReadBand(xOffset, yOffset, width, height, width, height);
+                result = GdalExtensions.GetBitmap(width, height, rBuffer, gBuffer, bBuffer, aBuffer, NoDataValue);
+            }
             if (disposeBand)
             {
                 aBand.Dispose();
@@ -528,11 +541,11 @@ namespace EM.GIS.Gdals
                 gBand.Dispose();
                 bBand.Dispose();
             }
-            Bitmap result = GdalExtensions.GetBitmap(width, height, rBuffer, gBuffer, bBuffer, aBuffer, NoDataValue);
             return result;
         }
         private Bitmap ReadPaletteBuffered(int xOffset, int yOffset, int xSize, int ySize)
         {
+            Bitmap result = null;
             ColorTable ct = _band.GetRasterColorTable();
             if (ct == null)
             {
@@ -569,24 +582,27 @@ namespace EM.GIS.Gdals
 
             int width, height;
             GdalExtensions.NormalizeSizeToBand(xOffset, yOffset, xSize, ySize, firstBand, out width, out height);
-            byte[] indexBuffer = firstBand.ReadBand( xOffset, yOffset, width, height, width, height);
+            if (width > 0 && height > 0)
+            {
+                byte[] indexBuffer = firstBand.ReadBand(xOffset, yOffset, width, height, width, height);
+                byte[] rBuffer = new byte[indexBuffer.Length];
+                byte[] gBuffer = new byte[indexBuffer.Length];
+                byte[] bBuffer = new byte[indexBuffer.Length];
+                byte[] aBuffer = new byte[indexBuffer.Length];
+                for (int i = 0; i < indexBuffer.Length; i++)
+                {
+                    int index = indexBuffer[i];
+                    aBuffer[i] = colorTable[index][0];
+                    rBuffer[i] = colorTable[index][1];
+                    gBuffer[i] = colorTable[index][2];
+                    bBuffer[i] = colorTable[index][3];
+                }
+                result = GdalExtensions.GetBitmap(width, height, rBuffer, gBuffer, gBuffer, aBuffer, NoDataValue);
+            }
             if (disposeBand)
             {
                 firstBand.Dispose();
             }
-            byte[] rBuffer = new byte[indexBuffer.Length];
-            byte[] gBuffer = new byte[indexBuffer.Length];
-            byte[] bBuffer = new byte[indexBuffer.Length];
-            byte[] aBuffer = new byte[indexBuffer.Length];
-            for (int i = 0; i < indexBuffer.Length; i++)
-            {
-                int index = indexBuffer[i];
-                aBuffer[i] = colorTable[index][0];
-                rBuffer[i] = colorTable[index][1];
-                gBuffer[i] = colorTable[index][2];
-                bBuffer[i] = colorTable[index][3];
-            }
-            Bitmap result = GdalExtensions.GetBitmap(width, height, rBuffer, gBuffer, gBuffer, aBuffer, NoDataValue);
             return result;
         }
         /// <summary>

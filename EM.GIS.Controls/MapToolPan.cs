@@ -17,35 +17,18 @@ namespace EM.GIS.Controls
         private Point _dragStart;
         private bool _preventDrag;
         private Rectangle _source;
+        private bool _isDragging;
 
         #endregion
 
         #region  Constructors
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="MapToolPan"/> class.
-        /// </summary>
-        /// <param name="inMap">The map the tool should work on.</param>
-        public MapToolPan(IMap inMap)
-            : base(inMap)
+        public MapToolPan(IMap map)
+            : base(map)
         {
             MapToolMode = MapToolMode.LeftButton;
-            BusySet = false;
+            Name = "拖动";
         }
-
-        #endregion
-
-        #region Properties
-
-        /// <summary>
-        /// Gets or sets a value indicating whether the map function is currently interacting with the map.
-        /// </summary>
-        public bool BusySet { get; set; }
-
-        /// <summary>
-        /// Gets a value indicating whether this tool is currently being used.
-        /// </summary>
-        public bool IsDragging { get; private set; }
 
         #endregion
 
@@ -57,7 +40,7 @@ namespace EM.GIS.Controls
             {
                 _dragStart = e.Location;
                 _source = e.Map.MapFrame.ViewBounds;
-                IsDragging = true;
+                _isDragging = true;
             }
 
             base.DoMouseDown(e);
@@ -65,7 +48,7 @@ namespace EM.GIS.Controls
 
         public override void DoMouseMove(GeoMouseArgs e)
         {
-            if (IsDragging)
+            if (_isDragging)
             {
                 if (!BusySet)
                 {
@@ -83,9 +66,9 @@ namespace EM.GIS.Controls
 
         public override void DoMouseUp(GeoMouseArgs e)
         {
-            if (IsDragging)
+            if (_isDragging)
             {
-                IsDragging = false;
+                _isDragging = false;
 
                 _preventDrag = true;
                 e.Map.MapFrame.ResetExtents();

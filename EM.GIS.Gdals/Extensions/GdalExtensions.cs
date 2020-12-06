@@ -81,10 +81,18 @@ namespace EM.GIS.Gdals
             {
                 width = band.XSize - xOffset;
             }
+            if (width < 0)
+            {
+                width = 0;
+            }
 
             if (yOffset + height > band.YSize)
             {
                 height = band.YSize - yOffset;
+            }
+            if (height < 0)
+            {
+                height = 0;
             }
         }
 

@@ -12,12 +12,6 @@ namespace EM.GIS.Controls
     /// </summary>
     public abstract class MapTool : IMapTool
     {
-        #region Fields
-
-        private string _name;
-
-        #endregion
-
         #region  Constructors
 
         public MapTool()
@@ -53,18 +47,13 @@ namespace EM.GIS.Controls
         public bool IsActivated { get; protected set; }
 
         public IMap Map { get; set; }
+        public bool BusySet { get; set; }
+        private string _name;
 
         public string Name
         {
-            get
-            {
-                return _name;
-            }
-
-            set
-            {
-                _name = GetAvailableName(value);
-            }
+            get => _name;
+            set => _name = GetAvailableName(value);
         }
 
         public MapToolMode MapToolMode { get; set; }

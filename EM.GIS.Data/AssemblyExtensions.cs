@@ -141,7 +141,7 @@ namespace EM.GIS.Data
                     }
                     catch (Exception ex)
                     {
-                        Trace.WriteLine($"GetAssignableAssembly Error!{ex}");
+                        Trace.WriteLine($"Load Assembly Error!{ex}");
                     }
                 }
             }

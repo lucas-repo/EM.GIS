@@ -72,10 +72,17 @@ namespace EM.GIS.Controls
             assemblies.Add(typeof(DataFactory).Assembly);
             assemblies.Add(typeof(AppManager).Assembly);
             #region 添加几何工厂程序集
-            Assembly geometryFactoryAssembly = AssemblyExtensions.GetAssignableAssembly<IGeometryFactory>(BaseDirectory);
-            if (geometryFactoryAssembly != null)
+            string[] directories ={ Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),
+                AppDomain.CurrentDomain.BaseDirectory
+            };
+            foreach (var directory in directories)
             {
-                assemblies.Add(geometryFactoryAssembly);
+                Assembly geometryFactoryAssembly = AssemblyExtensions.GetAssignableAssembly<IGeometryFactory>(directory);
+                if (geometryFactoryAssembly != null)
+                {
+                    assemblies.Add(geometryFactoryAssembly);
+                    break;
+                }
             }
             #endregion
 

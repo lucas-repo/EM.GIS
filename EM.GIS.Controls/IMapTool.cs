@@ -76,6 +76,10 @@ namespace EM.GIS.Controls
         /// </summary>
         MapToolMode MapToolMode { get; set; }
         /// <summary>
+        /// 是否正与地图交互
+        /// </summary>
+        bool BusySet { get; set; }
+        /// <summary>
         /// 激活
         /// </summary>
         void Activate();

@@ -15,11 +15,9 @@ namespace EM.GIS.Controls
     {
         #region Fields
 
-        private Rectangle _client;
         private int _direction;
         private Point _dragStart;
         private bool _isDragging;
-        private IFrame _mapFrame;
         private bool _preventDrag;
         private double _sensitivity;
         private Rectangle _source;
@@ -30,15 +28,10 @@ namespace EM.GIS.Controls
 
         #region  Constructors
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="MapToolZoom"/> class.
-        /// </summary>
-        /// <param name="inMap">The map the tool should work on.</param>
-        public MapToolZoom(IMap inMap)
-            : base(inMap)
+        public MapToolZoom(IMap map)
+            : base(map)
         {
             Configure();
-            BusySet = false;
         }
 
         #endregion
@@ -46,36 +39,20 @@ namespace EM.GIS.Controls
         #region Properties
 
         /// <summary>
-        /// Gets or sets a value indicating whether the map function is currently interacting with the map.
-        /// </summary>
-        public bool BusySet { get; set; }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether forward zooms in. This controls the sense (direction) of zoom (in or out) as you roll the mouse wheel.
+        /// 滚轮前滚是否为放大
         /// </summary>
         public bool ForwardZoomsIn
         {
-            get
-            {
-                return _direction > 0;
-            }
-
-            set
-            {
-                _direction = value ? 1 : -1;
-            }
+            get => _direction > 0;
+            set => _direction = value ? 1 : -1;
         }
 
         /// <summary>
-        /// Gets or sets the wheel zoom sensitivity. Increasing makes it more sensitive. Maximum is 0.5, Minimum is 0.01
+        /// 获取或设置滚轮缩放灵敏度，最大值是0.5，最小值是0.01
         /// </summary>
         public double Sensitivity
         {
-            get
-            {
-                return 1.0 / _sensitivity;
-            }
-
+            get => 1.0 / _sensitivity;
             set
             {
                 if (value > 0.5)
@@ -87,7 +64,7 @@ namespace EM.GIS.Controls
         }
 
         /// <summary>
-        /// Gets or sets the full refresh timeout value in milliseconds
+        /// 获取或设置以毫秒为单位的完整刷新超时值（默认100毫秒）
         /// </summary>
         public int TimerInterval
         {
@@ -113,6 +90,7 @@ namespace EM.GIS.Controls
             {
                 _dragStart = e.Location;
                 _source = e.Map.MapFrame.ViewBounds;
+                _isDragging = true;
             }
 
             base.DoMouseDown(e);
@@ -120,7 +98,7 @@ namespace EM.GIS.Controls
 
         public override void DoMouseMove(GeoMouseArgs e)
         {
-            if (_dragStart != Point.Empty && !_preventDrag)
+            if (_isDragging)
             {
                 if (!BusySet)
                 {
@@ -128,14 +106,9 @@ namespace EM.GIS.Controls
                     BusySet = true;
                 }
 
-                _isDragging = true;
-                Point diff = new Point
-                {
-                    X = _dragStart.X - e.X,
-                    Y = _dragStart.Y - e.Y
-                };
-                e.Map.MapFrame.ViewBounds = new Rectangle(_source.X + diff.X, _source.Y + diff.Y, _source.Width, _source.Height);
-                Map.Invalidate();
+                var dx = _dragStart.X - e.X;
+                var dy = _dragStart.Y - e.Y;
+                e.Map.MapFrame.ViewBounds = new Rectangle(_source.X + dx, _source.Y + dy, _source.Width, _source.Height);
             }
 
             base.DoMouseMove(e);
@@ -143,7 +116,7 @@ namespace EM.GIS.Controls
 
         public override void DoMouseUp(GeoMouseArgs e)
         {
-            if (e.Button == MouseButtons.Middle && _isDragging)
+            if (_isDragging)
             {
                 _isDragging = false;
                 _preventDrag = true;
@@ -154,7 +127,7 @@ namespace EM.GIS.Controls
             }
 
             _dragStart = Point.Empty;
-
+            _source = Rectangle.Empty;
             base.DoMouseUp(e);
         }
 
@@ -167,7 +140,6 @@ namespace EM.GIS.Controls
             // For multiple zoom steps before redrawing, we actually
             // want the x coordinate relative to the screen, not
             // the x coordinate relative to the previously modified view.
-            if (_client == Rectangle.Empty) _client = r;
 
             double w = r.Width;
             double h = r.Height;
@@ -204,9 +176,8 @@ namespace EM.GIS.Controls
                 r.Y += yOff;
             }
 
-            e.Map.MapFrame.ViewBounds = r;
+            Map.MapFrame.ViewBounds = r;
             _zoomTimer.Start();
-            _mapFrame = e.Map.MapFrame;
             if (!BusySet)
             {
                 Map.IsBusy = true;
@@ -225,18 +196,15 @@ namespace EM.GIS.Controls
                 Interval = _timerInterval
             };
             _zoomTimer.Elapsed += ZoomTimer_Elapsed;
-            _client = Rectangle.Empty;
             Sensitivity = 0.2;
             ForwardZoomsIn = true;
-            Name = "ScrollZoom";
+            Name = "缩放";
         }
 
         private void ZoomTimer_Elapsed(object sender, ElapsedEventArgs e)
         {
             _zoomTimer.Stop();
-            if (_mapFrame == null) return;
-            _client = Rectangle.Empty;
-            _mapFrame.ResetExtents();
+            Map.MapFrame.ResetExtents();
             Map.IsBusy = false;
             BusySet = false;
         }
