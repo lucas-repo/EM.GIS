@@ -76,7 +76,6 @@ namespace EM.GIS.Controls
                 var dx = _dragStart.X - e.X;
                 var dy = _dragStart.Y - e.Y;
                 e.Map.MapFrame.ViewBounds = new Rectangle(_source.X + dx, _source.Y + dy, _source.Width, _source.Height);
-                Map.Invalidate();
             }
 
             base.DoMouseMove(e);

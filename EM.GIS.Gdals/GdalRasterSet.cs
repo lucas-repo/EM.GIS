@@ -351,7 +351,7 @@ namespace EM.GIS.Gdals
             {
                 nbY = (int)Math.Ceiling(h / blockYsize);
             }
-            int redundancy = (int)Math.Ceiling(1 / Math.Min(m11, m22));
+            int redundancy = (int)Math.Ceiling(Math.Abs(1 / Math.Min(m11, m22)));
 
             ProgressHandler?.Progress(20, $"{Name} 绘制中...");
             var increment = 70.0 / nbX / nbY;

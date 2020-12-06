@@ -239,44 +239,37 @@ namespace EM.GIS.Symbology
             return new Rectangle(topLeft.X, topLeft.Y, bottomRight.X - topLeft.X, bottomRight.Y - topLeft.Y);
         }
 
-        /// <summary>
-        /// 根据指定范围重置缓存图片
-        /// </summary>
-        /// <param name="extent"></param>
-        public async Task ResetBuffer(IExtent extent = null)
+        public async Task ResetBuffer()
         {
+            if (ViewExtents == null || ViewExtents.IsEmpty() || Width * Height == 0)
+            {
+                return;
+            }
             await Task.Run(() =>
             {
-                if (extent == null)
-                {
-                    extent = ViewExtents;
-                }
                 Bitmap tmpBuffer = null;
                 if (Width > 0 && Height > 0)
                 {
                     tmpBuffer = new Bitmap(Width, Height);
-                    #region 绘制MapFrame
-                    Rectangle rectangle = ProjToBuffer(extent);
-                    if (rectangle.Width * rectangle.Height != 0)
+                    #region 绘制BackBuffer
+                    Rectangle rectangle = Bounds;
+                    using (Graphics g = Graphics.FromImage(tmpBuffer))
                     {
-                        using (Graphics g = Graphics.FromImage(tmpBuffer))
+                        using (Brush brush = new SolidBrush(BackGround))
                         {
-                            using (Brush brush = new SolidBrush(BackGround))
-                            {
-                                g.FillRectangle(brush, rectangle);
-                            }
+                            g.FillRectangle(brush, rectangle);
+                        }
 
-                            int count = 2;
-                            var visibleLayers = GetLayers().Where(x => x.GetVisible(extent, rectangle));
-                            for (int i = 0; i < count; i++)
+                        int count = 2;
+                        var visibleLayers = GetLayers().Where(x => x.GetVisible(ViewExtents, rectangle));
+                        for (int i = 0; i < count; i++)
+                        {
+                            if (CancellationTokenSource?.IsCancellationRequested == true)
                             {
-                                if (CancellationTokenSource?.IsCancellationRequested == true)
-                                {
-                                    break;
-                                }
-                                bool selected = i == 1;
-                                Draw(g, rectangle, extent, selected, CancellationTokenSource);
+                                break;
                             }
+                            bool selected = i == 1;
+                            Draw(g, rectangle, ViewExtents, selected, CancellationTokenSource);
                         }
                     }
                     #endregion
@@ -335,12 +328,14 @@ namespace EM.GIS.Symbology
         }
         public Coordinate BufferToProj(Point position)
         {
-            double x = Convert.ToDouble(position.X);
-            double y = Convert.ToDouble(position.Y);
-            x = (x * ViewExtents.Width / _width) + ViewExtents.MinX;
-            y = ViewExtents.MaxY - (y * ViewExtents.Height / _height);
-
-            return new Coordinate(x, y, 0.0);
+            Coordinate coordinate = null;
+            if (ViewExtents != null)
+            {
+                double x = (position.X * ViewExtents.Width / _width) + ViewExtents.MinX;
+                double y = ViewExtents.MaxY - (position.Y * ViewExtents.Height / _height);
+                coordinate = new Coordinate(x, y, 0.0);
+            }
+            return coordinate;
         }
 
         public void Resize(int width, int height)

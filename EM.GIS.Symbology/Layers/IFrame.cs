@@ -59,8 +59,7 @@ namespace EM.GIS.Symbology
         /// <summary>
         /// 重绘缓存
         /// </summary>
-        /// <param name="extent"></param>
-        Task ResetBuffer(IExtent extent = null);
+        Task ResetBuffer();
         /// <summary>
         /// 打印
         /// </summary>
