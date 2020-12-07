@@ -63,19 +63,22 @@ namespace EM.GIS.Controls
         /// <summary>
         /// 地图方法
         /// </summary>
-        List<IMapTool> MapTools { get; }
+        List<ITool> MapTools { get; }
         /// <summary>
         /// 激活地图方法
         /// </summary>
         /// <param name="function"></param>
-        void ActivateMapFunction(IMapTool function);
+        void ActivateMapFunction(ITool function);
         /// <summary>
         /// 使所有地图工具无效
         /// </summary>
         void DeactivateAllMapTools();
 
         #region 事件
-        event EventHandler<GeoMouseArgs> GeoMouseMove;
+        /// <summary>
+        /// 鼠标移动事件
+        /// </summary>
+        event EventHandler<IGeoMouseEventArgs> GeoMouseMove;
         #endregion
     }
 }

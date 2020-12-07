@@ -13,6 +13,7 @@
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <OutputPath>..\bin\Debug\</OutputPath>
+    <DocumentationFile>..\bin\Debug\EM.GIS.Data.xml</DocumentationFile>
   </PropertyGroup>
 
   <ItemGroup>

@@ -8,18 +8,18 @@ using System.Text;
 namespace EM.GIS.Controls
 {
     /// <summary>
-    /// 地图工具
+    /// 工具
     /// </summary>
-    public abstract class MapTool : IMapTool
+    public abstract class Tool : ITool
     {
         #region  Constructors
 
-        public MapTool()
+        public Tool()
         {
 
         }
 
-        public MapTool(IMap map)
+        public Tool(IMap map)
         {
             Map = map;
         }
@@ -30,13 +30,6 @@ namespace EM.GIS.Controls
 
         public event EventHandler Activated;
         public event EventHandler Deactivated;
-        public event EventHandler<KeyEventArgs> KeyUp;
-        public event EventHandler<KeyEventArgs> KeyDown;
-        public event EventHandler<GeoMouseArgs> MouseDoubleClick;
-        public event EventHandler<GeoMouseArgs> MouseDown;
-        public event EventHandler<GeoMouseArgs> MouseMove;
-        public event EventHandler<GeoMouseArgs> MouseUp;
-        public event EventHandler<GeoMouseArgs> MouseWheel;
         public event EventHandler<MapDrawArgs> Drawn;
 
 
@@ -74,41 +67,6 @@ namespace EM.GIS.Controls
         {
             IsActivated = false;
             Deactivated?.Invoke(this, EventArgs.Empty);
-        }
-
-        public virtual void DoKeyDown(KeyEventArgs e)
-        {
-            KeyDown?.Invoke(this, e);
-        }
-
-        public virtual void DoKeyUp(KeyEventArgs e)
-        {
-            KeyUp?.Invoke(this, e);
-        }
-
-        public virtual void DoMouseDoubleClick(GeoMouseArgs e)
-        {
-            MouseDoubleClick?.Invoke(this, e);
-        }
-
-        public virtual void DoMouseDown(GeoMouseArgs e)
-        {
-            MouseDown?.Invoke(this, e);
-        }
-
-        public virtual void DoMouseMove(GeoMouseArgs e)
-        {
-            MouseMove?.Invoke(this, e);
-        }
-
-        public virtual void DoMouseUp(GeoMouseArgs e)
-        {
-            MouseUp?.Invoke(this, e);
-        }
-
-        public virtual void DoMouseWheel(GeoMouseArgs e)
-        {
-            MouseWheel?.Invoke(this, e);
         }
 
         public virtual void DoDraw(MapDrawArgs e)
