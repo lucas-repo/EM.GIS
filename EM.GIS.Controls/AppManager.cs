@@ -2,6 +2,7 @@
 using EM.GIS.Gdals;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.ComponentModel.Composition.Hosting;
 using System.ComponentModel.Composition.Primitives;
@@ -37,7 +38,9 @@ namespace EM.GIS.Controls
             set { _progressHandler = value; OnPropertyChanged(nameof(ProgressHandler)); }
         }
 
-        public IEnumerable<IPlugin> Plugins { get; }
+        [Browsable(false)]
+        [ImportMany(AllowRecomposition = true)]
+        public IEnumerable<IPlugin> Plugins { get; private set; }
         public List<string> Directories { get; }
         private string _baseDirectory;
         public string BaseDirectory

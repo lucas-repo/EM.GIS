@@ -358,13 +358,22 @@ namespace EM.GIS.Symbology
 
         public void ZoomToMaxExtent()
         {
-            ViewExtents = GetMaxExtent(true);
+            var maxExtent = GetMaxExtent(true);
+            if (maxExtent != null)
+            {
+                ViewExtents = maxExtent;
+            }
         }
         public IExtent GetMaxExtent(bool expand = false)
         {
             // to prevent exception when zoom to map with one layer with one point
+            IExtent maxExtent = null;
+            if (Extent == null)
+            {
+                return maxExtent;
+            }
             const double Eps = 1e-7;
-            var maxExtent = Extent.Width < Eps || Extent.Height < Eps ? new Extent(Extent.MinX - Eps, Extent.MinY - Eps, Extent.MaxX + Eps, Extent.MaxY + Eps) : Extent.Copy();
+            maxExtent = Extent.Width < Eps || Extent.Height < Eps ? new Extent(Extent.MinX - Eps, Extent.MinY - Eps, Extent.MaxX + Eps, Extent.MaxY + Eps) : Extent.Copy();
             if (expand) maxExtent.ExpandBy(maxExtent.Width / 10, maxExtent.Height / 10);
             return maxExtent;
         }

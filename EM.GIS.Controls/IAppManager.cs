@@ -26,8 +26,6 @@ namespace EM.GIS.Controls
         /// <summary>
         /// 插件
         /// </summary>
-        [Browsable(false)]
-        [ImportMany(AllowRecomposition = true)]
         IEnumerable<IPlugin> Plugins { get; }
         /// <summary>
         /// 根目录
