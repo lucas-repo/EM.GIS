@@ -8,6 +8,7 @@ namespace EM.GIS.Controls
     /// <summary>
     /// app管理接口
     /// </summary>
+    [InheritedExport]
     public interface IAppManager
     {
         /// <summary>

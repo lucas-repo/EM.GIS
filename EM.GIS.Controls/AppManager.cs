@@ -16,7 +16,6 @@ namespace EM.GIS.Controls
     /// <summary>
     /// app管理类
     /// </summary>
-    [Export]
     public class AppManager : NotifyClass, IAppManager
     {
         private IMap _map;
