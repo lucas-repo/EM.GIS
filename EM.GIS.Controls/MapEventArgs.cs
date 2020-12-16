@@ -21,7 +21,7 @@ namespace EM.GIS.Controls
         /// <param name="bufferEnvelope">The buffer envelope.</param>
         public MapEventArgs(Rectangle bufferRectangle, IExtent bufferEnvelope)
         {
-            Bounds = bufferRectangle;
+            Bound = bufferRectangle;
             Extent = bufferEnvelope;
         }
 
@@ -33,7 +33,7 @@ namespace EM.GIS.Controls
         /// <param name="g">The graphics object used for drawing.</param>
         public MapEventArgs(Rectangle bufferRectangle, IExtent bufferEnvelope, Graphics g)
         {
-            Bounds = bufferRectangle;
+            Bound = bufferRectangle;
             Extent = bufferEnvelope;
             Device = g;
         }
@@ -50,12 +50,12 @@ namespace EM.GIS.Controls
         /// <summary>
         /// Gets the Dx
         /// </summary>
-        public double Dx => Extent.Width != 0.0 ? Bounds.Width / Extent.Width : 0.0;
+        public double Dx => Extent.Width != 0.0 ? Bound.Width / Extent.Width : 0.0;
 
         /// <summary>
         /// Gets the Dy
         /// </summary>
-        public double Dy => Extent.Height != 0.0 ? Bounds.Height / Extent.Height : 0.0;
+        public double Dy => Extent.Height != 0.0 ? Bound.Height / Extent.Height : 0.0;
 
         /// <summary>
         /// Gets the geographic bounds of the content of the buffer.
@@ -65,7 +65,7 @@ namespace EM.GIS.Controls
         /// <summary>
         /// Gets the rectangle dimensions of what the buffer should be in pixels
         /// </summary>
-        public Rectangle Bounds { get; set; }
+        public Rectangle Bound { get; set; }
 
         /// <summary>
         /// Gets the maximum Y value

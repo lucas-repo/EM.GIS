@@ -39,11 +39,11 @@ namespace EM.GIS.Symbology
         /// <summary>
         /// 视图边界
         /// </summary>
-        Rectangle ViewBounds { get; set; }
+        Rectangle ViewBound { get; set; }
         /// <summary>
         /// 视图范围
         /// </summary>
-        IExtent ViewExtents { get; set; }
+        IExtent ViewExtent { get; set; }
         /// <summary>
         /// 取消标记源
         /// </summary>
@@ -55,7 +55,7 @@ namespace EM.GIS.Symbology
         /// <summary>
         /// 视图边界改变事件
         /// </summary>
-        event EventHandler ViewBoundsChanged;
+        event EventHandler ViewBoundChanged;
         /// <summary>
         /// 重绘缓存
         /// </summary>
@@ -68,9 +68,9 @@ namespace EM.GIS.Symbology
         void Draw(Graphics g, Rectangle rectangle);
 
         /// <summary>
-        /// 根据视图范围重设范围
+        /// 根据视图边界重设视图范围
         /// </summary>
-        void ResetExtents();
+        void ResetViewExtent();
         /// <summary>
         /// 重设地图大小
         /// </summary>

@@ -209,12 +209,12 @@ namespace EM.GIS.Controls
             {
                 try
                 {
-                    Trace.WriteLine("Activating: " + extension.AssemblyQualifiedName);
+                    Trace.WriteLine("激活中: " + extension.AssemblyQualifiedName);
                     extension.Activate();
                 }
                 catch (Exception ex)
                 {
-                    Trace.WriteLine($"Error: {extension.AssemblyQualifiedName} {ex.Message} {ex.StackTrace}");
+                    Trace.WriteLine($"激活失败: {extension.AssemblyQualifiedName} {ex.Message} {ex.StackTrace}");
                 }
             }
         }

@@ -25,7 +25,7 @@ namespace EM.GIS.Controls
         public MapDrawArgs(Graphics inGraphics, Rectangle clipRectangle, IFrame inMapFrame)
         {
             _graphics = inGraphics;
-            _geoGraphics = new MapEventArgs(clipRectangle, inMapFrame.ViewExtents);
+            _geoGraphics = new MapEventArgs(clipRectangle, inMapFrame.ViewExtent);
 
             _clipRectangle = clipRectangle;
         }

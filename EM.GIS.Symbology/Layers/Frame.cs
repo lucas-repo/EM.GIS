@@ -30,25 +30,25 @@ namespace EM.GIS.Symbology
             get { return _backGround; }
             set { _backGround = value; OnBackGroundChanged(); }
         }
-        private Rectangle _viewBounds;
-        public Rectangle ViewBounds
+        private Rectangle _viewBound;
+        public Rectangle ViewBound
         {
-            get { return _viewBounds; }
+            get { return _viewBound; }
             set
             {
-                if (_viewBounds == value)
+                if (_viewBound == value)
                 {
                     return;
                 }
-                _viewBounds = value;
-                OnViewBoundsChanged();
+                _viewBound = value;
+                OnViewBoundChanged();
             }
         }
         public event EventHandler BufferChanged;
-        public event EventHandler ViewBoundsChanged;
-        protected virtual void OnViewBoundsChanged()
+        public event EventHandler ViewBoundChanged;
+        protected virtual void OnViewBoundChanged()
         {
-            ViewBoundsChanged?.Invoke(this, new EventArgs());
+            ViewBoundChanged?.Invoke(this, new EventArgs());
         }
 
         protected virtual void OnBufferChanged()
@@ -77,11 +77,11 @@ namespace EM.GIS.Symbology
 
         private void OnBackBufferChanged()
         {
-            _viewBounds = new Rectangle(0, 0, _width, _height);
+            _viewBound = new Rectangle(0, 0, _width, _height);
             OnBufferChanged();
         }
 
-        public virtual IExtent ViewExtents
+        public virtual IExtent ViewExtent
         {
             get
             {
@@ -98,7 +98,7 @@ namespace EM.GIS.Symbology
             }
         }
 
-        public Rectangle Bounds
+        public Rectangle Bound
         {
             get => new Rectangle(0, 0, _width, _height);
             set
@@ -125,7 +125,7 @@ namespace EM.GIS.Symbology
         {
             _width = width;
             _height = height;
-            _viewBounds = new Rectangle(0, 0, _width, _height);
+            _viewBound = new Rectangle(0, 0, _width, _height);
             DrawingLayers = new LayerCollection();
             Items.CollectionChanged += Layers_CollectionChanged;
         }
@@ -172,7 +172,7 @@ namespace EM.GIS.Symbology
                 }
                 if (firstLayerAdded)
                 {
-                    ViewExtents = Extent;
+                    ViewExtent = Extent;
                     return;
                 }
             }
@@ -226,8 +226,8 @@ namespace EM.GIS.Symbology
         public Point ProjToBuffer(Coordinate location)
         {
             if (_width == 0 || _height == 0) return new Point(0, 0);
-            int x = (int)((location.X - ViewExtents.MinX) * (_width / ViewExtents.Width)) + ViewBounds.X;
-            int y = (int)((ViewExtents.MaxY - location.Y) * (_height / ViewExtents.Height)) + ViewBounds.Y;
+            int x = (int)((location.X - ViewExtent.MinX) * (_width / ViewExtent.Width)) + ViewBound.X;
+            int y = (int)((ViewExtent.MaxY - location.Y) * (_height / ViewExtent.Height)) + ViewBound.Y;
             return new Point(x, y);
         }
         public Rectangle ProjToBuffer(IExtent extent)
@@ -241,7 +241,7 @@ namespace EM.GIS.Symbology
 
         public async Task ResetBuffer()
         {
-            if (ViewExtents == null || ViewExtents.IsEmpty() || Width * Height == 0)
+            if (ViewExtent == null || ViewExtent.IsEmpty() || Width * Height == 0)
             {
                 return;
             }
@@ -252,7 +252,7 @@ namespace EM.GIS.Symbology
                 {
                     tmpBuffer = new Bitmap(Width, Height);
                     #region 绘制BackBuffer
-                    Rectangle rectangle = Bounds;
+                    Rectangle rectangle = Bound;
                     using (Graphics g = Graphics.FromImage(tmpBuffer))
                     {
                         using (Brush brush = new SolidBrush(BackGround))
@@ -261,7 +261,7 @@ namespace EM.GIS.Symbology
                         }
 
                         int count = 2;
-                        var visibleLayers = GetLayers().Where(x => x.GetVisible(ViewExtents, rectangle));
+                        var visibleLayers = GetLayers().Where(x => x.GetVisible(ViewExtent, rectangle));
                         for (int i = 0; i < count; i++)
                         {
                             if (CancellationTokenSource?.IsCancellationRequested == true)
@@ -269,7 +269,7 @@ namespace EM.GIS.Symbology
                                 break;
                             }
                             bool selected = i == 1;
-                            Draw(g, rectangle, ViewExtents, selected, CancellationTokenSource);
+                            Draw(g, rectangle, ViewExtent, selected, CancellationTokenSource);
                         }
                     }
                     #endregion
@@ -304,18 +304,18 @@ namespace EM.GIS.Symbology
         {
             Rectangle result = new Rectangle
             {
-                X = ViewBounds.X + (clip.X * ViewBounds.Width / _width),
-                Y = ViewBounds.Y + (clip.Y * ViewBounds.Height / _height),
-                Width = clip.Width * ViewBounds.Width / _width,
-                Height = clip.Height * ViewBounds.Height / _height
+                X = ViewBound.X + (clip.X * ViewBound.Width / _width),
+                Y = ViewBound.Y + (clip.Y * ViewBound.Height / _height),
+                Width = clip.Width * ViewBound.Width / _width,
+                Height = clip.Height * ViewBound.Height / _height
             };
             return result;
         }
 
-        public void ResetExtents()
+        public void ResetViewExtent()
         {
-            IExtent env = BufferToProj(ViewBounds);
-            ViewExtents = env;
+            IExtent env = BufferToProj(ViewBound);
+            ViewExtent = env;
         }
         public IExtent BufferToProj(Rectangle rect)
         {
@@ -329,10 +329,10 @@ namespace EM.GIS.Symbology
         public Coordinate BufferToProj(Point position)
         {
             Coordinate coordinate = null;
-            if (ViewExtents != null)
+            if (ViewExtent != null)
             {
-                double x = (position.X * ViewExtents.Width / _width) + ViewExtents.MinX;
-                double y = ViewExtents.MaxY - (position.Y * ViewExtents.Height / _height);
+                double x = (position.X * ViewExtent.Width / _width) + ViewExtent.MinX;
+                double y = ViewExtent.MaxY - (position.Y * ViewExtent.Height / _height);
                 coordinate = new Coordinate(x, y, 0.0);
             }
             return coordinate;
@@ -342,15 +342,15 @@ namespace EM.GIS.Symbology
         {
             var dx = width - _width;
             var dy = height - _height;
-            var destWidth = ViewBounds.Width + dx;
-            var destHeight = ViewBounds.Height + dy;
+            var destWidth = ViewBound.Width + dx;
+            var destHeight = ViewBound.Height + dy;
 
             // Check for minimal size of view.
             if (destWidth < 5) destWidth = 5;
             if (destHeight < 5) destHeight = 5;
 
-            _viewBounds = new Rectangle(ViewBounds.X, ViewBounds.Y, destWidth, destHeight);
-            ResetExtents();
+            _viewBound = new Rectangle(ViewBound.X, ViewBound.Y, destWidth, destHeight);
+            ResetViewExtent();
 
             _width = width;
             _height = height;
@@ -361,7 +361,7 @@ namespace EM.GIS.Symbology
             var maxExtent = GetMaxExtent(true);
             if (maxExtent != null)
             {
-                ViewExtents = maxExtent;
+                ViewExtent = maxExtent;
             }
         }
         public IExtent GetMaxExtent(bool expand = false)

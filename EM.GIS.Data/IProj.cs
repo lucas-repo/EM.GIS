@@ -15,6 +15,6 @@ namespace EM.GIS.Data
         /// <summary>
         /// 边界
         /// </summary>
-        Rectangle Bounds { get; set; }
+        Rectangle Bound { get; set; }
     }
 }

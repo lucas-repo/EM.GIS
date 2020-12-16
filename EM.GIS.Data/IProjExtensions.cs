@@ -37,8 +37,8 @@ namespace EM.GIS.Data
             double y = Convert.ToDouble(position.Y);
             if (self != null && self.Extent != null)
             {
-                x = (x - self.Bounds.X) * self.Extent.Width / self.Bounds.Width + self.Extent.MinX;
-                y = self.Extent.MaxY - (y - self.Bounds.Y) * self.Extent.Height / self.Bounds.Height;
+                x = (x - self.Bound.X) * self.Extent.Width / self.Bound.Width + self.Extent.MinX;
+                y = self.Extent.MaxY - (y - self.Bound.Y) * self.Extent.Height / self.Bound.Height;
             }
 
             return new double[] { x, y };
@@ -92,10 +92,10 @@ namespace EM.GIS.Data
             if (self.Extent.Width == 0 || self.Extent.Height == 0) return Point.Empty;
             try
             {
-                int x = Convert.ToInt32(self.Bounds.X + (location[0] - self.Extent.MinX) *
-                                    (self.Bounds.Width / self.Extent.Width));
-                int y = Convert.ToInt32(self.Bounds.Y + (self.Extent.MaxY - location[1]) *
-                                        (self.Bounds.Height / self.Extent.Height));
+                int x = Convert.ToInt32(self.Bound.X + (location[0] - self.Extent.MinX) *
+                                    (self.Bound.Width / self.Extent.Width));
+                int y = Convert.ToInt32(self.Bound.Y + (self.Extent.MaxY - location[1]) *
+                                        (self.Bound.Height / self.Extent.Height));
 
                 return new Point(x, y);
             }
@@ -130,10 +130,10 @@ namespace EM.GIS.Data
             if (self.Extent.Width == 0 || self.Extent.Height == 0) return Point.Empty;
             try
             {
-                int x = Convert.ToInt32(self.Bounds.X + (location[0] - self.Extent.MinX) *
-                                    (self.Bounds.Width / self.Extent.Width));
-                int y = Convert.ToInt32(self.Bounds.Y + (self.Extent.MaxY - location[1]) *
-                                        (self.Bounds.Height / self.Extent.Height));
+                int x = Convert.ToInt32(self.Bound.X + (location[0] - self.Extent.MinX) *
+                                    (self.Bound.Width / self.Extent.Width));
+                int y = Convert.ToInt32(self.Bound.Y + (self.Extent.MaxY - location[1]) *
+                                        (self.Bound.Height / self.Extent.Height));
 
                 return new Point(x, y);
             }
@@ -148,10 +148,10 @@ namespace EM.GIS.Data
             if (self.Extent.Width == 0 || self.Extent.Height == 0) return Point.Empty;
             try
             {
-                int x = Convert.ToInt32(self.Bounds.X + (location.X - self.Extent.MinX) *
-                                    (self.Bounds.Width / self.Extent.Width));
-                int y = Convert.ToInt32(self.Bounds.Y + (self.Extent.MaxY - location.Y) *
-                                        (self.Bounds.Height / self.Extent.Height));
+                int x = Convert.ToInt32(self.Bound.X + (location.X - self.Extent.MinX) *
+                                    (self.Bound.Width / self.Extent.Width));
+                int y = Convert.ToInt32(self.Bound.Y + (self.Extent.MaxY - location.Y) *
+                                        (self.Bound.Height / self.Extent.Height));
 
                 return new Point(x, y);
             }
@@ -201,7 +201,7 @@ namespace EM.GIS.Data
         /// <returns>The integer distance in pixels</returns>
         public static double ProjToPixel(this IProj self, double distance)
         {
-            return distance * self.Bounds.Width / self.Extent.Width;
+            return distance * self.Bound.Width / self.Extent.Width;
         }
 
         #endregion

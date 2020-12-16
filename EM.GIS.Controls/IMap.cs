@@ -20,7 +20,7 @@ namespace EM.GIS.Controls
         /// <summary>
         /// 视图边界
         /// </summary>
-        Rectangle ViewBounds { get; set; }
+        Rectangle ViewBound { get; set; }
         /// <summary>
         /// 是否在工作中
         /// </summary>

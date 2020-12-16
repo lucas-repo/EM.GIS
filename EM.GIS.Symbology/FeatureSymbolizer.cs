@@ -14,7 +14,7 @@ namespace EM.GIS.Symbology
         {
             if (ScaleMode == ScaleMode.Geographic)
             {
-                return drawArgs.Bounds.Width / drawArgs.Extent.Width;
+                return drawArgs.Bound.Width / drawArgs.Extent.Width;
             }
             return 1;
         }
