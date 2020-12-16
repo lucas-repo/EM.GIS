@@ -26,10 +26,14 @@ namespace EM.GIS.Symbology
 
         private void Items_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
-            IExtent extent = new Extent();
+            IExtent extent = Extent.Copy();
             switch (e.Action)
             {
                 case NotifyCollectionChangedAction.Add:
+                    if (extent == null)
+                    {
+                        extent = new Extent();
+                    }
                     foreach (ILayer item in e.NewItems)
                     {
                         extent.ExpandToInclude(item.Extent);
@@ -37,6 +41,7 @@ namespace EM.GIS.Symbology
                     break;
                 case NotifyCollectionChangedAction.Remove:
                 case NotifyCollectionChangedAction.Replace:
+                    extent = new Extent();
                     foreach (var layer in GetAllLayers())
                     {
                         extent.ExpandToInclude(layer.Extent);
@@ -45,6 +50,7 @@ namespace EM.GIS.Symbology
                 case NotifyCollectionChangedAction.Move:
                     return;
                 case NotifyCollectionChangedAction.Reset:
+                    extent = new Extent();
                     break;
             }
             Extent = extent;

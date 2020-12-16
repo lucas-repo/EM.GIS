@@ -172,7 +172,12 @@ namespace EM.GIS.Symbology
                 }
                 if (firstLayerAdded)
                 {
-                    ViewExtent = Extent;
+                    var extent = Extent.Copy();
+                    if (!extent.IsEmpty())
+                    {
+                        extent.ExpandBy(extent.Width / 10, extent.Height / 10);
+                    }
+                    ViewExtent = extent;
                     return;
                 }
             }
