@@ -16,16 +16,7 @@ namespace EM.GIS.Symbology
         public string FontFamilyName { get; set; }
 
         public FontStyle FontStyle { get; set; }
-        protected override void OnRandomize(Random generator)
-        {
-            Color = generator.NextColor();
-            Opacity = generator.NextFloat();
-            Character = (char)generator.Next(0, 255);
-            FontFamilyName = FontFamily.Families[generator.Next(0, FontFamily.Families.Length - 1)].Name;
-            FontStyle = generator.NextEnum<FontStyle>();
-            base.OnRandomize(generator);
-        }
-
+      
         protected override void OnDrawPoint(Graphics g, float scale)
         {
             using (Brush b = new SolidBrush(Color))

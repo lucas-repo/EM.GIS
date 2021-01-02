@@ -6,27 +6,27 @@
     public enum FeatureType
     {
         /// <summary>
-        /// None specified or custom
+        /// 未指明或自定义
         /// </summary>
-        Unspecified = 0,
+        Unknown = 0,
 
         /// <summary>
-        /// Point
+        /// 点
         /// </summary>
         Point = 1,
 
         /// <summary>
-        /// Line
+        /// 线
         /// </summary>
-        Line = 2,
+        Polyline = 2,
 
         /// <summary>
-        /// Polygon
+        /// 面
         /// </summary>
         Polygon = 3,
 
         /// <summary>
-        /// MultiPoint
+        /// 多点
         /// </summary>
         MultiPoint = 4
     }

@@ -14,7 +14,11 @@ namespace EM.GIS.Symbology
     /// </summary>
     public abstract class FeatureLayer : Layer, IFeatureLayer
     {
-        public new IFeatureCategory DefaultCategory { get => base.DefaultCategory as IFeatureCategory; set => base.DefaultCategory = value; }
+        public new IFeatureCategory DefaultCategory 
+        {
+            get => base.DefaultCategory as IFeatureCategory;
+            set => base.DefaultCategory = value; 
+        }
         public FeatureLayer(IFeatureSet featureSet):base(featureSet)
         {
             Selection = new FeatureSelection(DataSet);

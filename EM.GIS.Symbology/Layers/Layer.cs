@@ -48,14 +48,21 @@ namespace EM.GIS.Symbology
         public IDataSet DataSet
         {
             get { return _dataSet; }
-            set 
+            set
             {
-                if (_dataSet == null)
-                {
-                    Extent = value?.Extent;
-                }
-                _dataSet = value; 
+                _dataSet = value;
+                OnDataSetChanged();
             }
+        }
+
+        private void OnDataSetChanged()
+        {
+            IExtent extent = null;
+            if (DataSet != null)
+            {
+                extent= DataSet.Extent;
+            }
+            Extent = extent;
         }
 
         public virtual ICategoryCollection Categories { get; }
@@ -64,8 +71,7 @@ namespace EM.GIS.Symbology
         { }
         public Layer(IDataSet dataSet)
         {
-            _dataSet = dataSet;
-            Extent = _dataSet?.Extent;
+            DataSet = dataSet;
         }
         private void GetResolution(IExtent envelope, int pixelWidth, int pixelHeight, out double xRes, out double yRes)
         {

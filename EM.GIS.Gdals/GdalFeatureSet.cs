@@ -29,9 +29,35 @@ namespace EM.GIS.Gdals
                 _dataSource = value;
             }
         }
-        public Layer Layer => DataSource.GetLayerByIndex(0);
-        public FeatureDefn FeatureDefn => Layer.GetLayerDefn();
-        public override IExtent Extent => Layer.GetExtent();
+        private Layer _layer;
+        public Layer Layer
+        {
+            get { return _layer; }
+            set 
+            { 
+                _layer = value;
+                OnLayerChanged();
+            }
+        }
+
+        private void OnLayerChanged()
+        {
+            FeatureType featureType = FeatureType.Unknown;
+            IExtent extent = null;
+            GdalProjectionInfo projection = null;
+            if (Layer != null)
+            {
+                featureType = Layer.GetGeomType().ToFeatureType();
+                extent = Layer.GetExtent();
+                SpatialReference spatialReference = Layer.GetSpatialRef();
+                projection = new GdalProjectionInfo(spatialReference);
+            }
+            FeatureType = featureType;
+            Extent = extent;
+            Projection = projection;
+        }
+
+        protected FeatureDefn FeatureDefn => Layer?.GetLayerDefn();
         private bool _ignoreChangeDataSource;
         public override string RelativeFilename
         {
@@ -45,12 +71,12 @@ namespace EM.GIS.Gdals
                     {
                         try
                         {
-                            DataSource = Ogr.Open(value, 1);
+                            DataSource = Ogr.Open(value, 0);
+                            Layer = DataSource.GetLayerByIndex(0); 
                         }
                         catch (Exception e)
                         {
                             Debug.WriteLine(e);
-                            DataSource = Ogr.Open(value, 0);
                         }
                     }
                     else
@@ -60,38 +86,17 @@ namespace EM.GIS.Gdals
                 }
             }
         }
-        public override ProjectionInfo Projection
-        {
-            get
-            {
-                SpatialReference spatialReference = null;
-                if (Layer != null)
-                {
-                    spatialReference = Layer.GetSpatialRef();
-                }
-                if (base.Projection == null)
-                {
-                    base.Projection = new GdalProjectionInfo(spatialReference);
-                }
-                else if (base.Projection is GdalProjectionInfo gdalProjectionInfo)
-                {
-                    if (!gdalProjectionInfo.SpatialReference.Equals(spatialReference))//待测试
-                    {
-                        gdalProjectionInfo.SpatialReference = spatialReference;
-                    }
-                }
-                return base.Projection; ;
-            }
-        }
+      
         public override int FeatureCount => (int)Layer.GetFeatureCount(1);
 
         public override int FieldCount => FeatureDefn.GetFieldCount();
 
-        public GdalFeatureSet(string filename, DataSource dataSource)
+        public GdalFeatureSet(string filename, DataSource dataSource,Layer layer)
         {
             _ignoreChangeDataSource = true;
             Filename = filename;
             _dataSource = dataSource;
+            Layer = layer;
         }
         protected override void Dispose(bool disposing)
         {

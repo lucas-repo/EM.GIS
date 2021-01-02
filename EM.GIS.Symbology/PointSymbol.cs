@@ -11,6 +11,7 @@ namespace EM.GIS.Symbology
         public PointSymbolType PointSymbolType { get; }
         public PointSymbol(PointSymbolType pointSymbolType)
         {
+            Size = new SizeF(4, 4);
             PointSymbolType = pointSymbolType;
         }
         public void DrawPoint(Graphics g, float scale, PointF point)

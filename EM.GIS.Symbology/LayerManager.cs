@@ -33,7 +33,7 @@ namespace EM.GIS.Symbology
                     case FeatureType.Point:
                         layer = new PointLayer(featureSet);
                         break;
-                    case FeatureType.Line:
+                    case FeatureType.Polyline:
                         layer = new LineLayer(featureSet);
                         break;
                     case FeatureType.Polygon:

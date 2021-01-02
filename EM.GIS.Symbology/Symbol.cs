@@ -1,9 +1,9 @@
 ﻿namespace EM.GIS.Symbology
 {
     /// <summary>
-    /// 符号化接口
+    /// 符号
     /// </summary>
-    public interface ISymbolizer : ILegendItem
+    public abstract class Symbol:BaseCopy
     {
     }
 }

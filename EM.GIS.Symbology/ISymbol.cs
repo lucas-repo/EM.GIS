@@ -1,6 +1,11 @@
-﻿namespace EM.GIS.Symbology
+﻿using System;
+
+namespace EM.GIS.Symbology
 {
-    public interface ISymbol: IDescriptor
+    /// <summary>
+    /// 符号
+    /// </summary>
+    public interface ISymbol: ILegendItem
     {
     }
 }

@@ -176,7 +176,7 @@ namespace EM.GIS.Symbology
             {
                 featureLayer = new PointLayer(featureSet);
             }
-            else if (featureSet.FeatureType == FeatureType.Line)
+            else if (featureSet.FeatureType == FeatureType.Polyline)
             {
                 featureLayer = new LineLayer(featureSet);
             }

@@ -5,8 +5,11 @@ using System.Drawing;
 
 namespace EM.GIS.Symbology
 {
+    /// <summary>
+    /// 要素符号
+    /// </summary>
     [Serializable]
-    public abstract class FeatureSymbol : Descriptor, IFeatureSymbol
+    public abstract class FeatureSymbol : Symbol, IFeatureSymbol
     {
         private Color _color;
         public virtual Color Color

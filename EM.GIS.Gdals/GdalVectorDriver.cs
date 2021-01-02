@@ -43,7 +43,10 @@ namespace EM.GIS.Gdals
                 switch (driver.name)
                 {
                     case "ESRI Shapefile":
-                        featureSet = new GdalFeatureSet(fileName, ds);
+                        if (ds.GetLayerCount() > 0)
+                        {
+                            featureSet = new GdalFeatureSet(fileName, ds, ds.GetLayerByIndex(0));
+                        }
                         break;
                     default:
                         throw new NotImplementedException();

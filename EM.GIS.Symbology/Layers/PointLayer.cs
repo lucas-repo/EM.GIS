@@ -14,6 +14,7 @@ namespace EM.GIS.Symbology
         public new IPointCategoryCollection Categories { get => Items as IPointCategoryCollection; }
         public PointLayer(IFeatureSet featureSet) : base(featureSet)
         {
+            Items = new PointCategoryCollection(this);
             DefaultCategory = new PointCategory();
             Items = new PointCategoryCollection(this)
             { 

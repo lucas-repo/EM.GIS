@@ -17,11 +17,6 @@ namespace EM.GIS.Symbology
         /// <returns></returns>
         new IRasterCategory this[int index] { get; set; }
         /// <summary>
-        /// 获取枚举器
-        /// </summary>
-        /// <returns></returns>
-        new IEnumerator<IRasterCategory> GetEnumerator();
-        /// <summary>
         /// 父图层
         /// </summary>
         new IRasterLayer Parent { get; set; }

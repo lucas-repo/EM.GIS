@@ -10,7 +10,7 @@ namespace EM.GIS.Data
     /// </summary>
     public abstract class FeatureSet : DataSet, IFeatureSet
     {
-        public FeatureType FeatureType { get;protected set; }
+        public FeatureType FeatureType { get; protected set; }
         public abstract int FeatureCount { get; }
         public abstract int FieldCount { get; }
 

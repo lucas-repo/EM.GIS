@@ -15,11 +15,6 @@ namespace EM.GIS.Symbology
         /// <returns></returns>
         new ICategory this[int index] { get; set; }
         /// <summary>
-        /// 获取枚举器
-        /// </summary>
-        /// <returns></returns>
-        new IEnumerator<ICategory> GetEnumerator();
-        /// <summary>
         /// 父元素
         /// </summary>
         new ILayer Parent { get; set; }

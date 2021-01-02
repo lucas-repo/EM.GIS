@@ -1,4 +1,5 @@
 ﻿using EM.GIS.Data;
+using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 
@@ -12,7 +13,7 @@ namespace EM.GIS.Symbology
         #region 重写部分
         public new ILayer this[int index] { get => Items[index] as ILayer; set => Items[index] = value; }
         public new IGroup Parent { get => base.Parent as IGroup; set => base.Parent = value; }
-        public new IEnumerator<ILayer> GetEnumerator()
+        public IEnumerator<ILayer> GetEnumerator()
         {
             foreach (var item in Items)
             {
@@ -51,7 +52,7 @@ namespace EM.GIS.Symbology
             {
                 res = new PointLayer(featureSet);
             }
-            else if (featureSet.FeatureType == FeatureType.Line)
+            else if (featureSet.FeatureType == FeatureType.Polyline)
             {
                 res = new LineLayer(featureSet);
             }
@@ -91,5 +92,9 @@ namespace EM.GIS.Symbology
             return AddLayer(dataSet, isVisible);
         }
 
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            throw new System.NotImplementedException();
+        }
     }
 }

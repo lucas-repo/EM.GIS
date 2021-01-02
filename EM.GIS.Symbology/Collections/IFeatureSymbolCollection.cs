@@ -2,10 +2,9 @@
 
 namespace EM.GIS.Symbology
 {
-    public interface IFeatureSymbolCollection: ISymbolCollection
+    public interface IFeatureSymbolCollection: ISymbolCollection, IEnumerable<IFeatureSymbol>    
     {
         new IFeatureSymbol this[int index] { get;set; }
         new IFeatureSymbolizer Parent { get; set; }
-        new IEnumerator<IFeatureSymbol> GetEnumerator();
     }
 }

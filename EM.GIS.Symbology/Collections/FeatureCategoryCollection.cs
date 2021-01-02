@@ -16,12 +16,5 @@ namespace EM.GIS.Symbology
         public FeatureCategoryCollection(IFeatureLayer parent) : base(parent)
         { }
 
-        public new IEnumerator<IFeatureCategory> GetEnumerator()
-        {
-            foreach (var item in Items)
-            {
-                yield return item as IFeatureCategory;
-            }
-        }
     }
 }

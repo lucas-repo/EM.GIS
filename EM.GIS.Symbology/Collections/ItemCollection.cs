@@ -12,7 +12,7 @@ namespace EM.GIS.Symbology
     /// <typeparam name="TParent"></typeparam>
     /// <typeparam name="TChild"></typeparam>
     [Serializable]
-    public abstract class ItemCollection< TParent, TChild> : ItemCollection<TChild>,  IItemCollection<TParent, TChild>
+    public abstract class ItemCollection<TParent, TChild> : ItemCollection<TChild>, IItemCollection<TParent, TChild>
     {
         [NonSerialized]
         private TParent _parent;
@@ -22,7 +22,7 @@ namespace EM.GIS.Symbology
         {
             Items.CollectionChanged += Items_CollectionChanged;
         }
-        public ItemCollection(TParent parent):this()
+        public ItemCollection(TParent parent) : this()
         {
             _parent = parent;
         }
@@ -72,7 +72,7 @@ namespace EM.GIS.Symbology
     /// 元素集合
     /// </summary>
     /// <typeparam name="TChild"></typeparam>
-    public abstract class ItemCollection< TChild> : IItemCollection< TChild>
+    public abstract class ItemCollection<TChild> : IItemCollection<TChild>
     {
         /// <summary>
         /// 元素集合
@@ -119,11 +119,6 @@ namespace EM.GIS.Symbology
         public virtual void CopyTo(TChild[] array, int arrayIndex)
         {
             Items.CopyTo(array, arrayIndex);
-        }
-
-        public virtual IEnumerator<TChild> GetEnumerator()
-        {
-            return Items.GetEnumerator();
         }
 
         public virtual int IndexOf(TChild item)

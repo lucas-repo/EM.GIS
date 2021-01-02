@@ -40,30 +40,25 @@ namespace EM.GIS.Gdals
                 OnDatasetChanged();
             }
         }
-        public override ProjectionInfo Projection
-        {
-            get
-            {
-                if (base.Projection == null)
-                {
-                    base.Projection = new GdalProjectionInfo(_dataset.GetProjection());
-                }
-                return base.Projection;
-            }
-        }
         private void OnDatasetChanged()
         {
-            int numBands = _dataset.RasterCount;
-            for (int i = 1; i <= numBands; i++)
+            GdalProjectionInfo projection = null;
+            Bands.Clear();
+            if (Dataset != null)
             {
-                Band band = _dataset.GetRasterBand(i);
-                if (i == 1)
+                int numBands = Dataset.RasterCount;
+                for (int i = 1; i <= numBands; i++)
                 {
-                    _band = band;
+                    Band band = Dataset.GetRasterBand(i);
+                    if (i == 1)
+                    {
+                        _band = band;
+                    }
+                    Bands.Add(new GdalRasterSet<T>(Filename, Dataset, band));
                 }
-                Bands.Add(new GdalRasterSet<T>(Filename, _dataset, band));
+                projection = new GdalProjectionInfo(Dataset.GetProjection());
             }
-            Projection = new GdalProjectionInfo(_dataset.GetProjection());
+            Projection = projection;
             ReadHeader();
         }
         bool _ignoreChangeDataset;

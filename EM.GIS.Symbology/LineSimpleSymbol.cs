@@ -36,13 +36,5 @@ namespace EM.GIS.Symbology
             }
             return pen;
         }
-        protected override void OnRandomize(Random generator)
-        {
-            Color = generator.NextColor();
-            Opacity = generator.NextFloat();
-            Width = generator.NextFloat(10);
-            DashStyle = generator.NextEnum<DashStyle>();
-            base.OnRandomize(generator);
-        }
     }
 }

@@ -2,7 +2,7 @@
 
 namespace EM.GIS.Symbology
 {
-    public class EditorSettings : Descriptor
+    public class EditorSettings : BaseCopy
     {
         #region Properties
         

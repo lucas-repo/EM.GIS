@@ -7,7 +7,7 @@ namespace EM.GIS.Symbology
     /// <summary>
     /// 图层集合接口
     /// </summary>
-    public interface ILayerCollection : ILegendItemCollection
+    public interface ILayerCollection : ILegendItemCollection,IEnumerable<ILayer>
     {
         #region 需要重写的部分
         /// <summary>
@@ -16,11 +16,6 @@ namespace EM.GIS.Symbology
         /// <param name="index"></param>
         /// <returns></returns>
         new ILayer this[int index] { get;set; }
-        /// <summary>
-        /// 获取枚举器
-        /// </summary>
-        /// <returns></returns>
-        new IEnumerator<ILayer> GetEnumerator();
         /// <summary>
         /// 父元素
         /// </summary>

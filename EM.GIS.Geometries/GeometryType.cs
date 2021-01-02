@@ -5,6 +5,7 @@
     /// </summary>
     public enum GeometryType
     {
+        Unknown,
         Point,
         LineString,
         LinearRing,

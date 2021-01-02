@@ -11,19 +11,30 @@ namespace EM.GIS.Data
     public abstract class RasterSet : DataSet, IRasterSet
     {
         public virtual int NumRows { get; }
-        public virtual int NumColumns { get;  }
-        public IList<IRasterSet> Bands { get;  }
+        public virtual int NumColumns { get; }
+        public IList<IRasterSet> Bands { get; }
         public abstract int ByteSize { get; }
         [Category("Data")]
         [Description("Gets or sets a  double showing the no-data value for this raster.")]
         public virtual double NoDataValue { get; set; }
-        public IRasterBounds Bounds { get; set; }
+        private IRasterBounds _bounds;
+        public IRasterBounds Bounds
+        {
+            get { return _bounds; }
+            set
+            {
+                _bounds = value;
+                OnBoundsChanged();
+            }
+        }
+
+        private void OnBoundsChanged()
+        {
+            Extent = Bounds?.Extent;
+        }
+
         public int PixelSpace { get; set; }
         public int LineSpace { get; set; }
-        public override IExtent Extent
-        {
-            get => Bounds?.Extent;
-        }
 
         public RasterType RasterType { get; set; }
 
@@ -39,7 +50,7 @@ namespace EM.GIS.Data
             return null;
         }
 
-        public  Bitmap GetBitmap(IExtent envelope, Size size)
+        public Bitmap GetBitmap(IExtent envelope, Size size)
         {
             return GetBitmap(envelope, new Rectangle(new Point(0, 0), size));
         }

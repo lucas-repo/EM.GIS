@@ -11,7 +11,7 @@ namespace EM.GIS.Symbology
     /// 图例元素
     /// </summary>
     [Serializable]
-    public abstract class LegendItem : Descriptor, ILegendItem
+    public abstract class LegendItem : BaseCopy, ILegendItem
     {
         public event EventHandler ItemChanged;
         public event EventHandler RemoveItem;

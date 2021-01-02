@@ -7,7 +7,7 @@ namespace EM.GIS.Symbology
     /// <summary>
     /// 点分类集合
     /// </summary>
-    public interface IPointCategoryCollection: IFeatureCategoryCollection
+    public interface IPointCategoryCollection: IFeatureCategoryCollection, IEnumerable<IPointCategory>
     {
         #region 需要重写的部分
         /// <summary>
@@ -16,11 +16,7 @@ namespace EM.GIS.Symbology
         /// <param name="index"></param>
         /// <returns></returns>
         new IPointCategory this[int index] { get; set; }
-        /// <summary>
-        /// 获取枚举器
-        /// </summary>
-        /// <returns></returns>
-        new IEnumerator<IPointCategory> GetEnumerator();
+
         #endregion
     }
 }

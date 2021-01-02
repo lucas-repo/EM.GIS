@@ -1,11 +1,12 @@
-﻿using System.Drawing;
+﻿using System.Collections;
+using System.Drawing;
 using System.Drawing.Drawing2D;
 
 namespace EM.GIS.Symbology
 {
     public abstract class OutLineSymbol : FeatureSymbol, IOutlineSymbol
     {
-        public bool UseOutLine { get; set; } = true;
+        public bool UseOutLine { get; set; } 
         public ILineSymbolizer OutLineSymbolizer { get; set; }
         public OutLineSymbol()
         {
