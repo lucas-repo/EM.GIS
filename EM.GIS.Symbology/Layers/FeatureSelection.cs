@@ -20,7 +20,7 @@ namespace EM.GIS.Symbology
                 IExtent extent = new Extent();
                 foreach (var item in this)
                 {
-                    extent.ExpandToInclude(item.Geometry.Extent);
+                    extent.ExpandToInclude(item.Geometry.GetExtent());
                 }
                 return extent;
             }
@@ -53,7 +53,7 @@ namespace EM.GIS.Symbology
             foreach (var item in FeatureSet.GetFeatures())
             {
                 Features.Add(item);
-                affectedExtent.ExpandToInclude(item.Geometry.Extent);
+                affectedExtent.ExpandToInclude(item.Geometry.GetExtent());
             }
             FeatureSet.SetSpatialExtentFilter(null);
             ret = true;
@@ -109,7 +109,7 @@ namespace EM.GIS.Symbology
                 {
                     Features.Add(item);
                 }
-                affectedExtent.ExpandToInclude(item.Geometry.Extent);
+                affectedExtent.ExpandToInclude(item.Geometry.GetExtent());
             }
             FeatureSet.SetSpatialExtentFilter(null);
             ret = true;
@@ -141,7 +141,7 @@ namespace EM.GIS.Symbology
                 {
                     Features.Remove(item);
                 }
-                affectedExtent.ExpandToInclude(item.Geometry.Extent);
+                affectedExtent.ExpandToInclude(item.Geometry.GetExtent());
             }
             FeatureSet.SetSpatialExtentFilter(null);
             ret = true;

@@ -1,61 +1,36 @@
 ﻿using EM.GIS.Geometries;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 
 namespace EM.GIS.Geometries
 {
     /// <summary>
     /// 几何接口
     /// </summary>
-    public interface IGeometry:ICloneable
+    public interface IGeometry : ICloneable
     {
         /// <summary>
         /// 几何类型
         /// </summary>
         GeometryType GeometryType { get; }
         /// <summary>
-        /// 点个数
-        /// </summary>
-        int PointCount { get; }
-        /// <summary>
-        /// 获取第一个点
-        /// </summary>
-        ICoordinate Coord { get; }
-        /// <summary>
         /// 是否为空
         /// </summary>
         bool IsEmpty();
         /// <summary>
-        /// 获取点
+        /// 几何集合
         /// </summary>
-        /// <param name="index"></param>
-        /// <returns></returns>
-        ICoordinate GetCoord(int index);
+        ObservableCollection<IGeometry> Geometries { get; }
         /// <summary>
-        /// 获取所有点
+        /// 几何集合
         /// </summary>
-        /// <returns></returns>
-        List<ICoordinate> GetAllCoords();
-        /// <summary>
-        /// 设置点
-        /// </summary>
-        /// <param name="index"></param>
-        /// <param name="coordinate"></param>
-        void SetCoord(int index, ICoordinate coordinate);
-        /// <summary>
-        /// 几何个数
-        /// </summary>
-        int GeometryCount { get; }
-        /// <summary>
-        /// 获取几何
-        /// </summary>
-        /// <param name="index"></param>
-        /// <returns></returns>
-        IGeometry GetGeometry(int index);
+        ObservableCollection<ICoordinate> Coordinates { get; }
+
         /// <summary>
         /// 范围
         /// </summary>
-        IExtent Extent { get; }
+        IExtent GetExtent();
         /// <summary>
         /// 转成Well-known Text
         /// </summary>
@@ -65,12 +40,12 @@ namespace EM.GIS.Geometries
         /// <summary>
         /// 面积
         /// </summary>
-        double Area { get; }
+        double Area();
         /// <summary>
         /// 长度
         /// </summary>
-        double Length { get; }
-        
+        double Length();
+
         #region 几何运算
 
         /// <summary>
@@ -110,6 +85,6 @@ namespace EM.GIS.Geometries
         /// <returns></returns>
         double Distance(ICoordinate coord);
         #endregion
-        
+
     }
 }

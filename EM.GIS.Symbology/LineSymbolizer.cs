@@ -29,7 +29,7 @@ namespace EM.GIS.Symbology
             get
             {
                 float width = 0;
-                foreach (var item in Symbols)
+                foreach (ILineSymbol item in Symbols)
                 {
                     if (item.Width > width)
                     {
@@ -42,7 +42,7 @@ namespace EM.GIS.Symbology
             {
                 float width = Width;
                 var ratio = value / width;
-                foreach (var item in Symbols)
+                foreach (ILineSymbol item in Symbols)
                 {
                     item.Width *= ratio;
                 }
@@ -104,7 +104,7 @@ namespace EM.GIS.Symbology
 
         public void DrawLine(Graphics context, float scale, GraphicsPath path)
         {
-            foreach (var symbol in Symbols)
+            foreach (ILineSymbol symbol in Symbols)
             {
                 symbol.DrawLine(context, scale, path);
             }

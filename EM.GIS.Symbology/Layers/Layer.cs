@@ -22,7 +22,11 @@ namespace EM.GIS.Symbology
         {
             get
             {
-                ICategory category = Categories?.FirstOrDefault() as ICategory;
+                ICategory category = null;
+                if (Categories?.Count > 0)
+                {
+                    category = Categories[0];
+                }
                 return category;
             }
             set
@@ -60,12 +64,13 @@ namespace EM.GIS.Symbology
             IExtent extent = null;
             if (DataSet != null)
             {
-                extent= DataSet.Extent;
+                extent = DataSet.Extent;
             }
             Extent = extent;
         }
 
-        public virtual ICategoryCollection Categories { get; }
+
+        public ICategoryCollection Categories { get => Items as ICategoryCollection; }
         public virtual ISelection Selection { get; protected set; }
         public Layer()
         { }
@@ -80,13 +85,13 @@ namespace EM.GIS.Symbology
             xRes = worldWidth / pixelWidth;
             yRes = worldHeight / pixelHeight;
         }
-        public void Draw(Graphics graphics, Rectangle rectangle, IExtent extent, bool selected = false,  CancellationTokenSource cancellationTokenSource = null)
+        public void Draw(Graphics graphics, Rectangle rectangle, IExtent extent, bool selected = false, CancellationTokenSource cancellationTokenSource = null)
         {
             if (graphics == null || rectangle.Width * rectangle.Height == 0 || extent == null || extent.Width * extent.Height == 0 || cancellationTokenSource?.IsCancellationRequested == true)
             {
                 return;
             }
-            OnDraw(graphics, rectangle, extent, selected,  cancellationTokenSource);
+            OnDraw(graphics, rectangle, extent, selected, cancellationTokenSource);
             ProgressHandler?.Progress(0);
         }
         protected abstract void OnDraw(Graphics graphics, Rectangle rectangle, IExtent extent, bool selected = false, CancellationTokenSource cancellationTokenSource = null);

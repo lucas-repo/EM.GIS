@@ -3,7 +3,7 @@
     /// <summary>
     /// 符号
     /// </summary>
-    public abstract class Symbol:BaseCopy
+    public abstract class Symbol:LegendItem
     {
     }
 }

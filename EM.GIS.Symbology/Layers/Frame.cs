@@ -200,7 +200,7 @@ namespace EM.GIS.Symbology
             var visibleDrawingFeatureLayers = new List<IFeatureLayer>();
             if (DrawingLayers != null)
             {
-                foreach (var item in DrawingLayers)
+                foreach (ILayer item in DrawingLayers)
                 {
                     if (CancellationTokenSource?.IsCancellationRequested == true)
                     {

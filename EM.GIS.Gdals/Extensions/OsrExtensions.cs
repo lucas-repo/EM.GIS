@@ -14,7 +14,7 @@ namespace EM.GIS.Gdals
             ICoordinate destCoord = null;
             if (coordinateTransformation != null && coord != null)
             {
-                var array = coord.ToDoubleArray(coord.NumOrdinates);
+                var array = coord.ToDoubleArray(coord.Dimension);
                 coordinateTransformation.TransformPoint(array);
                 destCoord = array.ToCoordinate();
             }
@@ -29,7 +29,7 @@ namespace EM.GIS.Gdals
                 if (firstCoord!=null)
                 {
                     var count = coords.Count();
-                    var dimension = firstCoord.NumOrdinates;
+                    var dimension = firstCoord.Dimension;
                     if (dimension >= 2)
                     {
                         double[] xs = new double[count];

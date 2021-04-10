@@ -12,9 +12,9 @@ namespace EM.GIS.Data
         /// </summary>
         /// <param name="extent"></param>
         /// <returns></returns>
-        public static IPolygon ToPolygon(this IExtent extent)
+        public static IGeometry ToPolygon(this IExtent extent)
         {
-            IPolygon polygon = null;
+            IGeometry polygon = null;
             if (extent != null)
             {
                 var geometryFactory = DataFactory.Default.GeometryFactory;

@@ -8,12 +8,5 @@ namespace EM.GIS.Symbology
 
         public new IPointSymbolizer Parent { get => base.Parent as IPointSymbolizer; set => base.Parent = value; }
 
-        public new IEnumerator<IPointSymbol> GetEnumerator()
-        {
-            foreach (var item in Items)
-            {
-                yield return item as IPointSymbol;
-            }
-        }
     }
 }

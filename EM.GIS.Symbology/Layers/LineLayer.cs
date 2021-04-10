@@ -38,30 +38,27 @@ namespace EM.GIS.Symbology
         }
         private void GetLines(MapArgs drawArgs, IGeometry geometry, GraphicsPath path)
         {
-            switch (geometry.GeometryType)
+            if (geometry.Geometries.Count == 0)
             {
-                case GeometryType.MultiLineString:
-                    int geoCount = geometry.GeometryCount;
-                    for (int i = 0; i < geoCount; i++)
-                    {
-                        var partGeo = geometry.GetGeometry(i);
-                        path.StartFigure();
-                        GetLines(drawArgs, partGeo, path);
-                    }
-                    break;
-                case GeometryType.LineString:
-                    int pointCount = geometry.PointCount;
-                    PointF[] points = new PointF[pointCount];
-                    for (int j = 0; j < pointCount; j++)
-                    {
-                        var coord = geometry.GetCoord(j);
-                        PointF point = drawArgs.ProjToPixelPointF(coord);
-                        points[j] = point;
-                    }
-                    path.AddLines(points);
-                    break;
-                default:
-                    throw new Exception("不支持的几何类型");
+                int pointCount = geometry.Coordinates.Count;
+                PointF[] points = new PointF[pointCount];
+                for (int j = 0; j < pointCount; j++)
+                {
+                    var coord = geometry.Coordinates[j];
+                    PointF point = drawArgs.ProjToPixelPointF(coord);
+                    points[j] = point;
+                }
+                path.AddLines(points);
+            }
+            else
+            {
+                int geoCount = geometry.Geometries.Count;
+                for (int i = 0; i < geoCount; i++)
+                {
+                    var partGeo = geometry.Geometries[i];
+                    path.StartFigure();
+                    GetLines(drawArgs, partGeo, path);
+                }
             }
         }
     }

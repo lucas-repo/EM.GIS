@@ -1,6 +1,8 @@
 ﻿using EM.GIS.Geometries;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -8,87 +10,154 @@ using System.Threading.Tasks;
 namespace EM.GIS.Gdals
 {
     [Serializable]
-    public abstract class Geometry : IGeometry
+    public class Geometry : BaseCopy, IGeometry
     {
-        public OSGeo.OGR.Geometry OgrGeometry { get; }
-        public int PointCount => OgrGeometry.GetPointCount();
+        private bool _ignoreGeoChanged;
+        private bool _ignoreCoordChanged;
+        private OSGeo.OGR.Geometry _ogrGeometry;
 
-        public int GeometryCount => OgrGeometry.GetGeometryCount();
-
-        public IExtent Extent
+        public OSGeo.OGR.Geometry OgrGeometry
         {
-            get
+            get { return _ogrGeometry; }
+            protected set
             {
-                OSGeo.OGR.Envelope envelope = new  OSGeo.OGR.Envelope();
-                OgrGeometry.GetEnvelope(envelope);
-               return envelope.ToExtent();
+                _ogrGeometry = value;
+                OnOgrGeometryChanged();
             }
-    }
+        }
+
+        private void OnOgrGeometryChanged()
+        {
+            _ignoreGeoChanged = true;
+            _ignoreCoordChanged = true;
+            Geometries.Clear();
+            Coordinates.Clear();
+            if (OgrGeometry != null)
+            {
+                var geometryCount = OgrGeometry.GetGeometryCount();
+                if (geometryCount == 0)
+                {
+                    var pointCount = OgrGeometry.GetPointCount();
+                    var dimension = OgrGeometry.GetDimension();
+                    for (int i = 0; i < pointCount; i++)
+                    {
+                        double[] argout = new double[dimension];
+                        OgrGeometry.GetPoint(i, argout);
+                        Coordinate coordinate = new Coordinate(argout);
+                        Coordinates.Add(coordinate);
+                    }
+                }
+                else
+                {
+                    for (int i = 0; i < geometryCount; i++)
+                    {
+                        var ogrGeometry = OgrGeometry.GetGeometryRef(i);
+                        Geometry geometry = new Geometry(ogrGeometry);
+                        Geometries.Add(geometry);
+                    }
+                }
+            }
+            _ignoreGeoChanged = false;
+            _ignoreCoordChanged = false;
+        }
+
+        public IExtent GetExtent()
+        {
+            IExtent extent = null;
+            if (OgrGeometry != null)
+            {
+                OSGeo.OGR.Envelope envelope = new OSGeo.OGR.Envelope();
+                OgrGeometry.GetEnvelope(envelope);
+                extent= envelope.ToExtent();
+            }
+            return extent;
+        }
 
         public GeometryType GeometryType
         {
             get
             {
-                GeometryType geometryType = GeometryType.Point; 
-                switch (OgrGeometry.GetGeometryType())
+                GeometryType geometryType = GeometryType.Unknown;
+                if (OgrGeometry != null)
                 {
-                    case OSGeo.OGR.wkbGeometryType.wkbPoint:
-                        geometryType = GeometryType.Point;
-                        break;
-                    case OSGeo.OGR.wkbGeometryType.wkbLineString:
-                        geometryType = GeometryType.LineString;
-                        break;
-                    case OSGeo.OGR.wkbGeometryType.wkbLinearRing:
-                        geometryType = GeometryType.LinearRing;
-                        break;
-                    case OSGeo.OGR.wkbGeometryType.wkbPolygon:
-                        geometryType = GeometryType.Polygon;
-                        break;
-                    case OSGeo.OGR.wkbGeometryType.wkbMultiPoint:
-                        geometryType = GeometryType.MultiPoint;
-                        break;
-                    case OSGeo.OGR.wkbGeometryType.wkbMultiLineString:
-                        geometryType = GeometryType.MultiLineString;
-                        break;
-                    case OSGeo.OGR.wkbGeometryType.wkbMultiPolygon:
-                        geometryType = GeometryType.MultiPolygon;
-                        break;
-                    default:
-                        throw new NotImplementedException("暂未实现的类型");
+                    geometryType = OgrGeometry.GetGeometryType().ToGeometryType();
                 }
                 return geometryType;
             }
         }
-
-        public double Area => OgrGeometry.Area();
-
-        public double Length => OgrGeometry.Length();
-
-        public ICoordinate Coord => OgrGeometry.GetCoordinate(0);
-
-        public bool IsEmpty() => OgrGeometry.IsEmpty();
-
-        public IGeometry GetGeometry(int index)
+        public Geometry(OSGeo.OGR.Geometry geometry)
         {
-            var numGeometry = OgrGeometry.GetGeometryRef(index);
-            var dsGeometry = numGeometry.ToGeometry();
-            return dsGeometry;
+            if (geometry == null)
+            {
+                throw new Exception("geometry不能为空");
+            }
+            OgrGeometry = geometry;
+            Geometries.CollectionChanged += Geometries_CollectionChanged;
+            Coordinates.CollectionChanged += Coordinates_CollectionChanged;
         }
 
-        public ICoordinate GetCoord(int index)
+        private void Coordinates_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
-            ICoordinate point = OgrGeometry.GetCoordinate(index);
-            return point;
+            if (_ignoreCoordChanged)
+            {
+                return;
+            }
+            switch (e.Action)
+            {
+                case NotifyCollectionChangedAction.Add:
+                    foreach (ICoordinate item in e.NewItems)
+                    {
+                        switch (item.Dimension)
+                        {
+                            case 2:
+                                OgrGeometry.AddPoint_2D(item.X, item.Y);
+                                break;
+                            case 3:
+                                OgrGeometry.AddPoint(item.X, item.Y, item.Z);
+                                break;
+                            case 4:
+                                OgrGeometry.AddPointZM(item.X, item.Y, item.Z, item.M);
+                                break;
+                        }
+                    }
+                    break;
+                default:
+                    throw new NotImplementedException();
+            }
         }
 
-
-        public void SetCoord(int index, ICoordinate coordinate)
+        private void Geometries_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
-            OgrGeometry.SetCoordinate(index, coordinate);
+            if (_ignoreGeoChanged)
+            {
+                return;
+            }
+            switch (e.Action)
+            {
+                case NotifyCollectionChangedAction.Add:
+                    foreach (Geometry item in e.NewItems)
+                    {
+                        OgrGeometry.AddGeometry(item.OgrGeometry);
+                    }
+                    break;
+                default:
+                    throw new NotImplementedException();
+            }
         }
+
+        public double Area() => OgrGeometry == null ? 0 : OgrGeometry.Area();
+
+        public double Length() => OgrGeometry == null ? 0 : OgrGeometry.Length();
+
+        public ObservableCollection<IGeometry> Geometries { get; } = new ObservableCollection<IGeometry>();
+
+        public ObservableCollection<ICoordinate> Coordinates { get; } = new ObservableCollection<ICoordinate>();
+
+        public bool IsEmpty() => OgrGeometry == null ? true : OgrGeometry.IsEmpty();
+
         public string ToWkt()
         {
-            var ret= OgrGeometry.ExportToWkt(out string wkt);
+            var ret = OgrGeometry.ExportToWkt(out string wkt);
             return wkt;
         }
         public override string ToString()
@@ -157,27 +226,6 @@ namespace EM.GIS.Gdals
             return ret;
         }
 
-        public List<ICoordinate> GetAllCoords()
-        {
-            List<ICoordinate> coords = new List<ICoordinate>();
-            for (int i = 0; i < PointCount; i++)
-            {
-                ICoordinate coord = GetCoord(i);
-                coords.Add(coord);
-            }
-            return coords;
-        }
-
-        public abstract object Clone();
-
-        public Geometry(OSGeo.OGR.Geometry geometry)
-        {
-            if (geometry == null || geometry.IsEmpty())
-            {
-                throw new Exception("非法的参数");
-            }
-            OgrGeometry = geometry;
-        }
         public override bool Equals(object obj)
         {
             bool ret = false;
@@ -193,6 +241,6 @@ namespace EM.GIS.Gdals
             int hashCode = GeometryType.GetHashCode() ^ OgrGeometry.GetHashCode();
             return hashCode;
         }
-        
+
     }
 }

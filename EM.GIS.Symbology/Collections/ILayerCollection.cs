@@ -7,7 +7,7 @@ namespace EM.GIS.Symbology
     /// <summary>
     /// 图层集合接口
     /// </summary>
-    public interface ILayerCollection : ILegendItemCollection,IEnumerable<ILayer>
+    public interface ILayerCollection : ILegendItemCollection
     {
         #region 需要重写的部分
         /// <summary>

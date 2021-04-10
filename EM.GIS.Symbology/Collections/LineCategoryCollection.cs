@@ -13,12 +13,5 @@ namespace EM.GIS.Symbology
         { }
         public LineCategoryCollection(IFeatureLayer parent) : base(parent)
         { }
-        public new IEnumerator<ILineCategory> GetEnumerator()
-        {
-            foreach (var item in Items)
-            {
-                yield return item as ILineCategory;
-            }
-        }
     }
 }

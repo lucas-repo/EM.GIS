@@ -10,12 +10,5 @@ namespace EM.GIS.Symbology
 
         public new IFeatureSymbolizer Parent { get => base.Parent as IFeatureSymbolizer; set => base.Parent = value; }
 
-        public IEnumerator<IFeatureSymbol> GetEnumerator()
-        {
-            foreach (var item in Items)
-            {
-                yield return item as IFeatureSymbol;
-            }
-        }
     }
 }

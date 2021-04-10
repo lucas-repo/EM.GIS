@@ -15,27 +15,59 @@ namespace EM.GIS.Gdals
             return destGeometry;
         }
 
-        public ILinearRing GetLinearRing(IEnumerable<ICoordinate> coordinates)
+        public IGeometry GetLinearRing(IEnumerable<ICoordinate> coordinates)
         {
-            var  geometry = new LinearRing(coordinates);
+            Geometry geometry = null;
+            OSGeo.OGR.Geometry ogrGeometry = coordinates.ToLinearRingGeometry();
+            if (ogrGeometry != null)
+            {
+                geometry = new Geometry(ogrGeometry);
+            }
             return geometry;
         }
 
-        public ILineString GetLineString(IEnumerable<ICoordinate> coordinates)
+        public IGeometry GetLineString(IEnumerable<ICoordinate> coordinates)
         {
-            var geometry = new LineString(coordinates);
+            Geometry geometry = null;
+            OSGeo.OGR.Geometry ogrGeometry = coordinates.ToLineStringGeometry();
+            if (ogrGeometry != null)
+            {
+                geometry = new Geometry(ogrGeometry);
+            }
             return geometry;
         }
 
-        public IPoint GetPoint(ICoordinate coordinate)
+        public IGeometry GetPoint(ICoordinate coordinate)
         {
-            var geometry = new Point(coordinate);
+            Geometry geometry = null;
+            OSGeo.OGR.Geometry ogrGeometry = coordinate.ToPointGeometry();
+            if (ogrGeometry != null)
+            {
+                geometry = new Geometry(ogrGeometry);
+            }
             return geometry;
         }
 
-        public IPolygon GetPolygon(ILinearRing shell, IEnumerable<ILinearRing> holes = null)
+        public IGeometry GetPolygon(IGeometry shell, IEnumerable<IGeometry> holes = null)
         {
-            var geometry = new Polygon(shell, holes);
+            Geometry geometry = null;
+            if (shell?.GeometryType != GeometryType.LinearRing)
+            {
+                return geometry;
+            }
+            OSGeo.OGR.Geometry ogrGeometry = new OSGeo.OGR.Geometry(OSGeo.OGR.wkbGeometryType.wkbPolygon);
+            ogrGeometry.AddGeometry(shell.ToGeometry());
+            if (holes != null)
+            {
+                foreach (var hole in holes)
+                {
+                    if (hole?.GeometryType == GeometryType.LinearRing)
+                    {
+                        ogrGeometry.AddGeometry(hole.ToGeometry());
+                    }
+                }
+            }
+            geometry = new Geometry(ogrGeometry);
             return geometry;
         }
     }

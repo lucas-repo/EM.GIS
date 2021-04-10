@@ -5,7 +5,7 @@ namespace EM.GIS.Symbology
     /// <summary>
     /// 面分类集合
     /// </summary>
-    public interface IPolygonCategoryCollection : IFeatureCategoryCollection, IEnumerable<IPolygonCategory>
+    public interface IPolygonCategoryCollection : IFeatureCategoryCollection
     {
         #region 需要重写的部分
         /// <summary>

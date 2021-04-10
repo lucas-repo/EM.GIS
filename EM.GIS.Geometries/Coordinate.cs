@@ -129,7 +129,7 @@ namespace EM.GIS.Geometries
         //     /// This is not a true length, but simply tests the Z and M value. If the M value
         //     is not NaN this is 4. Else if Z value /// is NaN then the value is 2. Otherwise
         //     this is 3. ///
-        public int NumOrdinates
+        public int Dimension
         {
             get
             {
@@ -183,7 +183,17 @@ namespace EM.GIS.Geometries
             : this(0.0, 0.0, double.NaN, double.NaN)
         {
         }
-
+        public Coordinate(double[] array)
+        {
+            if (array != null)
+            {
+                int count = Math.Min(array.Length, MaxPossibleOrdinates);
+                for (int i = 0; i < count; i++)
+                {
+                    this[i] = array[i];
+                }
+            }
+        }
 
         // 摘要:
         //     /// Constructs a Coordinate having the same (x,y,z) values as /// other. ///

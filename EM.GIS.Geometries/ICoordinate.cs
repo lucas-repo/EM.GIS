@@ -18,9 +18,9 @@ namespace EM.GIS.Geometries
         /// </summary>
         int MaxPossibleOrdinates { get; }
         /// <summary>
-        /// 索引个数
+        /// 维度
         /// </summary>
-        int NumOrdinates { get; }
+        int Dimension { get; }
         /// <summary>
         /// X值
         /// </summary>

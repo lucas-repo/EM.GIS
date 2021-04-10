@@ -65,7 +65,7 @@ namespace EM.GIS.Symbology
             foreach (var feature in DataSet.GetFeatures())
             {
                 features.Add(feature);
-                int pointCount = feature.Geometry.PointCount;
+                int pointCount = feature.Geometry.Coordinates.Count;
                 totalPointCount += pointCount;
                 if (totalPointCount >= threshold)
                 {

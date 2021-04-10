@@ -37,14 +37,14 @@ namespace EM.GIS.Symbology
         }
         private void DrawGeometry(MapArgs drawArgs, Graphics context, float scaleSize, IPolygonSymbolizer polygonSymbolizer, IGeometry geometry)
         {
-            int geoCount = geometry.GeometryCount;
+            int geoCount = geometry.Geometries.Count;
             if (geoCount == 0)
             {
-                int pointCount = geometry.PointCount;
+                int pointCount = geometry.Coordinates.Count;
                 PointF[] points = new PointF[pointCount];
                 for (int j = 0; j < pointCount; j++)
                 {
-                    var coord = geometry.GetCoord(j);
+                    var coord = geometry.Coordinates[j];
                     PointF point = drawArgs.ProjToPixelPointF(coord);
                     points[j] = point;
                 }
@@ -54,37 +54,34 @@ namespace EM.GIS.Symbology
             {
                 for (int i = 0; i < geoCount; i++)
                 {
-                    var partGeo = geometry.GetGeometry(i);
+                    var partGeo = geometry.Geometries[i];
                     DrawGeometry(drawArgs, context, scaleSize, polygonSymbolizer, partGeo);
                 }
             }
         }
         private void GetPolygons(MapArgs drawArgs, IGeometry geometry, GraphicsPath path)
         {
-            int geoCount = geometry.GeometryCount;
             switch (geometry.GeometryType)
             {
                 case GeometryType.MultiPolygon:
-                    for (int i = 0; i < geoCount; i++)
+                    foreach (var partGeo in geometry.Geometries)
                     {
-                        var partGeo = geometry.GetGeometry(i);
                         GetPolygons(drawArgs, partGeo, path);
                     }
                     break;
                 case GeometryType.Polygon:
-                    for (int i = 0; i < geoCount; i++)
+                    foreach (var partGeo in geometry.Geometries)
                     {
-                        var partGeo = geometry.GetGeometry(i);
                         path.StartFigure();
                         GetPolygons(drawArgs, partGeo, path);
                     }
                     break;
                 case GeometryType.LineString:
-                    int pointCount = geometry.PointCount;
+                    int pointCount = geometry.Coordinates.Count;
                     PointF[] points = new PointF[pointCount];
                     for (int j = 0; j < pointCount; j++)
                     {
-                        var coord = geometry.GetCoord(j);
+                        var coord = geometry.Coordinates[j];
                         PointF point = drawArgs.ProjToPixelPointF(coord);
                         points[j] = point;
                     }

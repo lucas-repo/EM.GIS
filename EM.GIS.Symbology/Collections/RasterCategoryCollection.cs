@@ -20,13 +20,6 @@ namespace EM.GIS.Symbology
         { }
         public RasterCategoryCollection(IRasterLayer parent) : base(parent)
         { }
-        public new IEnumerator<IRasterCategory> GetEnumerator()
-        {
-            foreach (var item in Items)
-            {
-                yield return item as IRasterCategory;
-            }
-        }
 
     }
 }

@@ -14,29 +14,40 @@ namespace EM.GIS.Symbology
         public new IPointCategoryCollection Categories { get => Items as IPointCategoryCollection; }
         public PointLayer(IFeatureSet featureSet) : base(featureSet)
         {
-            Items = new PointCategoryCollection(this);
-            DefaultCategory = new PointCategory();
+            var defaultCategory = new PointCategory();
             Items = new PointCategoryCollection(this)
-            { 
-                DefaultCategory
+            {
+                defaultCategory
             };
         }
 
         protected override void DrawGeometry(MapArgs drawArgs, IFeatureSymbolizer symbolizer, IGeometry geometry)
         {
-            int geometryCount = geometry.GeometryCount; 
-            for (int i = 0; i < geometryCount; i++)
+            DrawPoint(drawArgs, symbolizer as IPointSymbolizer, geometry);
+        }
+        private void DrawPoint(MapArgs drawArgs, IPointSymbolizer symbolizer, IGeometry geometry)
+        {
+            if (geometry.Geometries.Count == 0)
             {
-                var partGeo = geometry.GetGeometry(i);
-                int pointCount = partGeo.PointCount;
                 float scaleSize = (float)symbolizer.GetScale(drawArgs);
+                int pointCount = geometry.Coordinates.Count;
                 for (int j = 0; j < pointCount; j++)
                 {
-                    var coord= partGeo.GetCoord(j);
+                    var coord = geometry.Coordinates[j];
                     PointF point = drawArgs.ProjToPixelPointF(coord);
-                    (symbolizer as IPointSymbolizer).DrawPoint(drawArgs.Device, scaleSize, point);
+                    symbolizer.DrawPoint(drawArgs.Device, scaleSize, point);
                 }
             }
+            else
+            {
+                int geoCount = geometry.Geometries.Count;
+                for (int i = 0; i < geoCount; i++)
+                {
+                    var partGeo = geometry.Geometries[i];
+                    DrawPoint(drawArgs, symbolizer, partGeo);
+                }
+            }
+
         }
     }
 }

@@ -13,13 +13,6 @@ namespace EM.GIS.Symbology
         #region 重写部分
         public new ILayer this[int index] { get => Items[index] as ILayer; set => Items[index] = value; }
         public new IGroup Parent { get => base.Parent as IGroup; set => base.Parent = value; }
-        public IEnumerator<ILayer> GetEnumerator()
-        {
-            foreach (var item in Items)
-            {
-                yield return item as ILayer;
-            }
-        }
 
         #endregion
         public IProgressHandler ProgressHandler { get; set; }
@@ -92,9 +85,5 @@ namespace EM.GIS.Symbology
             return AddLayer(dataSet, isVisible);
         }
 
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            throw new System.NotImplementedException();
-        }
     }
 }

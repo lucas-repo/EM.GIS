@@ -5,7 +5,7 @@ namespace EM.GIS.Symbology
     /// <summary>
     /// 线分类集合
     /// </summary>
-    public interface ILineCategoryCollection : IFeatureCategoryCollection, IEnumerable<ILineCategory>
+    public interface ILineCategoryCollection : IFeatureCategoryCollection
     {
         #region 需要重写的部分
         /// <summary>

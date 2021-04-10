@@ -21,25 +21,25 @@ namespace EM.GIS.Data
         /// </summary>
         /// <param name="coordinate"></param>
         /// <returns></returns>
-        IPoint GetPoint(ICoordinate coordinate);
+        IGeometry GetPoint(ICoordinate coordinate);
         /// <summary>
         /// 创建线
         /// </summary>
         /// <param name="coordinates"></param>
         /// <returns></returns>
-        ILineString GetLineString(IEnumerable<ICoordinate> coordinates);
+        IGeometry GetLineString(IEnumerable<ICoordinate> coordinates);
         /// <summary>
         /// 创建环
         /// </summary>
         /// <param name="coordinates"></param>
         /// <returns></returns>
-        ILinearRing GetLinearRing(IEnumerable<ICoordinate> coordinates);
+        IGeometry GetLinearRing(IEnumerable<ICoordinate> coordinates);
         /// <summary>
         /// 创建面
         /// </summary>
         /// <param name="shell"></param>
         /// <param name="holes"></param>
         /// <returns></returns>
-        IPolygon GetPolygon(ILinearRing shell, IEnumerable<ILinearRing> holes = null);
+        IGeometry GetPolygon(IGeometry shell, IEnumerable<IGeometry> holes = null);
     }
 }

@@ -13,12 +13,5 @@ namespace EM.GIS.Symbology
         { }
         public PointCategoryCollection(IFeatureLayer parent) : base(parent)
         { }
-        public new IEnumerator<IPointCategory> GetEnumerator()
-        {
-            foreach (var item in Items)
-            {
-                yield return item as IPointCategory;
-            }
-        }
     }
 }

@@ -113,7 +113,19 @@ namespace EM.GIS.Gdals
             OSGeo.OGR.Geometry geometry = null;
             if (coordinate != null)
             {
-                geometry = ToPointGeometry(coordinate.X, coordinate.Y, coordinate.Z, coordinate.M);
+                geometry = new OSGeo.OGR.Geometry(OSGeo.OGR.wkbGeometryType.wkbLineString);
+                switch (coordinate.Dimension)
+                {
+                    case 2:
+                        geometry.AddPoint_2D(coordinate.X, coordinate.Y);
+                        break;
+                    case 3:
+                        geometry.AddPoint(coordinate.X, coordinate.Y, coordinate.Z);
+                        break;
+                    case 4:
+                        geometry.AddPointZM(coordinate.X, coordinate.Y, coordinate.Z, coordinate.M);
+                        break;
+                }
             }
             return geometry;
         }
@@ -125,7 +137,18 @@ namespace EM.GIS.Gdals
                 geometry = new OSGeo.OGR.Geometry(OSGeo.OGR.wkbGeometryType.wkbLineString);
                 foreach (var coordinate in coordinates)
                 {
-                    geometry.AddPoint(coordinate);
+                    switch (coordinate.Dimension)
+                    {
+                        case 2:
+                            geometry.AddPoint_2D(coordinate.X, coordinate.Y);
+                            break;
+                        case 3:
+                            geometry.AddPoint(coordinate.X, coordinate.Y, coordinate.Z);
+                            break;
+                        case 4:
+                            geometry.AddPointZM(coordinate.X, coordinate.Y, coordinate.Z, coordinate.M);
+                            break;
+                    }
                 }
             }
             return geometry;
@@ -138,31 +161,21 @@ namespace EM.GIS.Gdals
                 geometry = new OSGeo.OGR.Geometry(OSGeo.OGR.wkbGeometryType.wkbLinearRing);
                 foreach (var coordinate in coordinates)
                 {
-                    geometry.AddPoint(coordinate);
-                }
-                if (!geometry.IsRing())
-                {
-                    geometry.CloseRings();
-                }
-            }
-            return geometry;
-        }
-        public static OSGeo.OGR.Geometry ToPolygonGeometry(this ILinearRing shell, IEnumerable<ILinearRing> holes = null)
-        {
-            OSGeo.OGR.Geometry geometry = null;
-            if (shell == null)
-            {
-                return geometry;
-            }
-            geometry = new OSGeo.OGR.Geometry(OSGeo.OGR.wkbGeometryType.wkbPolygon);
-            geometry.AddGeometryDirectly(shell.ToGeometry());
-            if (holes != null)
-            {
-                foreach (var item in holes)
-                {
-                    geometry.AddGeometryDirectly(item.ToGeometry());
+                    switch (coordinate.Dimension)
+                    {
+                        case 2:
+                            geometry.AddPoint_2D(coordinate.X, coordinate.Y);
+                            break;
+                        case 3:
+                            geometry.AddPoint(coordinate.X, coordinate.Y, coordinate.Z);
+                            break;
+                        case 4:
+                            geometry.AddPointZM(coordinate.X, coordinate.Y, coordinate.Z, coordinate.M);
+                            break;
+                    }
                 }
             }
+            var geo = OSGeo.OGR.Geometry.CreateFromWkt("LINEARRING (104.57277242529 30.4319636253167,104.57277242529 30.4322491606373,104.581980939382 30.4322491606373,104.581980939382 30.4319636253167,104.57277242529 30.4319636253167)");
             return geometry;
         }
         #endregion
@@ -187,123 +200,38 @@ namespace EM.GIS.Gdals
             {
                 if (index >= 0 && index < geometry.GetPointCount())
                 {
-                    double[] buffer = new double[4];
-                    geometry.SetPointZM(index, coordinate.X, coordinate.Y, coordinate.Z, coordinate.M);
+                    geometry.SetPointZM(index, coordinate.X, coordinate.Y, coordinate.Z, coordinate.M); 
                 }
             }
         }
-        public static IPoint GetPoint(this OSGeo.OGR.Geometry geometry, int index)
-        {
-            IPoint point = null;
-            if (geometry != null)
-            {
-                if (index >= 0 && index < geometry.GetPointCount())
-                {
-                    double[] buffer = new double[4];
-                    geometry.GetPointZM(index, buffer);
-                    point = new Point(buffer[0], buffer[1], buffer[2], buffer[3]);
-                }
-            }
-            return point;
-        }
-
         #region 将DotSpatial的几何转成自定义的几何
 
         public static IGeometry ToGeometry(this OSGeo.OGR.Geometry geometry)
         {
-            IGeometry destGeometry = null;
-            if (geometry != null && !geometry.IsEmpty())
-            {
-                switch (geometry.GetGeometryType())
-                {
-                    case OSGeo.OGR.wkbGeometryType.wkbPoint:
-                        destGeometry = geometry.ToPoint();
-                        break;
-                    case OSGeo.OGR.wkbGeometryType.wkbLineString:
-                        destGeometry = geometry.ToLineString();
-                        break;
-                    case OSGeo.OGR.wkbGeometryType.wkbLinearRing:
-                        destGeometry = geometry.ToLinearRing();
-                        break;
-                    case OSGeo.OGR.wkbGeometryType.wkbPolygon:
-                        destGeometry = geometry.ToPolygon();
-                        break;
-                    default:
-                        throw new NotImplementedException();
-                }
-            }
+            var destGeometry = new Geometry(geometry);
             return destGeometry;
         }
-        public static IPoint ToPoint(this ICoordinate coordinate)
+        public static OSGeo.OGR.Geometry ToGeometry(this Geometry geometry)
         {
-            IPoint dsPoint = null;
-            if (coordinate != null)
-            {
-                dsPoint = new Point(coordinate); ;
-            }
-            return dsPoint;
-        }
-        public static IPoint ToPoint(this OSGeo.OGR.Geometry geometry)
-        {
-            IPoint dsGeometry = null;
-            if (geometry != null && !geometry.IsEmpty() && geometry.GetGeometryType() == OSGeo.OGR.wkbGeometryType.wkbPoint)
-            {
-                dsGeometry = new Point(geometry);
-            }
-            return dsGeometry;
-        }
-        public static ILineString ToLineString(this OSGeo.OGR.Geometry geometry)
-        {
-            ILineString dsGeometry = null;
-            if (geometry != null && !geometry.IsEmpty() && geometry.GetGeometryType() == OSGeo.OGR.wkbGeometryType.wkbLineString)
-            {
-                dsGeometry = new LineString(geometry);
-            }
-            return dsGeometry;
-        }
-        public static ILinearRing ToLinearRing(this OSGeo.OGR.Geometry geometry)
-        {
-            ILinearRing dsGeometry = null;
-            if (geometry != null && !geometry.IsEmpty() && geometry.GetGeometryType() == OSGeo.OGR.wkbGeometryType.wkbLinearRing)
-            {
-                dsGeometry = new LinearRing(geometry);
-            }
-            return dsGeometry;
-        }
-        public static IPolygon ToPolygon(this OSGeo.OGR.Geometry geometry)
-        {
-            IPolygon destGeometry = null;
-            if (geometry == null && !geometry.IsEmpty() && geometry.GetGeometryType() == OSGeo.OGR.wkbGeometryType.wkbPolygon)
-            {
-                return destGeometry;
-            }
-            destGeometry = new Polygon(geometry);
-            return destGeometry;
-        }
-        public static IMultiLineString ToMultiLineString(this OSGeo.OGR.Geometry geometry)
-        {
-            IMultiLineString destGeometry = null;
-            if (geometry == null && !geometry.IsEmpty() && geometry.GetGeometryType() == OSGeo.OGR.wkbGeometryType.wkbMultiLineString)
-            {
-                return destGeometry;
-            }
-            destGeometry = new MultiLineString(geometry);
+            var destGeometry = geometry?.OgrGeometry;
             return destGeometry;
         }
         #endregion
 
-
-        #region 自定义的几何转成DotSpatial的几何
-        public static ICoordinate ToCoordinate(this IPoint point)
+        public static GeometryType ToGeometryType(this wkbGeometryType wkbGeometryType)
         {
-            ICoordinate coordinate = null;
-            if (point == null)
-            {
-                return coordinate;
-            }
-            coordinate = new Coordinate(point.X, point.Y, point.Z, point.M);
-            return coordinate;
+            GeometryType geometryType = GeometryType.Unknown;
+            string name= wkbGeometryType.ToString().Replace("wkb", "");
+            Enum.TryParse(name, out geometryType);
+            return geometryType;
         }
-        #endregion
+        public static  wkbGeometryType TowWkbGeometryType(this GeometryType geometryType)
+        {
+            wkbGeometryType wkbGeometryType = wkbGeometryType.wkbUnknown;
+            string name = $"wkb{geometryType}";
+            Enum.TryParse(name, out wkbGeometryType);
+            return wkbGeometryType;
+        }
+
     }
 }

@@ -13,7 +13,7 @@ namespace EM.GIS.Symbology
             get
             {
                 SizeF size = new SizeF();
-                foreach (var symbol in Symbols)
+                foreach (IPointSymbol symbol in Symbols)
                 {
                     SizeF bsize = symbol.Size;
                     size.Width = Math.Max(size.Width, bsize.Width);
@@ -26,7 +26,7 @@ namespace EM.GIS.Symbology
                 SizeF oldSize = Size;
                 float dX = value.Width / oldSize.Width;
                 float dY = value.Height / oldSize.Height;
-                foreach (var symbol in Symbols)
+                foreach (IPointSymbol symbol in Symbols)
                 {
                     var os = symbol.Size;
                     symbol.Size = new SizeF(os.Width * dX, os.Height * dY);
@@ -93,7 +93,7 @@ namespace EM.GIS.Symbology
 
         public void DrawPoint(Graphics context, float scale, PointF point)
         {
-            foreach (var symbol in Symbols)
+            foreach (IPointSymbol symbol in Symbols)
             {
                 symbol.DrawPoint(context, scale, point);
             }
