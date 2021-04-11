@@ -62,7 +62,7 @@ namespace EM.GIS.Gdals
 
         public override string ExportToWkt()
         {
-            var ret = SpatialReference.ExportToWkt(out string wkt);
+            var ret = SpatialReference.ExportToWkt(out string wkt,null); 
             return wkt;
         }
 

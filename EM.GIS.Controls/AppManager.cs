@@ -53,13 +53,13 @@ namespace EM.GIS.Controls
         private CompositionContainer CompositionContainer { get; set; }
         public AppManager()
         {
-            AppDomain.CurrentDomain.AssemblyResolve += CurrentDomainAssemblyResolve;
             Plugins = new List<IPlugin>();
             BaseDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
             Directories = new List<string>
             {
                 "Plugins"
             };
+            AppDomain.CurrentDomain.AssemblyResolve += CurrentDomainAssemblyResolve;
         }
         private AggregateCatalog GetCatalog()
         {
@@ -142,27 +142,18 @@ namespace EM.GIS.Controls
         }
         private Assembly CurrentDomainAssemblyResolve(object sender, ResolveEventArgs args)
         {
-            var knownExtensions = new[] { "dll", "exe" };
+            Assembly assembly = null;
             string assemblyName = new AssemblyName(args.Name).Name;
-
-            // check the installation directory
             foreach (string directory in Directories)
             {
                 string path = Path.Combine(BaseDirectory, directory);
-
-                if (Directory.Exists(path))
+                assembly = AssemblyExtensions.GetAssembly(path, assemblyName);
+                if (assembly != null)
                 {
-                    foreach (string extension in knownExtensions)
-                    {
-                        var potentialFiles = Directory.GetFiles(path, assemblyName + "." + extension, SearchOption.AllDirectories);
-                        if (potentialFiles.Length > 0)
-                            return Assembly.LoadFrom(potentialFiles[0]);
-                    }
+                    break;
                 }
             }
-
-            // assembly not found
-            return null;
+            return assembly;
         }
         public virtual void LoadPlugins()
         {

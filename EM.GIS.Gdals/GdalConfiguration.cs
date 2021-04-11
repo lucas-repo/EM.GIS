@@ -27,6 +27,7 @@
  * DEALINGS IN THE SOFTWARE.
  *****************************************************************************/
 
+using EM.GIS.Data;
 using System;
 using System.Diagnostics;
 using System.IO;
@@ -51,13 +52,16 @@ namespace EM.GIS.Gdals
         [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
         static extern bool AddDllDirectory(string lpPathName);
-
+        static string _executingDirectory;
+        public static string GdalPath { get; }
+        static string _nativePath;
+        static string _driverPath;
+        static string[] _directories;
         /// <summary>
         /// Construction of Gdal/Ogr
         /// </summary>
         static GdalConfiguration()
         {
-            string executingDirectory = null, gdalPath = null, nativePath = null;
             try
             {
                 if (!IsWindows)
@@ -69,55 +73,73 @@ namespace EM.GIS.Gdals
                 }
 
                 string executingAssemblyFile = new Uri(Assembly.GetExecutingAssembly().GetName().CodeBase).LocalPath;
-                executingDirectory = Path.GetDirectoryName(executingAssemblyFile);
+                _executingDirectory = Path.GetDirectoryName(executingAssemblyFile);
 
-                if (string.IsNullOrEmpty(executingDirectory))
+                if (string.IsNullOrEmpty(_executingDirectory))
                     throw new InvalidOperationException("cannot get executing directory");
 
 
                 // modify search place and order
                 SetDefaultDllDirectories(DllSearchFlags);
 
-                gdalPath = Path.Combine(executingDirectory, "gdal");
-                nativePath = Path.Combine(gdalPath, GetPlatform());
-                if (!Directory.Exists(nativePath))
-                    throw new DirectoryNotFoundException($"GDAL native directory not found at '{nativePath}'");
-                if (!File.Exists(Path.Combine(nativePath, "gdal_wrap.dll")))
+                GdalPath = Path.Combine(_executingDirectory, "gdal");
+                _nativePath = GdalPath;
+                if (!Directory.Exists(_nativePath))
+                    throw new DirectoryNotFoundException($"GDAL native directory not found at '{_nativePath}'");
+                if (!File.Exists(Path.Combine(_nativePath, "gdal_wrap.dll")))
                     throw new FileNotFoundException(
-                        $"GDAL native wrapper file not found at '{Path.Combine(nativePath, "gdal_wrap.dll")}'");
+                        $"GDAL native wrapper file not found at '{Path.Combine(_nativePath, "gdal_wrap.dll")}'");
 
                 // Add directories
-                AddDllDirectory(nativePath);
-                AddDllDirectory(Path.Combine(nativePath, "plugins"));
+                AddDllDirectory(_nativePath);
+                _driverPath = Path.Combine(_nativePath, "plugins");
+                AddDllDirectory(_driverPath);
 
                 // Set the additional GDAL environment variables.
-                string gdalData = Path.Combine(gdalPath, "data");
+                string gdalData = Path.Combine(GdalPath, "data");
                 Environment.SetEnvironmentVariable("GDAL_DATA", gdalData);
                 Gdal.SetConfigOption("GDAL_DATA", gdalData);
 
-                string driverPath = Path.Combine(nativePath, "plugins");
-                Environment.SetEnvironmentVariable("GDAL_DRIVER_PATH", driverPath);
-                Gdal.SetConfigOption("GDAL_DRIVER_PATH", driverPath);
+                Environment.SetEnvironmentVariable("GDAL_DRIVER_PATH", _driverPath);
+                Gdal.SetConfigOption("GDAL_DRIVER_PATH", _driverPath);
 
                 Environment.SetEnvironmentVariable("GEOTIFF_CSV", gdalData);
                 Gdal.SetConfigOption("GEOTIFF_CSV", gdalData);
 
-                string projSharePath = Path.Combine(gdalPath, "share");
+                string projSharePath = Path.Combine(GdalPath, "share");
                 Environment.SetEnvironmentVariable("PROJ_LIB", projSharePath);
                 Gdal.SetConfigOption("PROJ_LIB", projSharePath);
 
                 _usable = true;
+
+                _directories = new string[] { GdalPath, _driverPath };
+                AppDomain.CurrentDomain.AssemblyResolve += CurrentDomainAssemblyResolve;
             }
             catch (Exception e)
             {
                 _usable = false;
                 Trace.WriteLine(e, "error");
-                Trace.WriteLine($"Executing directory: {executingDirectory}", "error");
-                Trace.WriteLine($"gdal directory: {gdalPath}", "error");
-                Trace.WriteLine($"native directory: {nativePath}", "error");
+                Trace.WriteLine($"Executing directory: {_executingDirectory}", "error");
+                Trace.WriteLine($"gdal directory: {GdalPath}", "error");
+                Trace.WriteLine($"native directory: {_nativePath}", "error");
 
                 //throw;
             }
+        }
+
+        private static Assembly CurrentDomainAssemblyResolve(object sender, ResolveEventArgs args)
+        {
+            Assembly assembly = null;
+            string assemblyName = new AssemblyName(args.Name).Name;
+            foreach (string directory in _directories)
+            {
+                assembly = AssemblyExtensions.GetAssembly(directory, assemblyName);
+                if (assembly != null)
+                {
+                    break;
+                }
+            }
+            return assembly;
         }
 
         /// <summary>

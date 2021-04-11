@@ -88,7 +88,7 @@ namespace EM.GIS.Data
         /// <returns></returns>
         public static bool IsAssignable(Assembly assembly, Type destType)
         {
-            bool  ret = false;
+            bool ret = false;
             if (assembly != null && destType != null)
             {
                 foreach (Type item in assembly.GetTypes())
@@ -101,6 +101,27 @@ namespace EM.GIS.Data
                 }
             }
             return ret;
+        }
+        /// <summary>
+        /// 获取指定名称的程序集
+        /// </summary>
+        /// <param name="directory">目录</param>
+        /// <param name="assemblyName">程序集名称</param>
+        /// <returns>程序集</returns>
+        public static Assembly GetAssembly(string directory, string assemblyName)
+        {
+            var knownExtensions = new[] { "dll", "exe" };
+            if (Directory.Exists(directory))
+            {
+                foreach (string extension in knownExtensions)
+                {
+                    var potentialFiles = Directory.GetFiles(directory, assemblyName + "." + extension, SearchOption.AllDirectories);
+                    if (potentialFiles.Length > 0)
+                        return Assembly.LoadFrom(potentialFiles[0]);
+                }
+            }
+            // assembly not found
+            return null;
         }
         /// <summary>
         /// 获取可分配指定类型的程序集
