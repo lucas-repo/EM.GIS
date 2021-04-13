@@ -175,6 +175,7 @@ namespace EM.GIS.Gdals
                     }
                 }
             }
+            var geo= new OSGeo.OGR.Geometry(wkbGeometryType.wkbCurvePolygon);
             var geo = OSGeo.OGR.Geometry.CreateFromWkt("LINEARRING (104.57277242529 30.4319636253167,104.57277242529 30.4322491606373,104.581980939382 30.4322491606373,104.581980939382 30.4319636253167,104.57277242529 30.4319636253167)");
             return geometry;
         }
