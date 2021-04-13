@@ -15,7 +15,7 @@ namespace EM.GIS.Data
         /// </summary>
         /// <param name="wkt"></param>
         /// <returns></returns>
-        IGeometry GetGeometryFromWkt(string wkt);
+        IGeometry GetGeometry(string wkt);
         /// <summary>
         /// 创建点
         /// </summary>
@@ -37,9 +37,14 @@ namespace EM.GIS.Data
         /// <summary>
         /// 创建面
         /// </summary>
-        /// <param name="shell"></param>
-        /// <param name="holes"></param>
+        /// <param name="coordinates"></param>
         /// <returns></returns>
-        IGeometry GetPolygon(IGeometry shell, IEnumerable<IGeometry> holes = null);
+        IGeometry GetPolygon(IEnumerable<ICoordinate> coordinates);
+        /// <summary>
+        /// 创建面
+        /// </summary>
+        /// <param name="ringList"></param>
+        /// <returns></returns>
+        IGeometry GetPolygon(IEnumerable<IEnumerable<ICoordinate>> ringList);
     }
 }

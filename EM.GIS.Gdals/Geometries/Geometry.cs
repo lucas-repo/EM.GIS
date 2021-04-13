@@ -221,7 +221,7 @@ namespace EM.GIS.Gdals
             double ret = 0;
             if (coord != null)
             {
-                ret = OgrGeometry.Distance(coord.ToPointGeometry());
+                ret = OgrGeometry.Distance(coord.ToOgrPoint());
             }
             return ret;
         }

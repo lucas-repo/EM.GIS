@@ -24,8 +24,7 @@ namespace EM.GIS.Data
                     new Coordinate(extent.MaxX, extent.MinY),
                     new Coordinate(extent.MinX, extent.MinY)
                 };
-                var shell = geometryFactory.GetLinearRing(coordinates);
-                polygon = DataFactory.Default.GeometryFactory.GetPolygon(shell);
+                polygon = DataFactory.Default.GeometryFactory.GetPolygon(coordinates);
             }
             return polygon;
         }
