@@ -91,7 +91,7 @@ namespace EM.GIS.Gdals
             }
             return ogrGeometry;
         }
-        
+
         private static void AddPoint(this OSGeo.OGR.Geometry geometry, double x, double y, double z = double.NaN, double m = double.NaN)
         {
             if (geometry != null)
@@ -175,7 +175,13 @@ namespace EM.GIS.Gdals
         }
         public static OSGeo.OGR.Geometry ToOgrPolygon(this IEnumerable<ICoordinate> coordinates)
         {
-            OSGeo.OGR.Geometry geometry = GetOgrGeometry(wkbGeometryType.wkbPolygon, coordinates);
+            OSGeo.OGR.Geometry geometry = null;
+            OSGeo.OGR.Geometry ring = GetOgrGeometry(wkbGeometryType.wkbLinearRing, coordinates);
+            if (ring != null)
+            {
+                geometry = new OSGeo.OGR.Geometry(wkbGeometryType.wkbPolygon);
+                geometry.AddGeometry(ring);
+            }
             return geometry;
         }
         public static OSGeo.OGR.Geometry ToOgrPolygon(this IEnumerable<IEnumerable<ICoordinate>> ringList)
@@ -206,7 +212,7 @@ namespace EM.GIS.Gdals
             {
                 if (index >= 0 && index < geometry.GetPointCount())
                 {
-                    int dimension = geometry.GetDimension();
+                    int dimension = geometry.GetCoordinateDimension();
                     double[] buffer = new double[dimension];
                     switch (dimension)
                     {
@@ -231,7 +237,7 @@ namespace EM.GIS.Gdals
             {
                 if (index >= 0 && index < geometry.GetPointCount())
                 {
-                    int dimension = geometry.GetDimension();
+                    int dimension = geometry.GetCoordinateDimension(); 
                     switch (dimension)
                     {
                         case 2:

@@ -38,7 +38,7 @@ namespace EM.GIS.Gdals
                 if (geometryCount == 0)
                 {
                     var pointCount = OgrGeometry.GetPointCount();
-                    var dimension = OgrGeometry.GetDimension();
+                     var dimension = OgrGeometry.GetCoordinateDimension(); 
                     for (int i = 0; i < pointCount; i++)
                     {
                         double[] argout = new double[dimension];

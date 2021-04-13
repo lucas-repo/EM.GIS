@@ -25,15 +25,8 @@ namespace EM.GIS.Geometries
     //     /// Apart from the basic accessor functions, NTS supports /// only specific operations
     //     involving the Z-ordinate. ///
     [Serializable]
-    public class Coordinate : ICoordinate, ICloneable, IComparable, IComparable<Coordinate>, IEquatable<Coordinate>
+    public class Coordinate : ICoordinate
     {
-        //
-        // 摘要:
-        //     /// The value used to indicate a null or missing ordinate value. /// In particular,
-        //     used for the value of ordinates for dimensions /// greater than the defined dimension
-        //     of a coordinate. ///
-        public const double NullOrdinate = double.NaN;
-
         //
         // 摘要:
         //     /// The X or horizontal, or longitudinal ordinate ///
@@ -47,12 +40,12 @@ namespace EM.GIS.Geometries
         //
         // 摘要:
         //     /// The Z or up or altitude ordinate ///
-        public double Z { get; set; }
+        public double Z { get; set; } = double.NaN;
 
         //
         // 摘要:
         //     /// An optional place holder for a measure value if needed ///
-        public double M { get; set; }
+        public double M { get; set; } = double.NaN;
 
         //
         // 摘要:
@@ -145,42 +138,24 @@ namespace EM.GIS.Geometries
             }
         }
 
-
-
-        //
-        // 摘要:
-        //     /// Constructs a Coordinate at (x,y,z). ///
-        //
-        // 参数:
-        //   x:
-        //     X value.
-        //
-        //   y:
-        //     Y value.
-        //
-        //   z:
-        //     Z value.
-        public Coordinate(double x, double y, double z)
-            : this(x, y, z, double.NaN)
+        public Coordinate()
         {
         }
-
-        //
-        // 摘要:
-        //     /// Creates a new instance of Coordinate ///
-        public Coordinate(double x, double y, double z, double m)
+        public Coordinate(double x, double y)
         {
             X = x;
             Y = y;
+        }
+        public Coordinate(double x, double y, double z) : this(x, y)
+        {
             Z = z;
-            M = m;
         }
 
-        //
-        // 摘要:
-        //     /// Creates an coordinate with (0,0,NaN,NaN). ///
-        public Coordinate()
-            : this(0.0, 0.0, double.NaN, double.NaN)
+        public Coordinate(double x, double y, double z, double m) : this(x, y, z)
+        {
+            M = m;
+        }
+        public Coordinate(Coordinate c) : this(c.X, c.Y, c.Z, c.M)
         {
         }
         public Coordinate(double[] array)
@@ -195,31 +170,7 @@ namespace EM.GIS.Geometries
             }
         }
 
-        // 摘要:
-        //     /// Constructs a Coordinate having the same (x,y,z) values as /// other. ///
-        //
-        // 参数:
-        //   c:
-        //     Coordinate to copy.
-        public Coordinate(Coordinate c)
-            : this(c.X, c.Y, c.Z, c.M)
-        {
-        }
 
-        //
-        // 摘要:
-        //     /// Creates a 2D Coordinate with NaN for the Z and M values. ///
-        //
-        // 参数:
-        //   x:
-        //     X value.
-        //
-        //   y:
-        //     Y value.
-        public Coordinate(double x, double y)
-            : this(x, y, double.NaN, double.NaN)
-        {
-        }
 
         //
         // 摘要:
@@ -233,7 +184,7 @@ namespace EM.GIS.Geometries
         // 返回结果:
         //     /// true if the x- and y-coordinates are equal; /// the Z coordinates do not
         //     have to be equal. ///
-        public bool Equals2D(Coordinate other)
+        public bool Equals2D(ICoordinate other)
         {
             if (other == null)
             {
@@ -318,7 +269,7 @@ namespace EM.GIS.Geometries
             {
                 return false;
             }
-            Coordinate coordinate = other as Coordinate;
+            var coordinate = other as ICoordinate;
             if (coordinate != null)
             {
                 return Equals(coordinate);
@@ -342,7 +293,7 @@ namespace EM.GIS.Geometries
         //
         // 返回结果:
         //     true if other is a Coordinate with the same values for the x and y ordinates.
-        public bool Equals(Coordinate other)
+        public bool Equals(ICoordinate other)
         {
             return Equals2D(other);
         }
@@ -383,7 +334,7 @@ namespace EM.GIS.Geometries
         // 返回结果:
         //     /// A negative integer, zero, or a positive integer as this Coordinate /// is
         //     less than, equal to, or greater than the specified Coordinate. ///
-        public int CompareTo(Coordinate other)
+        public int CompareTo(ICoordinate other)
         {
             if (other == null)
             {
@@ -563,7 +514,7 @@ namespace EM.GIS.Geometries
         public double[] ToDoubleArray(int dimension = 2)
         {
             double[] array = null;
-            if (dimension >= 0&&dimension<MaxPossibleOrdinates)
+            if (dimension >= 0 && dimension < MaxPossibleOrdinates)
             {
                 array = new double[dimension];
                 for (int i = 0; i < MaxPossibleOrdinates; i++)

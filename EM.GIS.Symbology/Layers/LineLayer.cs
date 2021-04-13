@@ -16,11 +16,8 @@ namespace EM.GIS.Symbology
         public new ILineCategoryCollection Categories { get => Items as ILineCategoryCollection; }
         public LineLayer(IFeatureSet featureSet) : base(featureSet)
         {
+            Items = new LineCategoryCollection(this);
             DefaultCategory = new LineCategory();
-            Items = new LineCategoryCollection(this)
-            {
-                DefaultCategory
-            };
         }
 
         protected override void DrawGeometry(MapArgs drawArgs, IFeatureSymbolizer symbolizer, IGeometry geometry)

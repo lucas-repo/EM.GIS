@@ -18,11 +18,8 @@ namespace EM.GIS.Symbology
 
         public PolygonLayer(IFeatureSet featureSet) : base(featureSet)
         {
+            Items = new PolygonCategoryCollection(this);
             DefaultCategory = new PolygonCategory();
-            Items = new PolygonCategoryCollection(this)
-            {
-                DefaultCategory
-            };
         }
         protected override void DrawGeometry(MapArgs drawArgs, IFeatureSymbolizer symbolizer, IGeometry geometry)
         {

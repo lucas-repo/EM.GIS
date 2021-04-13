@@ -16,11 +16,8 @@ namespace EM.GIS.Symbology
         public new IRasterCategoryCollection Categories { get=> Items as IRasterCategoryCollection; }
         public RasterLayer()
         {
+            Items = new RasterCategoryCollection(this);
             DefaultCategory = new RasterCategory();
-            Items = new RasterCategoryCollection(this)
-            {
-                DefaultCategory
-            };
         }
         public RasterLayer(IRasterSet rasterSet):this()
         {

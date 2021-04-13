@@ -14,12 +14,12 @@ namespace EM.GIS.Symbology
     /// </summary>
     public abstract class FeatureLayer : Layer, IFeatureLayer
     {
-        public new IFeatureCategory DefaultCategory 
+        public new IFeatureCategory DefaultCategory
         {
             get => base.DefaultCategory as IFeatureCategory;
-            set => base.DefaultCategory = value; 
+            set => base.DefaultCategory = value;
         }
-        public FeatureLayer(IFeatureSet featureSet):base(featureSet)
+        public FeatureLayer(IFeatureSet featureSet) : base(featureSet)
         {
             Selection = new FeatureSelection(DataSet);
         }
@@ -45,7 +45,7 @@ namespace EM.GIS.Symbology
             int threshold = 65536;
             int totalPointCount = 0;
             int percent;
-            Action drawFeatuesAction = new Action(() =>
+            Action drawFeatuesAction = () =>
             {
                 if (features.Count > 0)
                 {
@@ -61,12 +61,23 @@ namespace EM.GIS.Symbology
                     features.Clear();
                 }
                 totalPointCount = 0;
-            });
+            };
             foreach (var feature in DataSet.GetFeatures())
             {
                 features.Add(feature);
-                int pointCount = feature.Geometry.Coordinates.Count;
-                totalPointCount += pointCount;
+                if (feature.Geometry.Geometries.Count == 0)
+                {
+                    int pointCount = feature.Geometry.Coordinates.Count;
+                    totalPointCount += pointCount;
+                }
+                else
+                {
+                    foreach (var geometry in feature.Geometry.Geometries)
+                    {
+                        int pointCount = geometry.Coordinates.Count;
+                        totalPointCount += pointCount;
+                    }
+                }
                 if (totalPointCount >= threshold)
                 {
                     drawFeatuesAction();

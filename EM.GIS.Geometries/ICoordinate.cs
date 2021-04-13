@@ -5,7 +5,7 @@ namespace EM.GIS.Geometries
     /// <summary>
     /// 坐标接口
     /// </summary>
-    public interface ICoordinate : ICloneable
+    public interface ICoordinate : ICloneable, IComparable, IComparable<ICoordinate>, IEquatable<ICoordinate>
     {
         /// <summary>
         /// 返回指定索引值
