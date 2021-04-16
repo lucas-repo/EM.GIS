@@ -16,12 +16,12 @@ namespace EM.GIS.Symbology
     /// </summary>
     public class Group : Layer, IGroup
     {
-        public ILayerCollection Layers { get => Items as ILayerCollection; }
+        public ILayerCollection Layers { get => LegendItems as ILayerCollection; }
         public int LayerCount => GetLayers().Count();
         public Group()
         {
-            Items = new LayerCollection();
-            Items.CollectionChanged += Items_CollectionChanged;
+            LegendItems = new LayerCollection();
+            LegendItems.CollectionChanged += Items_CollectionChanged;
         }
 
         private void Items_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
@@ -77,7 +77,7 @@ namespace EM.GIS.Symbology
 
         public IEnumerable<ILayer> GetLayers()
         {
-            foreach (ILayer item in Items)
+            foreach (ILayer item in LegendItems)
             {
                 yield return item;
             }
@@ -128,15 +128,15 @@ namespace EM.GIS.Symbology
             }
             if (index.HasValue)
             {
-                if (index.Value < 0 || index.Value > Items.Count)
+                if (index.Value < 0 || index.Value > LegendItems.Count)
                 {
                     return ret;
                 }
-                Items.Insert(index.Value, layer);
+                LegendItems.Insert(index.Value, layer);
             }
             else
             {
-                Items.Add(layer);
+                LegendItems.Add(layer);
             }
             if (layer.ProgressHandler == null && ProgressHandler != null)
             {
@@ -223,17 +223,17 @@ namespace EM.GIS.Symbology
 
         public bool RemoveLayer(ILayer layer)
         {
-            return Items.Remove(layer);
+            return LegendItems.Remove(layer);
         }
 
         public void RemoveLayerAt(int index)
         {
-            Items.RemoveAt(index);
+            LegendItems.RemoveAt(index);
         }
 
         public void ClearLayers()
         {
-            Items.Clear();
+            LegendItems.Clear();
         }
 
         public IEnumerable<IFeatureLayer> GetFeatureLayers()

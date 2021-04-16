@@ -13,10 +13,10 @@ namespace EM.GIS.Symbology
             set => base.DefaultCategory = value;
         }
 
-        public new IRasterCategoryCollection Categories { get=> Items as IRasterCategoryCollection; }
+        public new IRasterCategoryCollection Categories { get=> LegendItems as IRasterCategoryCollection; }
         public RasterLayer()
         {
-            Items = new RasterCategoryCollection(this);
+            LegendItems = new RasterCategoryCollection(this);
             DefaultCategory = new RasterCategory();
         }
         public RasterLayer(IRasterSet rasterSet):this()

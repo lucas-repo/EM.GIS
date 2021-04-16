@@ -127,7 +127,7 @@ namespace EM.GIS.Symbology
             _height = height;
             _viewBound = new Rectangle(0, 0, _width, _height);
             DrawingLayers = new LayerCollection();
-            Items.CollectionChanged += Layers_CollectionChanged;
+            LegendItems.CollectionChanged += Layers_CollectionChanged;
         }
 
         protected void ResetAspectRatio(IExtent newEnv)

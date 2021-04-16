@@ -70,7 +70,7 @@ namespace EM.GIS.Symbology
         }
 
 
-        public ICategoryCollection Categories { get => Items as ICategoryCollection; }
+        public ICategoryCollection Categories { get => LegendItems as ICategoryCollection; }
         public virtual ISelection Selection { get; protected set; }
         public Layer()
         { }

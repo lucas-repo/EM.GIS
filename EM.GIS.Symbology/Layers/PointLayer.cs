@@ -11,10 +11,10 @@ namespace EM.GIS.Symbology
             get => base.DefaultCategory as IPointCategory;
             set => base.DefaultCategory = value;
         }
-        public new IPointCategoryCollection Categories { get => Items as IPointCategoryCollection; }
+        public new IPointCategoryCollection Categories { get => LegendItems as IPointCategoryCollection; }
         public PointLayer(IFeatureSet featureSet) : base(featureSet)
         {
-            Items = new PointCategoryCollection(this);
+            LegendItems = new PointCategoryCollection(this);
             DefaultCategory = new PointCategory();
         }
 

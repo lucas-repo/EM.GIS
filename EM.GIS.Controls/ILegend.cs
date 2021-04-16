@@ -10,6 +10,11 @@ namespace EM.GIS.Controls
         /// <summary>
         /// 元素集合
         /// </summary>
-        ILegendItemCollection Items { get; }
+        ILegendItemCollection LegendItems { get; }
+        /// <summary>
+        /// 添加地图框架
+        /// </summary>
+        /// <param name="mapFrame"></param>
+        void AddMapFrame(IFrame mapFrame);
     }
 }

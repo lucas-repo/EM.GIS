@@ -14,11 +14,11 @@ namespace EM.GIS.Symbology
             set => base.DefaultCategory = value;
         }
 
-        public new IPolygonCategoryCollection Categories { get=> Items as IPolygonCategoryCollection; }
+        public new IPolygonCategoryCollection Categories { get=> LegendItems as IPolygonCategoryCollection; }
 
         public PolygonLayer(IFeatureSet featureSet) : base(featureSet)
         {
-            Items = new PolygonCategoryCollection(this);
+            LegendItems = new PolygonCategoryCollection(this);
             DefaultCategory = new PolygonCategory();
         }
         protected override void DrawGeometry(MapArgs drawArgs, IFeatureSymbolizer symbolizer, IGeometry geometry)

@@ -10,7 +10,7 @@ namespace EM.GIS.Symbology
         public IFeatureLayer FeatureLayer { get; }
         public new ILabelCategory DefaultCategory { get => base.DefaultCategory as ILabelCategory; set => base.DefaultCategory = value; }
 
-        public new ILabelCategoryCollection Categories { get => Items as ILabelCategoryCollection; }
+        public new ILabelCategoryCollection Categories { get => LegendItems as ILabelCategoryCollection; }
         public LabelLayer(IFeatureLayer featureLayer)
         {
             FeatureLayer = featureLayer;

@@ -95,6 +95,7 @@ namespace EM.GIS.Gdals
         {
             _ignoreChangeDataSource = true;
             Filename = filename;
+            Name = Path.GetFileNameWithoutExtension(filename);
             _dataSource = dataSource;
             Layer = layer;
         }
@@ -186,7 +187,7 @@ namespace EM.GIS.Gdals
 
         public override IEnumerable<IFeature> GetFeatures()
         {
-            var feature = Layer.GetNextFeature()?.ToFeature();
+            var feature = Layer.GetNextFeature()?.ToFeature(); 
             while (feature != null)
             {
                 yield return feature;

@@ -33,7 +33,7 @@ namespace EM.GIS.Symbology
         /// <summary>
         /// 子元素集合
         /// </summary>
-        ILegendItemCollection Items { get; }
+        ILegendItemCollection LegendItems { get; }
         /// <summary>
         /// Gets or sets a list of menu items that should appear for this layer.
         /// These are in addition to any that are supported by default.

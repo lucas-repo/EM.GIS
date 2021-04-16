@@ -13,10 +13,10 @@ namespace EM.GIS.Symbology
             get => base.DefaultCategory as ILineCategory;
             set => base.DefaultCategory = value;
         }
-        public new ILineCategoryCollection Categories { get => Items as ILineCategoryCollection; }
+        public new ILineCategoryCollection Categories { get => LegendItems as ILineCategoryCollection; }
         public LineLayer(IFeatureSet featureSet) : base(featureSet)
         {
-            Items = new LineCategoryCollection(this);
+            LegendItems = new LineCategoryCollection(this);
             DefaultCategory = new LineCategory();
         }
 

@@ -32,6 +32,10 @@ namespace EM.GIS.Symbology
             {
                 layer = AddLayer(r, isVisible);
             }
+            if (dataSet != null)
+            {
+                layer.Text = dataSet.Name; 
+            }
             return layer;
         }
 

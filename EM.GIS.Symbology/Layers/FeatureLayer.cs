@@ -27,7 +27,7 @@ namespace EM.GIS.Symbology
         public ILabelLayer LabelLayer { get; set; }
         public new IFeatureSet DataSet { get => base.DataSet as IFeatureSet; set => base.DataSet = value; }
 
-        public new IFeatureCategoryCollection Categories => Items as IFeatureCategoryCollection;
+        public new IFeatureCategoryCollection Categories => LegendItems as IFeatureCategoryCollection;
 
         public new IFeatureSelection Selection
         {
