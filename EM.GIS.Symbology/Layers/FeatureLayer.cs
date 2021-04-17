@@ -35,9 +35,9 @@ namespace EM.GIS.Symbology
             set => base.Selection = value;
         }
 
-        protected override void OnDraw(Graphics graphics, Rectangle rectangle, IExtent extent, bool selected = false, CancellationTokenSource cancellationTokenSource = null)
+        protected override void OnDraw(Graphics graphics, Rectangle rectangle, IExtent extent, bool selected = false, Func<bool> cancelFunc = null)
         {
-            if (selected && Selection.Count == 0)
+            if (selected && Selection.Count == 0 || cancelFunc?.Invoke() == true)
             {
                 return;
             }
@@ -52,11 +52,14 @@ namespace EM.GIS.Symbology
             {
                 if (features.Count > 0)
                 {
-                    percent = (int)(drawnFeatureCount * 100.0 / featureCount);
-                    ProgressHandler?.Progress(percent, "绘制要素中...");
-                    MapArgs drawArgs = new MapArgs(rectangle, extent, graphics);
-                    DrawFeatures(drawArgs, features, selected, ProgressHandler, cancellationTokenSource);
-                    drawnFeatureCount += features.Count;
+                    if (cancelFunc?.Invoke() != true)
+                    {
+                        percent = (int)(drawnFeatureCount * 100.0 / featureCount);
+                        ProgressHandler?.Progress(percent, "绘制要素中...");
+                        MapArgs drawArgs = new MapArgs(rectangle, extent, graphics);
+                        DrawFeatures(drawArgs, features, selected, ProgressHandler, cancelFunc);
+                        drawnFeatureCount += features.Count;
+                    }
                     foreach (var item in features)
                     {
                         item.Dispose();
@@ -68,6 +71,10 @@ namespace EM.GIS.Symbology
             List<IFeature> ignoreFeatures = new List<IFeature>();
             foreach (var feature in DataSet.GetFeatures())
             {
+                if (cancelFunc?.Invoke() == true)
+                {
+                    break;
+                }
                 if (selected)
                 {
                     if (!Selection.Contains(feature))
@@ -135,16 +142,16 @@ namespace EM.GIS.Symbology
         /// <param name="symbolizer"></param>
         /// <param name="geometry"></param>
         protected abstract void DrawGeometry(MapArgs drawArgs, IFeatureSymbolizer symbolizer, IGeometry geometry);
-        private void DrawFeatures(MapArgs drawArgs, List<IFeature> features, bool selected, IProgressHandler progressHandler, CancellationTokenSource cancellationTokenSource)
+        private void DrawFeatures(MapArgs drawArgs, List<IFeature> features, bool selected, IProgressHandler progressHandler, Func<bool> cancelFunc = null)
         {
-            if (drawArgs == null || features == null || cancellationTokenSource?.IsCancellationRequested == true)
+            if (drawArgs == null || features == null || cancelFunc?.Invoke() == true)
             {
                 return;
             }
             var featureCategoryDic = GetFeatureAndCategoryDic(features);
             foreach (var item in featureCategoryDic)
             {
-                if (cancellationTokenSource?.IsCancellationRequested == true)
+                if (cancelFunc?.Invoke() == true)
                 {
                     return;
                 }

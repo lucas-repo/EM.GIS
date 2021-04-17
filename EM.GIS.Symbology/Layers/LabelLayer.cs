@@ -24,7 +24,7 @@ namespace EM.GIS.Symbology
         {
             throw new NotImplementedException();
         }
-        protected override void OnDraw(Graphics graphics, Rectangle rectangle, IExtent extent, bool selected = false, CancellationTokenSource cancellationTokenSource = null)
+        protected override void OnDraw(Graphics graphics, Rectangle rectangle, IExtent extent, bool selected = false, Func<bool> cancelFunc = null)
         {
             throw new NotImplementedException();
         }

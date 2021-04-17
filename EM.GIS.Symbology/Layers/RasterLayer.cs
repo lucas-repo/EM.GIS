@@ -1,5 +1,6 @@
 ﻿using EM.GIS.Data;
 using EM.GIS.Geometries;
+using System;
 using System.Drawing;
 using System.Threading;
 
@@ -36,8 +37,12 @@ namespace EM.GIS.Symbology
 
         public new IRasterSet DataSet { get => base.DataSet as IRasterSet; set => base.DataSet = value; }
 
-        protected override void OnDraw(Graphics graphics, Rectangle rectangle, IExtent extent, bool selected = false, CancellationTokenSource cancellationTokenSource = null)
+        protected override void OnDraw(Graphics graphics, Rectangle rectangle, IExtent extent, bool selected = false, Func<bool> cancelFunc = null)
         {
+            if (selected || cancelFunc?.Invoke() == true)
+            {
+                return;
+            }
             using (var bmp = DataSet.GetBitmap(extent, rectangle))
             {
                 if (bmp != null)

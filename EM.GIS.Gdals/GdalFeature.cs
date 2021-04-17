@@ -19,7 +19,7 @@ namespace EM.GIS.Gdals
             {
                 if (SetProperty(ref _feature, value, true))
                 {
-                    Geometry = _feature?.GetGeometryRef()?.ToGeometry();
+                    _geometry = _feature?.GetGeometryRef()?.ToGeometry();
                 }
             }
         }
@@ -37,7 +37,7 @@ namespace EM.GIS.Gdals
                         int ret = Feature.SetGeometry(geometry.OgrGeometry);
                         if (ret == 0)
                         {
-                            SetProperty(ref _geometry, value, true);
+                            SetProperty(ref _geometry, value);
                         }
                     }
                 }
@@ -123,11 +123,6 @@ namespace EM.GIS.Gdals
                 if (disposing)
                 {
                     // TODO: 释放托管状态(托管对象)
-                    if (_geometry != null)
-                    {
-                        _geometry.Dispose();
-                        _geometry = null;
-                    }
                 }
 
                 // TODO: 释放未托管的资源(未托管的对象)并替代终结器

@@ -20,16 +20,25 @@ namespace EM.GIS.Gdals
         public SpatialReference SpatialReference
         {
             get { return _spatialReference; }
-            set 
+            set
             {
-                SetProperty(ref _spatialReference, value, true);
+                if (SpatialReferenceDisposable)
+                {
+                    SetProperty(ref _spatialReference, value, true);
+                }
+                else
+                {
+                    SetProperty(ref _spatialReference, value);
+                }
             }
         }
-
-
+        /// <summary>
+        /// 空间参考是否可释放
+        /// </summary>
+        public bool SpatialReferenceDisposable { get; set; } = true;
         public GdalProjectionInfo(SpatialReference spatialReference)
         {
-            SpatialReference = spatialReference; 
+            SpatialReference = spatialReference;
         }
         public GdalProjectionInfo(string wkt)
         {
@@ -42,7 +51,7 @@ namespace EM.GIS.Gdals
                 if (disposing)
                 {
                 }
-                if (_spatialReference != null)
+                if (SpatialReferenceDisposable && _spatialReference != null)
                 {
                     _spatialReference.Dispose();
                     _spatialReference = null;
@@ -50,16 +59,16 @@ namespace EM.GIS.Gdals
             }
             base.Dispose(disposing);
         }
-        public override bool IsValid => SpatialReference.Validate()== 0;
+        public override bool IsValid => SpatialReference.Validate() == 0;
         public override void ImportFromWkt(string wkt)
         {
             var destWkt = wkt;
-            var ret= SpatialReference.ImportFromWkt(ref destWkt); 
+            var ret = SpatialReference.ImportFromWkt(ref destWkt);
         }
 
         public override string ExportToWkt()
         {
-            var ret = SpatialReference.ExportToWkt(out string wkt); 
+            var ret = SpatialReference.ExportToWkt(out string wkt);
             return wkt;
         }
 
@@ -263,7 +272,7 @@ namespace EM.GIS.Gdals
                 string name = string.Empty;
                 if (SpatialReference != null)
                 {
-                    if (SpatialReference.IsProjected()==1)
+                    if (SpatialReference.IsProjected() == 1)
                     {
                         name = SpatialReference.GetAttrValue("PROJCS", 0);
                     }

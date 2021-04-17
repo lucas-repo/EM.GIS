@@ -54,7 +54,6 @@ namespace EM.GIS.Symbology
 
         public virtual void DrawLegend(Graphics g, Rectangle rectangle)
         {
-            throw new NotImplementedException();
         }
     }
 }

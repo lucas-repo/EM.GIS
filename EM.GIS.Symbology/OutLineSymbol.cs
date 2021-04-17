@@ -6,11 +6,11 @@ namespace EM.GIS.Symbology
 {
     public abstract class OutLineSymbol : FeatureSymbol, IOutlineSymbol
     {
-        public bool UseOutLine { get; set; } 
+        public bool UseOutLine { get; set; } = true;
         public ILineSymbolizer OutLineSymbolizer { get; set; }
         public OutLineSymbol()
         {
-            OutLineSymbolizer = new LineSymbolizer();
+            OutLineSymbolizer = new LineSymbolizer(Color.Black);
         }
 
         public void CopyOutLine(IOutlineSymbol outlineSymbol)

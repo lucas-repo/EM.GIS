@@ -22,7 +22,7 @@ namespace EM.GIS.Gdals
             get { return _dataSource; }
             private set
             {
-                SetProperty(ref _dataSource,value,true);
+                SetProperty(ref _dataSource, value, true);
             }
         }
         private Layer _layer;
@@ -31,7 +31,7 @@ namespace EM.GIS.Gdals
             get { return _layer; }
             set
             {
-                if (SetProperty(ref _layer, value, true))
+                if (SetProperty(ref _layer, value))
                 {
                     OnLayerChanged();
                 }
@@ -48,7 +48,10 @@ namespace EM.GIS.Gdals
                 featureType = Layer.GetGeomType().ToFeatureType();
                 extent = Layer.GetExtent();
                 SpatialReference spatialReference = Layer.GetSpatialRef();
-                projection = new GdalProjectionInfo(spatialReference);
+                projection = new GdalProjectionInfo(spatialReference)
+                {
+                    SpatialReferenceDisposable = false
+                };
             }
             FeatureType = featureType;
             Extent = extent;
@@ -107,11 +110,6 @@ namespace EM.GIS.Gdals
                 }
                 // TODO: 释放未托管的资源(未托管的对象)并在以下内容中替代终结器。
                 // TODO: 将大型字段设置为 null。
-                if (_layer != null)
-                {
-                    _layer.Dispose();
-                    _layer = null;
-                }
                 if (_dataSource != null)
                 {
                     _dataSource.Dispose();

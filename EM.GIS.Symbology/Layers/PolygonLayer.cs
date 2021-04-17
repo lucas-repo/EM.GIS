@@ -31,9 +31,11 @@ namespace EM.GIS.Symbology
                 return;
             }
             float scaleSize = (float)symbolizer.GetScale(drawArgs);
-            GraphicsPath path = new GraphicsPath();
-            GetPolygons(drawArgs, geometry, path);
-            polygonSymbolizer.DrawPolygon(drawArgs.Device, scaleSize, path);
+            using (GraphicsPath path = new GraphicsPath())
+            {
+                GetPolygons(drawArgs, geometry, path);
+                polygonSymbolizer.DrawPolygon(drawArgs.Device, scaleSize, path);
+            }
         }
         private void DrawGeometry(MapArgs drawArgs, Graphics context, float scaleSize, IPolygonSymbolizer polygonSymbolizer, IGeometry geometry)
         {

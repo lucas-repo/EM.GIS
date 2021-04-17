@@ -3,6 +3,7 @@ using EM.GIS.Geometries;
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Drawing2D;
@@ -18,6 +19,32 @@ namespace EM.GIS.Symbology
     public class Frame : Group, IFrame
     {
         private object _lockObject = new object();
+        private BackgroundWorker _bw;
+        private int _busyCount;
+
+        private bool BwIsBusy
+        {
+            get => _busyCount > 0;
+            set
+            {
+                lock (_lockObject)
+                {
+                    if (value)
+                    {
+                        _busyCount++;
+                    }
+                    else
+                    {
+                        _busyCount--;
+                    }
+                    if (_busyCount < 0)
+                    {
+                        _busyCount = 0;
+                    }
+                }
+            }
+        }
+
         public CancellationTokenSource CancellationTokenSource { get; set; }
         private int _width;
         public int Width => _width;
@@ -126,10 +153,105 @@ namespace EM.GIS.Symbology
             _width = width;
             _height = height;
             _viewBound = new Rectangle(0, 0, _width, _height);
+            _bw = new BackgroundWorker
+            {
+                WorkerSupportsCancellation = true,
+                WorkerReportsProgress = true
+            };
+            _bw.DoWork += BwDoWork;
+            _bw.RunWorkerCompleted += BwRunWorkerCompleted;
+            _bw.ProgressChanged += BwProgressChanged;
+
             DrawingLayers = new LayerCollection();
             LegendItems.CollectionChanged += Layers_CollectionChanged;
         }
+        private void BwProgressChanged(object sender, ProgressChangedEventArgs e)
+        {
+            ProgressHandler?.Progress(e.ProgressPercentage, "绘制中 ...");
+        }
+        private void BwRunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
+        {
+            if (sender is BackgroundWorker bw)
+            {
+                BwIsBusy = false;
+                if (BwIsBusy)
+                {
+                    bw.RunWorkerAsync();
+                    return;
+                }
 
+                ProgressHandler?.Progress( 0, string.Empty);
+            }
+        }
+        private void BwDoWork(object sender, DoWorkEventArgs e)
+        {
+            if (sender is BackgroundWorker worker)
+            {
+                if (worker.CancellationPending)
+                {
+                    e.Cancel = true;
+                }
+                else
+                {
+                    worker.ReportProgress(10);
+                    ResetBuffer(e);
+                }
+            }
+        }
+        private bool CancelDrawing()
+        {
+            bool ret = CancellationTokenSource?.IsCancellationRequested == true || _bw.CancellationPending;
+            return ret;
+        }
+        private void ResetBuffer(DoWorkEventArgs e)
+        {
+            if (ViewExtent == null || ViewExtent.IsEmpty() || Width * Height == 0)
+            {
+                return;
+            }
+            var bwProgress = (Func<int, bool>)(p =>
+            {
+                _bw.ReportProgress(p);
+                if (_bw.CancellationPending)
+                {
+                    e.Cancel = true;
+                    return false;
+                }
+
+                return true;
+            });
+
+            Bitmap tmpBuffer = null;
+            if (Width > 0 && Height > 0)
+            {
+                tmpBuffer = new Bitmap(Width, Height);
+                #region 绘制BackBuffer
+                Rectangle rectangle = Bound;
+                using (Graphics g = Graphics.FromImage(tmpBuffer))
+                {
+                    using (Brush brush = new SolidBrush(BackGround))
+                    {
+                        g.FillRectangle(brush, rectangle);
+                    }
+                    CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
+                    int count = 2;
+                    for (int i = 0; i < count; i++)
+                    {
+                        if (CancellationTokenSource?.IsCancellationRequested == true)
+                        {
+                            break;
+                        }
+                        bool selected = i == 1;
+                        Draw(g, rectangle, ViewExtent, selected, CancelDrawing);
+                    }
+                }
+                #endregion
+            }
+            BackBuffer = tmpBuffer;
+
+            // report progress and check for cancel
+            bwProgress(99);
+        }
         protected void ResetAspectRatio(IExtent newEnv)
         {
             // Aspect Ratio Handling
@@ -194,21 +316,21 @@ namespace EM.GIS.Symbology
             ResetBuffer();
         }
 
-        protected override void OnDraw(Graphics graphics, Rectangle rectangle, IExtent extent, bool selected = false, CancellationTokenSource cancellationTokenSource = null)
+        protected override void OnDraw(Graphics graphics, Rectangle rectangle, IExtent extent, bool selected = false, Func<bool> cancelFunc = null)
         {
-            base.OnDraw(graphics, rectangle, extent, selected, cancellationTokenSource);
+            base.OnDraw(graphics, rectangle, extent, selected, cancelFunc);
             var visibleDrawingFeatureLayers = new List<IFeatureLayer>();
             if (DrawingLayers != null)
             {
                 foreach (ILayer item in DrawingLayers)
                 {
-                    if (CancellationTokenSource?.IsCancellationRequested == true)
+                    if (cancelFunc?.Invoke() == true)
                     {
                         break;
                     }
                     if (item.GetVisible(extent, rectangle))
                     {
-                        item.Draw(graphics, rectangle, extent, selected, cancellationTokenSource);
+                        item.Draw(graphics, rectangle, extent, selected, cancelFunc);
                         if (item is IFeatureLayer featureLayer)
                         {
                             visibleDrawingFeatureLayers.Add(featureLayer);
@@ -225,7 +347,7 @@ namespace EM.GIS.Symbology
                 {
                     break;
                 }
-                layer.Draw(graphics, rectangle, extent, selected, CancellationTokenSource);
+                layer.Draw(graphics, rectangle, extent, selected, cancelFunc);
             }
         }
         public Point ProjToBuffer(Coordinate location)
@@ -246,41 +368,47 @@ namespace EM.GIS.Symbology
 
         public async Task ResetBuffer()
         {
-            if (ViewExtent == null || ViewExtent.IsEmpty() || Width * Height == 0)
-            {
-                return;
-            }
-            await Task.Run(() =>
-            {
-                Bitmap tmpBuffer = null;
-                if (Width > 0 && Height > 0)
-                {
-                    tmpBuffer = new Bitmap(Width, Height);
-                    #region 绘制BackBuffer
-                    Rectangle rectangle = Bound;
-                    using (Graphics g = Graphics.FromImage(tmpBuffer))
-                    {
-                        using (Brush brush = new SolidBrush(BackGround))
-                        {
-                            g.FillRectangle(brush, rectangle);
-                        }
+            BwIsBusy = true;
+            if (!_bw.IsBusy)
+                _bw.RunWorkerAsync();
+            else
+                _bw.CancelAsync();
 
-                        int count = 2;
-                        var visibleLayers = GetLayers().Where(x => x.GetVisible(ViewExtent, rectangle));
-                        for (int i = 0; i < count; i++)
-                        {
-                            if (CancellationTokenSource?.IsCancellationRequested == true)
-                            {
-                                break;
-                            }
-                            bool selected = i == 1;
-                            Draw(g, rectangle, ViewExtent, selected, CancellationTokenSource);
-                        }
-                    }
-                    #endregion
-                }
-                BackBuffer = tmpBuffer;
-            });
+            //if (ViewExtent == null || ViewExtent.IsEmpty() || Width * Height == 0)
+            //{
+            //    return;
+            //}
+            //await Task.Run(() =>
+            //{
+            //    Bitmap tmpBuffer = null;
+            //    if (Width > 0 && Height > 0)
+            //    {
+            //        tmpBuffer = new Bitmap(Width, Height);
+            //        #region 绘制BackBuffer
+            //        Rectangle rectangle = Bound;
+            //        using (Graphics g = Graphics.FromImage(tmpBuffer))
+            //        {
+            //            using (Brush brush = new SolidBrush(BackGround))
+            //            {
+            //                g.FillRectangle(brush, rectangle);
+            //            }
+
+            //            int count = 2;
+            //            var visibleLayers = GetLayers().Where(x => x.GetVisible(ViewExtent, rectangle));
+            //            for (int i = 0; i < count; i++)
+            //            {
+            //                if (CancellationTokenSource?.IsCancellationRequested == true)
+            //                {
+            //                    break;
+            //                }
+            //                bool selected = i == 1;
+            //                Draw(g, rectangle, ViewExtent, selected, CancellationTokenSource);
+            //            }
+            //        }
+            //        #endregion
+            //    }
+            //    BackBuffer = tmpBuffer;
+            //});
         }
         public void Draw(Graphics g, Rectangle rectangle)
         {

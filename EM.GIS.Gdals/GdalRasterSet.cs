@@ -1,15 +1,10 @@
 ﻿using EM.GIS.Data;
 using EM.GIS.Geometries;
-using EM.GIS.Projection;
 using OSGeo.GDAL;
-using OSGeo.OGR;
-using OSGeo.OSR;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Drawing2D;
-using System.Drawing.Imaging;
 using System.IO;
 using System.Runtime.InteropServices;
 

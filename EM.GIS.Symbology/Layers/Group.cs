@@ -56,12 +56,12 @@ namespace EM.GIS.Symbology
             Extent = extent;
         }
 
-        protected override void OnDraw(Graphics graphics, Rectangle rectangle, IExtent extent, bool selected = false, CancellationTokenSource cancellationTokenSource = null)
+        protected override void OnDraw(Graphics graphics, Rectangle rectangle, IExtent extent, bool selected = false, Func<bool> cancelFunc = null)
         {
             var visibleLayers = GetLayers().Where(x => x.GetVisible(extent, rectangle));
             foreach (var layer in visibleLayers)
             {
-                layer?.Draw(graphics, rectangle, extent, selected, cancellationTokenSource);
+                layer?.Draw(graphics, rectangle, extent, selected, cancelFunc);
             }
         }
 

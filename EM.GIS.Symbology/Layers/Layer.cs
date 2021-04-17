@@ -87,16 +87,16 @@ namespace EM.GIS.Symbology
             xRes = worldWidth / pixelWidth;
             yRes = worldHeight / pixelHeight;
         }
-        public void Draw(Graphics graphics, Rectangle rectangle, IExtent extent, bool selected = false, CancellationTokenSource cancellationTokenSource = null)
+        public void Draw(Graphics graphics, Rectangle rectangle, IExtent extent, bool selected = false, Func<bool> cancelFunc = null)
         {
-            if (graphics == null || rectangle.Width * rectangle.Height == 0 || extent == null || extent.Width * extent.Height == 0 || cancellationTokenSource?.IsCancellationRequested == true)
+            if (graphics == null || rectangle.Width * rectangle.Height == 0 || extent == null || extent.Width * extent.Height == 0 || cancelFunc?.Invoke() == true)
             {
                 return;
             }
-            OnDraw(graphics, rectangle, extent, selected, cancellationTokenSource);
+            OnDraw(graphics, rectangle, extent, selected, cancelFunc);
             ProgressHandler?.Progress(0);
         }
-        protected abstract void OnDraw(Graphics graphics, Rectangle rectangle, IExtent extent, bool selected = false, CancellationTokenSource cancellationTokenSource = null);
+        protected abstract void OnDraw(Graphics graphics, Rectangle rectangle, IExtent extent, bool selected = false, Func<bool> cancelFunc = null);
         public bool GetVisible(IExtent extent, Rectangle rectangle)
         {
             bool visible = false;

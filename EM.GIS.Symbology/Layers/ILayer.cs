@@ -49,7 +49,7 @@ namespace EM.GIS.Symbology
         /// <param name="rectangle"></param>
         /// <param name="extent"></param>
         /// <param name="selected"></param>
-        /// <param name="cancellationTokenSource"></param>
-        void Draw(Graphics graphics,Rectangle rectangle, IExtent extent, bool selected=false,  CancellationTokenSource cancellationTokenSource = null);
+        /// <param name="cancelFunc"></param>
+        void Draw(Graphics graphics,Rectangle rectangle, IExtent extent, bool selected=false,  Func<bool> cancelFunc = null);
     }
 }
