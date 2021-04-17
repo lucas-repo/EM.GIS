@@ -36,15 +36,6 @@ namespace EM.GIS.Symbology
 
         public new IRasterSet DataSet { get => base.DataSet as IRasterSet; set => base.DataSet = value; }
 
-        protected override void Dispose(bool disposing)
-        {
-            if (disposing)
-            {
-                DataSet?.Dispose();
-                DataSet = null;
-            }
-            base.Dispose(disposing);
-        }
         protected override void OnDraw(Graphics graphics, Rectangle rectangle, IExtent extent, bool selected = false, CancellationTokenSource cancellationTokenSource = null)
         {
             using (var bmp = DataSet.GetBitmap(extent, rectangle))

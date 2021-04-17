@@ -6,23 +6,40 @@ using System.Collections.Generic;
 
 namespace EM.GIS.Gdals
 {
-    internal class GdalFeature : IFeature
+    internal class GdalFeature : NotifyClass, IFeature
     {
         private bool disposedValue;
 
-        public Feature Feature { get; set; }
-        public IGeometry Geometry
+        private Feature _feature;
+
+        public Feature Feature
         {
-            get
-            {
-                IGeometry geometry = Feature?.GetGeometryRef().ToGeometry();
-                return geometry;
-            }
+            get { return _feature; }
             set
             {
-                if (Feature != null && value is Geometry geometry)
+                if (SetProperty(ref _feature, value, true))
                 {
-                    Feature.SetGeometry(geometry.OgrGeometry);
+                    Geometry = _feature?.GetGeometryRef()?.ToGeometry();
+                }
+            }
+        }
+        private IGeometry _geometry;
+
+        public IGeometry Geometry
+        {
+            get { return _geometry; }
+            set
+            {
+                if (_geometry != value)
+                {
+                    if (Feature != null && value is Geometry geometry)
+                    {
+                        int ret = Feature.SetGeometry(geometry.OgrGeometry);
+                        if (ret == 0)
+                        {
+                            SetProperty(ref _geometry, value, true);
+                        }
+                    }
                 }
             }
         }
@@ -105,16 +122,21 @@ namespace EM.GIS.Gdals
             {
                 if (disposing)
                 {
-                    if (Feature != null)
-                    {
-                        Feature.Dispose();
-                        Feature = null;
-                    }
                     // TODO: 释放托管状态(托管对象)
+                    if (_geometry != null)
+                    {
+                        _geometry.Dispose();
+                        _geometry = null;
+                    }
                 }
 
                 // TODO: 释放未托管的资源(未托管的对象)并替代终结器
                 // TODO: 将大型字段设置为 null
+                if (_feature != null)
+                {
+                    _feature.Dispose();
+                    _feature = null;
+                }
                 disposedValue = true;
             }
         }

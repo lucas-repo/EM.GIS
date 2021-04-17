@@ -9,6 +9,9 @@ namespace EM.GIS.Projection
     /// </summary>
     public abstract class ProjectionInfo : BaseCopy,IDisposable
     {
+        /// <summary>
+        /// 是否已释放
+        /// </summary>
         public bool IsDisposed { get; private set; }
         
         /// <summary>

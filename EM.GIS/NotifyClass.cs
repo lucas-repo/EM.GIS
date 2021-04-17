@@ -17,17 +17,43 @@ namespace EM.GIS
         /// <summary>
         /// 设置值并调用属性改变通知
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="t"></param>
-        /// <param name="value"></param>
-        /// <param name="propertyName"></param>
-        public void SetProperty<T>(ref T t, T value, string propertyName)
+        /// <typeparam name="T">泛型</typeparam>
+        /// <param name="t">字段</param>
+        /// <param name="value">值</param>
+        /// <param name="propertyName">属性名</param>
+        /// <param name="autoDisposeOldValue">是否自动释放</param>
+        /// <returns>成功返回true，反之false</returns>
+        public bool SetProperty<T>(ref T t, T value, string propertyName, bool autoDisposeOldValue = false)
         {
-            if (!Equals(t, value))
+            bool ret = SetProperty(ref t, value, autoDisposeOldValue);
+            if (ret)
             {
-                t = value;
                 OnPropertyChanged(propertyName);
             }
+            return ret;
+        }
+        /// <summary>
+        /// 设置属性
+        /// </summary>
+        /// <typeparam name="T">类型</typeparam>
+        /// <param name="t">字段</param>
+        /// <param name="value">值</param>
+        /// <param name="autoDisposeOldValue">是否自动释放</param>
+        /// <returns>成功返回true，反之false</returns>
+        public bool SetProperty<T>(ref T t, T value, bool autoDisposeOldValue = false)
+        {
+            bool ret = false;
+            if (!Equals(t, value))
+            {
+                var old = t;
+                t = value;
+                if (autoDisposeOldValue && old is IDisposable disposable)
+                {
+                    disposable.Dispose();
+                }
+                ret = true;
+            }
+            return ret;
         }
         private Type _type;
         private Type Type
@@ -53,61 +79,6 @@ namespace EM.GIS
         public virtual void OnPropertyChanged(string propertyName)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        }
-        /// <summary>
-        /// 设置字段
-        /// </summary>
-        /// <typeparam name="T">值的类型</typeparam>
-        /// <param name="fieldName">字段名称</param>
-        /// <param name="value">值</param>
-        /// <returns></returns>
-        protected bool SetField<T>(string fieldName, T value)
-        {
-            bool ret = false;
-            if (string.IsNullOrEmpty(fieldName))
-            {
-                return ret;
-            }
-            var field = Type.GetField(fieldName, System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
-            if (field != null)
-            {
-                var oldValue = field.GetValue(this);
-                if (!Equals(oldValue, value))
-                {
-                    try
-                    {
-                        field.SetValue(this, value);
-                        ret = true;
-                    }
-                    catch (Exception e)
-                    {
-                        Debug.WriteLine(e);
-                    }
-                }
-            }
-            return ret;
-        }
-        /// <summary>
-        /// 设置属性
-        /// </summary>
-        /// <typeparam name="T">值的类型</typeparam>
-        /// <param name="fieldName">字段名称</param>
-        /// <param name="propertyName">属性名称</param>
-        /// <param name="value">值</param>
-        /// <returns></returns>
-        protected bool SetProperty<T>(string fieldName, string propertyName, T value)
-        {
-            bool ret = false;
-            if (string.IsNullOrEmpty(fieldName) || string.IsNullOrEmpty(propertyName))
-            {
-                return ret;
-            }
-            if (SetField(fieldName, value))
-            {
-                OnPropertyChanged(propertyName);
-                ret = true;
-            }
-            return ret;
         }
     }
 }

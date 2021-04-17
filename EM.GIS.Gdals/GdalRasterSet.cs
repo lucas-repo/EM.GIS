@@ -32,12 +32,10 @@ namespace EM.GIS.Gdals
             get { return _dataset; }
             private set
             {
-                if (_dataset != null)
+                if (SetProperty(ref _dataset, value, true))
                 {
-                    _dataset.Dispose();
+                    OnDatasetChanged();
                 }
-                _dataset = value;
-                OnDatasetChanged();
             }
         }
         private void OnDatasetChanged()
@@ -767,26 +765,23 @@ namespace EM.GIS.Gdals
                 if (disposing)
                 {
                     // 释放托管状态(托管对象)。
-                    if (_band != null)
-                    {
-                        _band.Dispose();
-                    }
-                    else
+                    if (Bands.Count > 0)
                     {
                         foreach (IRasterSet raster in Bands)
                         {
                             raster.Dispose();
                         }
-                    }
-
-                    if (_dataset != null)
-                    {
-                        _dataset.FlushCache();
-                        _dataset.Dispose();
+                        Bands.Clear();
                     }
                 }
                 // 释放未托管的资源(未托管的对象)并在以下内容中替代终结器。
                 // 将大型字段设置为 null。
+                if (_band != null)
+                {
+                    _dataset.FlushCache();
+                    _band.Dispose();
+                    _band = null;
+                }
             }
             base.Dispose(disposing);
         }

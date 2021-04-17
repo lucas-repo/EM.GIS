@@ -22,21 +22,19 @@ namespace EM.GIS.Gdals
             get { return _dataSource; }
             private set
             {
-                if (_dataSource != null)
-                {
-                    _dataSource.Dispose();
-                }
-                _dataSource = value;
+                SetProperty(ref _dataSource,value,true);
             }
         }
         private Layer _layer;
         public Layer Layer
         {
             get { return _layer; }
-            set 
-            { 
-                _layer = value;
-                OnLayerChanged();
+            set
+            {
+                if (SetProperty(ref _layer, value, true))
+                {
+                    OnLayerChanged();
+                }
             }
         }
 
@@ -72,7 +70,7 @@ namespace EM.GIS.Gdals
                         try
                         {
                             DataSource = Ogr.Open(value, 0);
-                            Layer = DataSource.GetLayerByIndex(0); 
+                            Layer = DataSource.GetLayerByIndex(0);
                         }
                         catch (Exception e)
                         {
@@ -86,12 +84,12 @@ namespace EM.GIS.Gdals
                 }
             }
         }
-      
+
         public override long FeatureCount => Layer.GetFeatureCount(1);
 
         public override int FieldCount => FeatureDefn.GetFieldCount();
 
-        public GdalFeatureSet(string filename, DataSource dataSource,Layer layer)
+        public GdalFeatureSet(string filename, DataSource dataSource, Layer layer)
         {
             _ignoreChangeDataSource = true;
             Filename = filename;
@@ -105,11 +103,19 @@ namespace EM.GIS.Gdals
             {
                 if (disposing)
                 {
-                    if (DataSource != null)
-                    {
-                        DataSource.Dispose();
-                        DataSource = null;
-                    }
+                    // TODO: 释放托管状态(托管对象)。
+                }
+                // TODO: 释放未托管的资源(未托管的对象)并在以下内容中替代终结器。
+                // TODO: 将大型字段设置为 null。
+                if (_layer != null)
+                {
+                    _layer.Dispose();
+                    _layer = null;
+                }
+                if (_dataSource != null)
+                {
+                    _dataSource.Dispose();
+                    _dataSource = null;
                 }
             }
             base.Dispose(disposing);
@@ -187,7 +193,7 @@ namespace EM.GIS.Gdals
 
         public override IEnumerable<IFeature> GetFeatures()
         {
-            var feature = Layer.GetNextFeature()?.ToFeature(); 
+            var feature = Layer.GetNextFeature()?.ToFeature();
             while (feature != null)
             {
                 yield return feature;

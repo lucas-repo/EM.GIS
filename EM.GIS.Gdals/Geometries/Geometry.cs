@@ -15,16 +15,17 @@ namespace EM.GIS.Gdals
         private bool _ignoreGeoChanged;
         private bool _ignoreCoordChanged;
         private OSGeo.OGR.Geometry _ogrGeometry;
+        private bool disposedValue;
 
         public OSGeo.OGR.Geometry OgrGeometry
         {
             get { return _ogrGeometry; }
             protected set
             {
-                var oldGeo = _ogrGeometry;
-                _ogrGeometry = value;
-                oldGeo?.Dispose();
-                OnOgrGeometryChanged();
+                if (SetProperty(ref _ogrGeometry, value, true))
+                {
+                    OnOgrGeometryChanged();
+                }
             }
         }
 
@@ -40,7 +41,7 @@ namespace EM.GIS.Gdals
                 if (geometryCount == 0)
                 {
                     var pointCount = OgrGeometry.GetPointCount();
-                     var dimension = OgrGeometry.GetCoordinateDimension(); 
+                    var dimension = OgrGeometry.GetCoordinateDimension();
                     for (int i = 0; i < pointCount; i++)
                     {
                         double[] argout = new double[dimension];
@@ -70,7 +71,7 @@ namespace EM.GIS.Gdals
             {
                 OSGeo.OGR.Envelope envelope = new OSGeo.OGR.Envelope();
                 OgrGeometry.GetEnvelope(envelope);
-                extent= envelope.ToExtent();
+                extent = envelope.ToExtent();
             }
             return extent;
         }
@@ -244,12 +245,38 @@ namespace EM.GIS.Gdals
             return hashCode;
         }
 
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                if (disposing)
+                {
+                    // TODO: 释放托管状态(托管对象)
+                }
+
+                // TODO: 释放未托管的资源(未托管的对象)并替代终结器
+                // TODO: 将大型字段设置为 null
+                if (_ogrGeometry != null)
+                {
+                    _ogrGeometry.Dispose();
+                    _ogrGeometry = null;
+                }
+                disposedValue = true;
+            }
+        }
+
+        // // TODO: 仅当“Dispose(bool disposing)”拥有用于释放未托管资源的代码时才替代终结器
+        // ~Geometry()
+        // {
+        //     // 不要更改此代码。请将清理代码放入“Dispose(bool disposing)”方法中
+        //     Dispose(disposing: false);
+        // }
+
         public void Dispose()
         {
-            if (OgrGeometry != null)
-            {
-                OgrGeometry = null;
-            }
+            // 不要更改此代码。请将清理代码放入“Dispose(bool disposing)”方法中
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
         }
     }
 }

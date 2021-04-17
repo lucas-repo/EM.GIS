@@ -54,8 +54,10 @@ namespace EM.GIS.Symbology
             get { return _dataSet; }
             set
             {
-                _dataSet = value;
-                OnDataSetChanged();
+                if (SetProperty(ref _dataSet, value))
+                {
+                    OnDataSetChanged();
+                }
             }
         }
 
@@ -112,20 +114,28 @@ namespace EM.GIS.Symbology
         }
 
         #region IDisposable Support
-        private bool disposedValue = false; // 要检测冗余调用
+        /// <summary>
+        /// 是否已释放
+        /// </summary>
+        public bool IsDisposed { get; private set; }
 
         protected virtual void Dispose(bool disposing)
         {
-            if (!disposedValue)
+            if (!IsDisposed)
             {
                 if (disposing)
                 {
                     // TODO: 释放托管状态(托管对象)。
+                    if (_dataSet != null)
+                    {
+                        _dataSet.Dispose();
+                        _dataSet = null;
+                    }
                 }
                 // TODO: 释放未托管的资源(未托管的对象)并在以下内容中替代终结器。
                 // TODO: 将大型字段设置为 null。
 
-                disposedValue = true;
+                IsDisposed = true;
             }
         }
 

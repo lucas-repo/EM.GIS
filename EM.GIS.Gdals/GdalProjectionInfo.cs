@@ -22,11 +22,7 @@ namespace EM.GIS.Gdals
             get { return _spatialReference; }
             set 
             {
-                if (_spatialReference != null)
-                {
-                    _spatialReference.Dispose();
-                }
-                _spatialReference = value; 
+                SetProperty(ref _spatialReference, value, true);
             }
         }
 
@@ -45,10 +41,11 @@ namespace EM.GIS.Gdals
             {
                 if (disposing)
                 {
-                    if (SpatialReference != null)
-                    {
-                        SpatialReference.Dispose();
-                    }
+                }
+                if (_spatialReference != null)
+                {
+                    _spatialReference.Dispose();
+                    _spatialReference = null;
                 }
             }
             base.Dispose(disposing);

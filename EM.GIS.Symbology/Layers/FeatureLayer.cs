@@ -41,10 +41,7 @@ namespace EM.GIS.Symbology
             {
                 return;
             }
-            using (var polygon = extent.ToPolygon())
-            { 
-                DataSet.SetSpatialFilter(polygon);
-            }
+            DataSet.SetSpatialExtentFilter(extent);
             var features = new List<IFeature>();
             long featureCount = DataSet.FeatureCount;
             long drawnFeatureCount = 0;
@@ -55,23 +52,27 @@ namespace EM.GIS.Symbology
             {
                 if (features.Count > 0)
                 {
-                    percent = (int)(drawnFeatureCount * 100 / featureCount);
+                    percent = (int)(drawnFeatureCount * 100.0 / featureCount);
                     ProgressHandler?.Progress(percent, "绘制要素中...");
                     MapArgs drawArgs = new MapArgs(rectangle, extent, graphics);
                     DrawFeatures(drawArgs, features, selected, ProgressHandler, cancellationTokenSource);
                     drawnFeatureCount += features.Count;
+                    foreach (var item in features)
+                    {
+                        item.Dispose();
+                    }
                     features.Clear();
                 }
                 totalPointCount = 0;
             };
-            List<IFeature> readedFeatures = new List<IFeature>();
+            List<IFeature> ignoreFeatures = new List<IFeature>();
             foreach (var feature in DataSet.GetFeatures())
             {
-                readedFeatures.Add(feature);
                 if (selected)
                 {
                     if (!Selection.Contains(feature))
                     {
+                        ignoreFeatures.Add(feature);
                         continue;
                     }
                 }
@@ -98,7 +99,7 @@ namespace EM.GIS.Symbology
             {
                 drawFeatuesAction();
             }
-            foreach (var item in readedFeatures)
+            foreach (var item in ignoreFeatures)
             {
                 item.Dispose();
             }
