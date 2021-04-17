@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Drawing;
 
 namespace EM.GIS.Symbology
@@ -8,7 +9,7 @@ namespace EM.GIS.Symbology
     /// <summary>
     /// 图例元素接口
     /// </summary>
-    public interface ILegendItem : IChangeItem, IParentItem<ILegendItem>,ICloneable
+    public interface ILegendItem : IChangeItem, IParentItem<ILegendItem>,ICloneable, INotifyPropertyChanged
     {
         /// <summary>
         /// 是否展开

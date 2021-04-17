@@ -21,7 +21,9 @@ namespace EM.GIS.Gdals
             get { return _ogrGeometry; }
             protected set
             {
+                var oldGeo = _ogrGeometry;
                 _ogrGeometry = value;
+                oldGeo?.Dispose();
                 OnOgrGeometryChanged();
             }
         }
@@ -242,5 +244,12 @@ namespace EM.GIS.Gdals
             return hashCode;
         }
 
+        public void Dispose()
+        {
+            if (OgrGeometry != null)
+            {
+                OgrGeometry = null;
+            }
+        }
     }
 }

@@ -37,8 +37,10 @@ namespace EM.GIS.Symbology
 
         protected override void OnDraw(Graphics graphics, Rectangle rectangle, IExtent extent, bool selected = false, CancellationTokenSource cancellationTokenSource = null)
         {
-            var polygon = extent.ToPolygon();
-            DataSet.SetSpatialFilter(polygon);
+            using (var polygon = extent.ToPolygon())
+            { 
+                DataSet.SetSpatialFilter(polygon);
+            }
             var features = new List<IFeature>();
             long featureCount = DataSet.FeatureCount;
             long drawnFeatureCount = 0;

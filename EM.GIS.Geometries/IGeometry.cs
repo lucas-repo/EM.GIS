@@ -8,7 +8,7 @@ namespace EM.GIS.Geometries
     /// <summary>
     /// 几何接口
     /// </summary>
-    public interface IGeometry : ICloneable
+    public interface IGeometry : ICloneable, IDisposable
     {
         /// <summary>
         /// 几何类型
