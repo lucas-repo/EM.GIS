@@ -19,7 +19,10 @@ namespace EM.GIS.Symbology
         public PolygonLayer(IFeatureSet featureSet) : base(featureSet)
         {
             LegendItems = new PolygonCategoryCollection(this);
-            DefaultCategory = new PolygonCategory();
+            DefaultCategory = new PolygonCategory()
+            {
+                Text = "默认"
+            };
         }
         protected override void DrawGeometry(MapArgs drawArgs, IFeatureSymbolizer symbolizer, IGeometry geometry)
         {

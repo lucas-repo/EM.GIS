@@ -17,7 +17,10 @@ namespace EM.GIS.Symbology
         public LineLayer(IFeatureSet featureSet) : base(featureSet)
         {
             LegendItems = new LineCategoryCollection(this);
-            DefaultCategory = new LineCategory();
+            DefaultCategory = new LineCategory()
+            {
+                Text = "默认"
+            };
         }
 
         protected override void DrawGeometry(MapArgs drawArgs, IFeatureSymbolizer symbolizer, IGeometry geometry)

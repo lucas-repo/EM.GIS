@@ -42,7 +42,7 @@ namespace EM.GIS.Symbology
         public  object Tag { get; set; }
         public virtual void ApplyMinMax(EditorSettings settings)
         {
-            Text = Range.ToString(settings.IntervalSnapMethod, settings.IntervalRoundingDigits);
+            Text = Range?.ToString(settings.IntervalSnapMethod, settings.IntervalRoundingDigits);
         }
         public void ApplySnapping(IntervalSnapMethod method, int numDigits, List<double> values)
         {
@@ -93,11 +93,11 @@ namespace EM.GIS.Symbology
         }
         public virtual string ToString(IntervalSnapMethod method, int digits)
         {
-            return Range.ToString(method, digits);
+            return Range?.ToString(method, digits);
         }
         public override string ToString()
         {
-            return Range.ToString();
+            return Range?.ToString();
         }
     }
 }

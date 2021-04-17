@@ -16,10 +16,25 @@ namespace EM.GIS.Symbology
         public event EventHandler ItemChanged;
         public event EventHandler RemoveItem;
 
-        public bool IsVisible { get; set; }
-        public bool IsExpanded { get; set; }
-        public bool IsSelected { get; set; }
-
+        private bool _isVisible;
+        public bool IsVisible
+        {
+            get { return _isVisible; }
+            set { SetProperty(ref _isVisible, value, nameof(IsVisible)); }
+        }
+        private bool _isExpanded;
+        public bool IsExpanded
+        {
+            get { return _isExpanded; }
+            set { SetProperty(ref _isExpanded, value, nameof(IsExpanded)); }
+        }
+        private bool _isSelected;
+        public bool IsSelected
+        {
+            get { return _isSelected; }
+            set { SetProperty(ref _isSelected, value, nameof(IsSelected)); }
+        }
+        
         public string Text { get; set; }
         public ILegendItem Parent { get; set; }
 

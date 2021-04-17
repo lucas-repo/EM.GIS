@@ -17,11 +17,21 @@ namespace EM.GIS.Symbology
         public RasterLayer()
         {
             LegendItems = new RasterCategoryCollection(this);
-            DefaultCategory = new RasterCategory();
         }
         public RasterLayer(IRasterSet rasterSet):this()
         {
             DataSet = rasterSet;
+            if (DataSet?.Bands.Count > 0)
+            {
+                foreach (var item in DataSet.Bands)
+                {
+                    IRasterCategory rasterCategory = new RasterCategory()
+                    {
+                        Text = item.Name
+                    };
+                    LegendItems.Add(rasterCategory);
+                }
+            }
         }
 
         public new IRasterSet DataSet { get => base.DataSet as IRasterSet; set => base.DataSet = value; }

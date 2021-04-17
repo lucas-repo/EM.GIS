@@ -15,7 +15,10 @@ namespace EM.GIS.Symbology
         public PointLayer(IFeatureSet featureSet) : base(featureSet)
         {
             LegendItems = new PointCategoryCollection(this);
-            DefaultCategory = new PointCategory();
+            DefaultCategory = new PointCategory()
+            {
+                Text="默认"
+            };
         }
 
         protected override void DrawGeometry(MapArgs drawArgs, IFeatureSymbolizer symbolizer, IGeometry geometry)

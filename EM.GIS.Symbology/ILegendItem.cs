@@ -35,14 +35,18 @@ namespace EM.GIS.Symbology
         /// </summary>
         ILegendItemCollection LegendItems { get; }
         /// <summary>
-        /// Gets or sets a list of menu items that should appear for this layer.
-        /// These are in addition to any that are supported by default.
-        /// Handlers should be added to this list before it is retrieved.
+        /// 右键菜单项
         /// </summary>
         List<SymbologyMenuItem> ContextMenuItems { get; set; }
-
+        /// <summary>
+        /// 图例类型
+        /// </summary>
         LegendMode LegendSymbolMode { get; set; }
-
-        void DrawLegend(Graphics context, Rectangle rectangle);
+        /// <summary>
+        /// 绘制图例
+        /// </summary>
+        /// <param name="graphics">画布</param>
+        /// <param name="rectangle">矩形</param>
+        void DrawLegend(Graphics graphics, Rectangle rectangle);
     }
 }
