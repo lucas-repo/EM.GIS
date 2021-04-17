@@ -37,6 +37,10 @@ namespace EM.GIS.Symbology
 
         protected override void OnDraw(Graphics graphics, Rectangle rectangle, IExtent extent, bool selected = false, CancellationTokenSource cancellationTokenSource = null)
         {
+            if (selected && Selection.Count == 0)
+            {
+                return;
+            }
             using (var polygon = extent.ToPolygon())
             { 
                 DataSet.SetSpatialFilter(polygon);
@@ -56,16 +60,21 @@ namespace EM.GIS.Symbology
                     MapArgs drawArgs = new MapArgs(rectangle, extent, graphics);
                     DrawFeatures(drawArgs, features, selected, ProgressHandler, cancellationTokenSource);
                     drawnFeatureCount += features.Count;
-                    foreach (var item in features)
-                    {
-                        item.Dispose();
-                    }
                     features.Clear();
                 }
                 totalPointCount = 0;
             };
+            List<IFeature> readedFeatures = new List<IFeature>();
             foreach (var feature in DataSet.GetFeatures())
             {
+                readedFeatures.Add(feature);
+                if (selected)
+                {
+                    if (!Selection.Contains(feature))
+                    {
+                        continue;
+                    }
+                }
                 features.Add(feature);
                 if (feature.Geometry.Geometries.Count == 0)
                 {
@@ -88,6 +97,10 @@ namespace EM.GIS.Symbology
             if (totalPointCount > 0)
             {
                 drawFeatuesAction();
+            }
+            foreach (var item in readedFeatures)
+            {
+                item.Dispose();
             }
             DataSet.SetSpatialFilter(null);
             ProgressHandler?.Progress(100, "绘制要素中...");

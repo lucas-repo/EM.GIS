@@ -87,7 +87,7 @@ namespace EM.GIS.Gdals
             }
         }
       
-        public override int FeatureCount => (int)Layer.GetFeatureCount(1);
+        public override long FeatureCount => Layer.GetFeatureCount(1);
 
         public override int FieldCount => FeatureDefn.GetFieldCount();
 

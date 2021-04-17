@@ -1,9 +1,8 @@
 ﻿using EM.GIS.Data;
 using EM.GIS.Geometries;
-using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Collections.Specialized;
+using System.Linq;
 
 namespace EM.GIS.Symbology
 {
@@ -67,7 +66,12 @@ namespace EM.GIS.Symbology
 
         public bool Contains(IFeature item)
         {
-            return Features.Contains(item);
+            bool ret = Features.Contains(item);
+            if (!ret && item != null)
+            {
+                ret = Features.Any(x => x.FId == item.FId);
+            }
+            return ret;
         }
 
         public void CopyTo(IFeature[] array, int arrayIndex)

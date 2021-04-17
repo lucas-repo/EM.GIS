@@ -11,7 +11,7 @@ namespace EM.GIS.Data
     public abstract class FeatureSet : DataSet, IFeatureSet
     {
         public FeatureType FeatureType { get; protected set; }
-        public abstract int FeatureCount { get; }
+        public abstract long FeatureCount { get; }
         public abstract int FieldCount { get; }
 
         public abstract IFeature AddFeature(IGeometry geometry);

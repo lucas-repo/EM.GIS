@@ -11,7 +11,7 @@ namespace EM.GIS.Data
         /// <summary>
         /// 要素个数
         /// </summary>
-        int FeatureCount { get; }
+        long FeatureCount { get; }
         /// <summary>
         /// 要素类型
         /// </summary>
