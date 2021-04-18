@@ -3,6 +3,7 @@ using EM.GIS.Geometries;
 using System;
 using System.Drawing;
 using System.Drawing.Drawing2D;
+using System.Linq;
 
 namespace EM.GIS.Symbology
 {
@@ -87,7 +88,13 @@ namespace EM.GIS.Symbology
                         PointF point = drawArgs.CoordinateToPointF(coord);
                         points[j] = point;
                     }
-                    path.AddLines(points);
+                    //去重
+                    var intPoints = DuplicationPreventer.Clean(points).ToArray();
+                    if (intPoints.Length >= 2)
+                    {
+                        path.AddLines(intPoints);
+                    }
+
                     break;
                 default:
                     throw new Exception("不支持的几何类型");
