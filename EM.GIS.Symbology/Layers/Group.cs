@@ -58,10 +58,12 @@ namespace EM.GIS.Symbology
 
         protected override void OnDraw(Graphics graphics, Rectangle rectangle, IExtent extent, bool selected = false, Func<bool> cancelFunc = null)
         {
-            var visibleLayers = GetLayers().Where(x => x.GetVisible(extent, rectangle));
-            foreach (var layer in visibleLayers)
+            for (int i = LegendItems.Count - 1; i >= 0; i--)
             {
-                layer?.Draw(graphics, rectangle, extent, selected, cancelFunc);
+                if (LegendItems[i] is ILayer layer && layer.GetVisible(extent, rectangle))
+                {
+                    layer.Draw(graphics, rectangle, extent, selected, cancelFunc);
+                }
             }
         }
 

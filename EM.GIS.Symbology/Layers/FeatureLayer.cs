@@ -55,7 +55,7 @@ namespace EM.GIS.Symbology
                     if (cancelFunc?.Invoke() != true)
                     {
                         percent = (int)(drawnFeatureCount * 100.0 / featureCount);
-                        ProgressHandler?.Progress(percent, "绘制要素中...");
+                        ProgressHandler?.Progress(percent, ProgressMessage);
                         MapArgs drawArgs = new MapArgs(rectangle, extent, graphics);
                         DrawFeatures(drawArgs, features, selected, ProgressHandler, cancelFunc);
                         drawnFeatureCount += features.Count;
@@ -116,20 +116,20 @@ namespace EM.GIS.Symbology
         private Dictionary<IFeature, IFeatureCategory> GetFeatureAndCategoryDic(List<IFeature> features)
         {
             Dictionary<IFeature, IFeatureCategory> featureCategoryDic = new Dictionary<IFeature, IFeatureCategory>();
-            foreach (var feature in features)
-            {
-                featureCategoryDic[feature] = DefaultCategory;
-            }
             using (DataTable dataTable = GetAttribute(features))
             {
-                foreach (IFeatureCategory featureCategory in Categories)
+                for (int i = 0; i < dataTable.Rows.Count; i++)
                 {
-                    DataRow[] rows = dataTable.Select(featureCategory.FilterExpression);
-                    foreach (var row in rows)
+                    DataRow row = dataTable.Rows[i];
+                    IFeature feature = features[i];
+                    for (int j = Categories.Count - 1; j >= 0; j--)
                     {
-                        int index = dataTable.Rows.IndexOf(row);
-                        IFeature feature = features[index];
-                        featureCategoryDic[feature] = featureCategory;
+                        IFeatureCategory featureCategory = Categories[j];
+                        DataRow[] rows = dataTable.Select(featureCategory.FilterExpression);
+                        if (rows.Contains(row))
+                        {
+                            featureCategoryDic[feature] = featureCategory;
+                        }
                     }
                 }
             }

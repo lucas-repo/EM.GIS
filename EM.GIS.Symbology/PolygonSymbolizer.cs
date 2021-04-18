@@ -38,9 +38,9 @@ namespace EM.GIS.Symbology
         }
         public void DrawPolygon(Graphics context, float scale, GraphicsPath path)
         {
-            foreach (IPolygonSymbol symbol in Symbols)
+            for (int i = Symbols.Count - 1; i >= 0; i--)
             {
-                symbol.DrawPolygon(context, scale, path);
+                Symbols[i].DrawPolygon(context, scale, path);
             }
         }
     }

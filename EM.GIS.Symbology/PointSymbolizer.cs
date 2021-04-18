@@ -93,9 +93,9 @@ namespace EM.GIS.Symbology
 
         public void DrawPoint(Graphics context, float scale, PointF point)
         {
-            foreach (IPointSymbol symbol in Symbols)
+            for (int i = Symbols.Count - 1; i >= 0; i--)
             {
-                symbol.DrawPoint(context, scale, point);
+                Symbols[i].DrawPoint(context, scale, point);
             }
         }
     }

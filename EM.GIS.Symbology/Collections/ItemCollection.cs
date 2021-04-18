@@ -72,7 +72,7 @@ namespace EM.GIS.Symbology
     /// 元素集合
     /// </summary>
     /// <typeparam name="TChild"></typeparam>
-    public abstract class ItemCollection<TChild> : IItemCollection<TChild>
+    public abstract class ItemCollection<TChild> : NotifyClass, IItemCollection<TChild>
     {
         /// <summary>
         /// 元素集合

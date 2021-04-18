@@ -15,7 +15,6 @@ namespace EM.GIS.Symbology
         public new IGroup Parent { get => base.Parent as IGroup; set => base.Parent = value; }
 
         #endregion
-        public IProgressHandler ProgressHandler { get; set; }
 
 
         public ILayer AddLayer(IDataSet dataSet, bool isVisible = true)
@@ -62,7 +61,7 @@ namespace EM.GIS.Symbology
             {
                 res.IsVisible = isVisible;
                 res.ProgressHandler = ProgressHandler;
-                base.Add(res);
+                Insert(0, res);
             }
 
             return res;
@@ -78,7 +77,7 @@ namespace EM.GIS.Symbology
                 {
                     IsVisible = isVisible
                 };
-                Add(rasterLayer);
+                Insert(0, rasterLayer);
             }
             return rasterLayer;
         }

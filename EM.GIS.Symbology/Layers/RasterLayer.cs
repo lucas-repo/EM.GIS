@@ -22,17 +22,17 @@ namespace EM.GIS.Symbology
         public RasterLayer(IRasterSet rasterSet):this()
         {
             DataSet = rasterSet;
-            if (DataSet?.Bands.Count > 0)
-            {
-                foreach (var item in DataSet.Bands)
-                {
-                    IRasterCategory rasterCategory = new RasterCategory()
-                    {
-                        Text = item.Name
-                    };
-                    LegendItems.Add(rasterCategory);
-                }
-            }
+            //if (DataSet?.Bands.Count > 0)
+            //{
+            //    foreach (var item in DataSet.Bands)
+            //    {
+            //        IRasterCategory rasterCategory = new RasterCategory()
+            //        {
+            //            Text = item.Name
+            //        };
+            //        LegendItems.Add(rasterCategory);
+            //    }
+            //}
         }
 
         public new IRasterSet DataSet { get => base.DataSet as IRasterSet; set => base.DataSet = value; }
@@ -45,6 +45,7 @@ namespace EM.GIS.Symbology
             }
             using (var bmp = DataSet.GetBitmap(extent, rectangle))
             {
+                ProgressHandler?.Progress(50, ProgressMessage);
                 if (bmp != null)
                 {
                     graphics.DrawImage(bmp, rectangle);

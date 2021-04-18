@@ -1,4 +1,5 @@
-﻿using System;
+﻿using EM.GIS.Data;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -43,6 +44,10 @@ namespace EM.GIS.Symbology
         /// 图例类型
         /// </summary>
         LegendMode LegendSymbolMode { get; set; }
+        /// <summary>
+        /// 进度处理
+        /// </summary>
+        IProgressHandler ProgressHandler { get; set; }
         /// <summary>
         /// 绘制图例
         /// </summary>

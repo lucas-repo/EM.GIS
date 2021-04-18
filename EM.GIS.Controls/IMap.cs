@@ -30,6 +30,10 @@ namespace EM.GIS.Controls
         /// </summary>
         ILegend Legend { get; set; }
         /// <summary>
+        /// 进度管理
+        /// </summary>
+        IProgressHandler ProgressHandler { get; set; }
+        /// <summary>
         /// 重绘指定范围
         /// </summary>
         /// <param name="extent"></param>

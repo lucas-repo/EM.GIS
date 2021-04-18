@@ -23,11 +23,6 @@ namespace EM.GIS.Symbology
         #endregion
 
         /// <summary>
-        /// 进度
-        /// </summary>
-        IProgressHandler ProgressHandler { get; set; }
-
-        /// <summary>
         /// 添加图层
         /// </summary>
         /// <param name="path"></param>

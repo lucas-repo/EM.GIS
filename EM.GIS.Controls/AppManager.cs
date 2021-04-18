@@ -23,19 +23,29 @@ namespace EM.GIS.Controls
         public IMap Map
         {
             get { return _map; }
-            set { _map = value; OnPropertyChanged(nameof(Map)); }
+            set { SetProperty(ref _map, value, nameof(Map)); }
         }
+
         private ILegend _legend;
         public ILegend Legend
         {
             get { return _legend; }
-            set { _legend = value; OnPropertyChanged(nameof(Legend)); }
+            set { SetProperty(ref _legend, value, nameof(Legend)); }
         }
         private IProgressHandler _progressHandler;
         public IProgressHandler ProgressHandler
         {
             get { return _progressHandler; }
-            set { _progressHandler = value; OnPropertyChanged(nameof(ProgressHandler)); }
+            set
+            {
+                if (SetProperty(ref _progressHandler, value, nameof(ProgressHandler)))
+                {
+                    if (Map != null)
+                    {
+                        Map.ProgressHandler = _progressHandler;
+                    }
+                }
+            }
         }
 
         [Browsable(false)]
@@ -46,7 +56,7 @@ namespace EM.GIS.Controls
         public string BaseDirectory
         {
             get { return _baseDirectory; }
-            set { _baseDirectory = value; OnPropertyChanged(nameof(BaseDirectory)); }
+            set { SetProperty(ref _baseDirectory, value, nameof(BaseDirectory)); }
         }
         private AggregateCatalog Catalog { get; set; }
 

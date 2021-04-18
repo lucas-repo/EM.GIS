@@ -16,10 +16,6 @@ namespace EM.GIS.Symbology
         /// </summary>
         IDataSet DataSet { get; set; }
         /// <summary>
-        /// 进度处理
-        /// </summary>
-        IProgressHandler ProgressHandler { get; set; }
-        /// <summary>
         /// 范围
         /// </summary>
         IExtent Extent { get; set; }

@@ -120,7 +120,7 @@ namespace EM.GIS.Symbology
                 if (value == null) return;
                 IExtent ext = value.Copy();
                 ResetAspectRatio(ext);
-                _viewExtents = value;
+                _viewExtents = ext;
                 OnViewExtentsChanged(_viewExtents);
             }
         }
@@ -198,29 +198,21 @@ namespace EM.GIS.Symbology
                 }
             }
         }
-        private bool CancelDrawing()
+        /// <summary>
+        /// 是否取消绘制
+        /// </summary>
+        /// <returns></returns>
+        private bool CancellationPending()
         {
             bool ret = CancellationTokenSource?.IsCancellationRequested == true || _bw.CancellationPending;
             return ret;
         }
         private void ResetBuffer(DoWorkEventArgs e)
         {
-            if (ViewExtent == null || ViewExtent.IsEmpty() || Width * Height == 0)
+            if (ViewExtent == null || ViewExtent.IsEmpty() || Width * Height == 0|| CancellationPending())
             {
                 return;
             }
-            var bwProgress = (Func<int, bool>)(p =>
-            {
-                _bw.ReportProgress(p);
-                if (_bw.CancellationPending)
-                {
-                    e.Cancel = true;
-                    return false;
-                }
-
-                return true;
-            });
-
             Bitmap tmpBuffer = null;
             if (Width > 0 && Height > 0)
             {
@@ -233,24 +225,23 @@ namespace EM.GIS.Symbology
                     {
                         g.FillRectangle(brush, rectangle);
                     }
-                    CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
                     int count = 2;
                     for (int i = 0; i < count; i++)
                     {
-                        if (CancellationTokenSource?.IsCancellationRequested == true)
+                        if (CancellationPending())
                         {
                             break;
                         }
                         bool selected = i == 1;
-                        Draw(g, rectangle, ViewExtent, selected, CancelDrawing);
+                        Draw(g, rectangle, ViewExtent, selected, CancellationPending);
                     }
                 }
                 #endregion
             }
-            BackBuffer = tmpBuffer;
-
-            // report progress and check for cancel
-            bwProgress(99);
+            if (!CancellationPending())
+            {
+                BackBuffer = tmpBuffer;
+            }
         }
         protected void ResetAspectRatio(IExtent newEnv)
         {

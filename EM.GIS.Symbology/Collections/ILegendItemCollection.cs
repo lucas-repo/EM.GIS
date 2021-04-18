@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using EM.GIS.Data;
+using System.Collections;
 using System.Collections.Generic;
 
 namespace EM.GIS.Symbology
@@ -8,5 +9,9 @@ namespace EM.GIS.Symbology
     /// </summary>
     public interface ILegendItemCollection : IItemCollection<ILegendItem, ILegendItem>
     {
+        /// <summary>
+        /// 进度
+        /// </summary>
+        IProgressHandler ProgressHandler { get; set; }
     }
 }

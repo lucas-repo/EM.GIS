@@ -17,7 +17,7 @@ namespace EM.GIS.Symbology
     public abstract class Layer : LegendItem, ILayer
     {
         public virtual IExtent Extent { get; set; }
-        public IProgressHandler ProgressHandler { get; set; }
+
         public ICategory DefaultCategory
         {
             get
@@ -25,7 +25,7 @@ namespace EM.GIS.Symbology
                 ICategory category = null;
                 if (Categories?.Count > 0)
                 {
-                    category = Categories[0];
+                    category = Categories[Categories.Count - 1];
                 }
                 return category;
             }
@@ -35,7 +35,7 @@ namespace EM.GIS.Symbology
                 {
                     if (Categories.Count > 0)
                     {
-                        Categories[0] = value;
+                        Categories[Categories.Count - 1] = value;
                     }
                     else
                     {
@@ -61,6 +61,21 @@ namespace EM.GIS.Symbology
             }
         }
 
+        private string _progressMessage;
+        /// <summary>
+        /// 进度消息文字
+        /// </summary>
+        protected string ProgressMessage
+        {
+            get
+            {
+                if (string.IsNullOrEmpty(_progressMessage))
+                {
+                    _progressMessage = $"绘制 {Text} 中...";
+                }
+                return _progressMessage;
+            }
+        }
         private void OnDataSetChanged()
         {
             IExtent extent = null;
@@ -87,6 +102,7 @@ namespace EM.GIS.Symbology
             xRes = worldWidth / pixelWidth;
             yRes = worldHeight / pixelHeight;
         }
+
         public void Draw(Graphics graphics, Rectangle rectangle, IExtent extent, bool selected = false, Func<bool> cancelFunc = null)
         {
             if (graphics == null || rectangle.Width * rectangle.Height == 0 || extent == null || extent.Width * extent.Height == 0 || cancelFunc?.Invoke() == true)
@@ -94,7 +110,7 @@ namespace EM.GIS.Symbology
                 return;
             }
             OnDraw(graphics, rectangle, extent, selected, cancelFunc);
-            ProgressHandler?.Progress(0);
+            ProgressHandler?.Progress(99, ProgressMessage);
         }
         protected abstract void OnDraw(Graphics graphics, Rectangle rectangle, IExtent extent, bool selected = false, Func<bool> cancelFunc = null);
         public bool GetVisible(IExtent extent, Rectangle rectangle)

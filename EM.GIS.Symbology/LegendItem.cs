@@ -1,4 +1,5 @@
-﻿using System;
+﻿using EM.GIS.Data;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
@@ -22,7 +23,7 @@ namespace EM.GIS.Symbology
             get { return _isVisible; }
             set { SetProperty(ref _isVisible, value, nameof(IsVisible)); }
         }
-        private bool _isExpanded;
+        private bool _isExpanded = true;
         public bool IsExpanded
         {
             get { return _isExpanded; }
@@ -34,14 +35,29 @@ namespace EM.GIS.Symbology
             get { return _isSelected; }
             set { SetProperty(ref _isSelected, value, nameof(IsSelected)); }
         }
-        
+
         public string Text { get; set; }
         public ILegendItem Parent { get; set; }
 
         public List<SymbologyMenuItem> ContextMenuItems { get; set; }
-        public LegendMode LegendSymbolMode { get ; set ; }
+        public LegendMode LegendSymbolMode { get; set; }
         public LegendType LegendType { get; set; }
 
+        private IProgressHandler _progressHandler;
+        public IProgressHandler ProgressHandler
+        {
+            get { return _progressHandler; }
+            set
+            {
+                if (SetProperty(ref _progressHandler, value, nameof(ProgressHandler)))
+                {
+                    if (LegendItems != null)
+                    {
+                        LegendItems.ProgressHandler = _progressHandler;
+                    }
+                }
+            }
+        }
         public ILegendItemCollection LegendItems { get; protected set; }
 
         public LegendItem()

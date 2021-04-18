@@ -104,9 +104,9 @@ namespace EM.GIS.Symbology
 
         public void DrawLine(Graphics context, float scale, GraphicsPath path)
         {
-            foreach (ILineSymbol symbol in Symbols)
+            for (int i = Symbols.Count - 1; i >= 0; i--)
             {
-                symbol.DrawLine(context, scale, path);
+                Symbols[i].DrawLine(context, scale, path);
             }
         }
     }
