@@ -56,13 +56,14 @@ namespace EM.GIS.Symbology
             Extent = extent;
         }
 
-        protected override void OnDraw(Graphics graphics, Rectangle rectangle, IExtent extent, bool selected = false, Func<bool> cancelFunc = null)
+        protected override void OnDraw(Graphics graphics, Rectangle rectangle, IExtent extent, bool selected = false, Func<bool> cancelFunc = null, Action invalidateMapFrameAction = null)
         {
             for (int i = LegendItems.Count - 1; i >= 0; i--)
             {
                 if (LegendItems[i] is ILayer layer && layer.GetVisible(extent, rectangle))
                 {
-                    layer.Draw(graphics, rectangle, extent, selected, cancelFunc);
+                    layer.Draw(graphics, rectangle, extent, selected, cancelFunc, invalidateMapFrameAction);
+                    invalidateMapFrameAction?.Invoke();
                 }
             }
         }

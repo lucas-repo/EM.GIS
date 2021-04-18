@@ -180,7 +180,7 @@ namespace EM.GIS.Symbology
                     return;
                 }
 
-                ProgressHandler?.Progress( 0, string.Empty);
+                ProgressHandler?.Progress(0, string.Empty);
             }
         }
         private void BwDoWork(object sender, DoWorkEventArgs e)
@@ -193,8 +193,44 @@ namespace EM.GIS.Symbology
                 }
                 else
                 {
-                    worker.ReportProgress(10);
-                    ResetBuffer(e);
+                    if (ViewExtent == null || ViewExtent.IsEmpty() || Width * Height == 0 || CancellationPending())
+                    {
+                        return;
+                    }
+                    Bitmap tmpBuffer = null;
+                    if (Width > 0 && Height > 0)
+                    {
+                        tmpBuffer = new Bitmap(Width, Height);
+                        Action resetBufferAction = () =>
+                        {
+                            Bitmap bmpCopy = (Bitmap)tmpBuffer.Clone();
+                            BackBuffer = bmpCopy;
+                        };
+                        #region 绘制BackBuffer
+                        Rectangle rectangle = Bound;
+                        using (Graphics g = Graphics.FromImage(tmpBuffer))
+                        {
+                            using (Brush brush = new SolidBrush(BackGround))
+                            {
+                                g.FillRectangle(brush, rectangle);
+                            }
+                            int count = 2;
+                            for (int i = 0; i < count; i++)
+                            {
+                                if (CancellationPending())
+                                {
+                                    break;
+                                }
+                                bool selected = i == 1;
+                                Draw(g, rectangle, ViewExtent, selected, CancellationPending, resetBufferAction);
+                            }
+                        }
+                        #endregion
+                    }
+                    if (!CancellationPending())
+                    {
+                        BackBuffer = tmpBuffer;
+                    }
                 }
             }
         }
@@ -207,42 +243,7 @@ namespace EM.GIS.Symbology
             bool ret = CancellationTokenSource?.IsCancellationRequested == true || _bw.CancellationPending;
             return ret;
         }
-        private void ResetBuffer(DoWorkEventArgs e)
-        {
-            if (ViewExtent == null || ViewExtent.IsEmpty() || Width * Height == 0|| CancellationPending())
-            {
-                return;
-            }
-            Bitmap tmpBuffer = null;
-            if (Width > 0 && Height > 0)
-            {
-                tmpBuffer = new Bitmap(Width, Height);
-                #region 绘制BackBuffer
-                Rectangle rectangle = Bound;
-                using (Graphics g = Graphics.FromImage(tmpBuffer))
-                {
-                    using (Brush brush = new SolidBrush(BackGround))
-                    {
-                        g.FillRectangle(brush, rectangle);
-                    }
-                    int count = 2;
-                    for (int i = 0; i < count; i++)
-                    {
-                        if (CancellationPending())
-                        {
-                            break;
-                        }
-                        bool selected = i == 1;
-                        Draw(g, rectangle, ViewExtent, selected, CancellationPending);
-                    }
-                }
-                #endregion
-            }
-            if (!CancellationPending())
-            {
-                BackBuffer = tmpBuffer;
-            }
-        }
+       
         protected void ResetAspectRatio(IExtent newEnv)
         {
             // Aspect Ratio Handling
@@ -307,9 +308,9 @@ namespace EM.GIS.Symbology
             ResetBuffer();
         }
 
-        protected override void OnDraw(Graphics graphics, Rectangle rectangle, IExtent extent, bool selected = false, Func<bool> cancelFunc = null)
+        protected override void OnDraw(Graphics graphics, Rectangle rectangle, IExtent extent, bool selected = false, Func<bool> cancelFunc = null, Action invalidateMapFrameAction = null)
         {
-            base.OnDraw(graphics, rectangle, extent, selected, cancelFunc);
+            base.OnDraw(graphics, rectangle, extent, selected, cancelFunc, invalidateMapFrameAction);
             var visibleDrawingFeatureLayers = new List<IFeatureLayer>();
             if (DrawingLayers != null)
             {
@@ -364,42 +365,6 @@ namespace EM.GIS.Symbology
                 _bw.RunWorkerAsync();
             else
                 _bw.CancelAsync();
-
-            //if (ViewExtent == null || ViewExtent.IsEmpty() || Width * Height == 0)
-            //{
-            //    return;
-            //}
-            //await Task.Run(() =>
-            //{
-            //    Bitmap tmpBuffer = null;
-            //    if (Width > 0 && Height > 0)
-            //    {
-            //        tmpBuffer = new Bitmap(Width, Height);
-            //        #region 绘制BackBuffer
-            //        Rectangle rectangle = Bound;
-            //        using (Graphics g = Graphics.FromImage(tmpBuffer))
-            //        {
-            //            using (Brush brush = new SolidBrush(BackGround))
-            //            {
-            //                g.FillRectangle(brush, rectangle);
-            //            }
-
-            //            int count = 2;
-            //            var visibleLayers = GetLayers().Where(x => x.GetVisible(ViewExtent, rectangle));
-            //            for (int i = 0; i < count; i++)
-            //            {
-            //                if (CancellationTokenSource?.IsCancellationRequested == true)
-            //                {
-            //                    break;
-            //                }
-            //                bool selected = i == 1;
-            //                Draw(g, rectangle, ViewExtent, selected, CancellationTokenSource);
-            //            }
-            //        }
-            //        #endregion
-            //    }
-            //    BackBuffer = tmpBuffer;
-            //});
         }
         public void Draw(Graphics g, Rectangle rectangle)
         {

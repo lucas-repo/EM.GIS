@@ -14,12 +14,12 @@ namespace EM.GIS.Symbology
             set => base.DefaultCategory = value;
         }
 
-        public new IRasterCategoryCollection Categories { get=> LegendItems as IRasterCategoryCollection; }
+        public new IRasterCategoryCollection Categories { get => LegendItems as IRasterCategoryCollection; }
         public RasterLayer()
         {
             LegendItems = new RasterCategoryCollection(this);
         }
-        public RasterLayer(IRasterSet rasterSet):this()
+        public RasterLayer(IRasterSet rasterSet) : this()
         {
             DataSet = rasterSet;
             //if (DataSet?.Bands.Count > 0)
@@ -37,7 +37,7 @@ namespace EM.GIS.Symbology
 
         public new IRasterSet DataSet { get => base.DataSet as IRasterSet; set => base.DataSet = value; }
 
-        protected override void OnDraw(Graphics graphics, Rectangle rectangle, IExtent extent, bool selected = false, Func<bool> cancelFunc = null)
+        protected override void OnDraw(Graphics graphics, Rectangle rectangle, IExtent extent, bool selected = false, Func<bool> cancelFunc = null, Action invalidateMapFrameAction = null)
         {
             if (selected || cancelFunc?.Invoke() == true)
             {

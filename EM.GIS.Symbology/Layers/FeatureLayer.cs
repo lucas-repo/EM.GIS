@@ -25,7 +25,15 @@ namespace EM.GIS.Symbology
         }
 
         public ILabelLayer LabelLayer { get; set; }
-        public new IFeatureSet DataSet { get => base.DataSet as IFeatureSet; set => base.DataSet = value; }
+        public new IFeatureSet DataSet 
+        { 
+            get => base.DataSet as IFeatureSet;
+            set
+            {
+                base.DataSet = value;
+                FidCategoryDic.Clear();
+            }
+        }
 
         public new IFeatureCategoryCollection Categories => LegendItems as IFeatureCategoryCollection;
 
@@ -34,18 +42,19 @@ namespace EM.GIS.Symbology
             get => base.Selection as IFeatureSelection;
             set => base.Selection = value;
         }
-
-        protected override void OnDraw(Graphics graphics, Rectangle rectangle, IExtent extent, bool selected = false, Func<bool> cancelFunc = null)
+       
+        public Dictionary<long, IFeatureCategory> FidCategoryDic { get; } = new Dictionary<long, IFeatureCategory>();
+        protected override void OnDraw(Graphics graphics, Rectangle rectangle, IExtent extent, bool selected = false, Func<bool> cancelFunc = null, Action invalidateMapFrameAction = null)
         {
             if (selected && Selection.Count == 0 || cancelFunc?.Invoke() == true)
             {
                 return;
             }
             DataSet.SetSpatialExtentFilter(extent);
-            var features = new List<IFeature>();
             long featureCount = DataSet.FeatureCount;
+            var features = new List<IFeature>();
             long drawnFeatureCount = 0;
-            int threshold = 65536;
+            int threshold = 262144;
             int totalPointCount = 0;
             int percent;
             Action drawFeatuesAction = () =>
@@ -54,11 +63,12 @@ namespace EM.GIS.Symbology
                 {
                     if (cancelFunc?.Invoke() != true)
                     {
-                        percent = (int)(drawnFeatureCount * 100.0 / featureCount);
+                        percent = (int)(drawnFeatureCount * 90 / featureCount);
                         ProgressHandler?.Progress(percent, ProgressMessage);
                         MapArgs drawArgs = new MapArgs(rectangle, extent, graphics);
                         DrawFeatures(drawArgs, features, selected, ProgressHandler, cancelFunc);
                         drawnFeatureCount += features.Count;
+                        invalidateMapFrameAction?.Invoke();
                     }
                     foreach (var item in features)
                     {
@@ -110,24 +120,40 @@ namespace EM.GIS.Symbology
             {
                 item.Dispose();
             }
+            ProgressHandler?.Progress(95, ProgressMessage);
             DataSet.SetSpatialFilter(null);
         }
         private Dictionary<IFeature, IFeatureCategory> GetFeatureAndCategoryDic(List<IFeature> features)
         {
             Dictionary<IFeature, IFeatureCategory> featureCategoryDic = new Dictionary<IFeature, IFeatureCategory>();
-            using (DataTable dataTable = GetAttribute(features))
+            var cachedFeatures = features.Where(x => FidCategoryDic.Keys.Contains(x.FId));
+            foreach (var item in cachedFeatures)
+            {
+                featureCategoryDic[item] = FidCategoryDic[item.FId];
+            }
+            var otherFeatures = features.Except(cachedFeatures).ToList(); ;
+            using (DataTable dataTable = GetAttribute(otherFeatures))
             {
                 for (int i = 0; i < dataTable.Rows.Count; i++)
                 {
                     DataRow row = dataTable.Rows[i];
-                    IFeature feature = features[i];
+                    IFeature feature = otherFeatures.ElementAt(i);
                     for (int j = Categories.Count - 1; j >= 0; j--)
                     {
                         IFeatureCategory featureCategory = Categories[j];
-                        DataRow[] rows = dataTable.Select(featureCategory.FilterExpression);
-                        if (rows.Contains(row))
+                        if (string.IsNullOrEmpty(featureCategory.FilterExpression))
                         {
+                            FidCategoryDic[feature.FId]= featureCategory;
                             featureCategoryDic[feature] = featureCategory;
+                        }
+                        else
+                        {
+                            DataRow[] rows = dataTable.Select(featureCategory.FilterExpression);
+                            if (rows.Contains(row))
+                            {
+                                FidCategoryDic[feature.FId] = featureCategory;
+                                featureCategoryDic[feature] = featureCategory;
+                            }
                         }
                     }
                 }
@@ -212,10 +238,10 @@ namespace EM.GIS.Symbology
             }
             return dataTable;
         }
-        private DataTable GetAttribute(List<IFeature> features)
+        private DataTable GetAttribute(IEnumerable<IFeature> features)
         {
             DataTable dataTable = GetSchema();
-            if (features == null || features.Count == 0)
+            if (features == null || features.Count() == 0)
             {
                 return dataTable;
             }

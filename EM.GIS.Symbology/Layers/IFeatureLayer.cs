@@ -1,4 +1,5 @@
 ﻿using EM.GIS.Data;
+using System.Collections.Generic;
 
 namespace EM.GIS.Symbology
 {
@@ -27,5 +28,9 @@ namespace EM.GIS.Symbology
         /// 默认分类
         /// </summary>
         new IFeatureCategory DefaultCategory { get; set; }
+        /// <summary>
+        /// 要素Id和分类缓存字典
+        /// </summary>
+        Dictionary<long, IFeatureCategory> FidCategoryDic { get; }
     }
 }
