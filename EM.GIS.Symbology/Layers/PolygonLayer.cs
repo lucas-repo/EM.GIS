@@ -47,7 +47,7 @@ namespace EM.GIS.Symbology
                 for (int j = 0; j < pointCount; j++)
                 {
                     var coord = geometry.Coordinates[j];
-                    PointF point = drawArgs.ProjToPixelPointF(coord);
+                    PointF point = drawArgs.CoordinateToPointF(coord);
                     points[j] = point;
                 }
                 polygonSymbolizer.DrawPolygon(context, scaleSize, points.ToPath());
@@ -84,7 +84,7 @@ namespace EM.GIS.Symbology
                     for (int j = 0; j < pointCount; j++)
                     {
                         var coord = geometry.Coordinates[j];
-                        PointF point = drawArgs.ProjToPixelPointF(coord);
+                        PointF point = drawArgs.CoordinateToPointF(coord);
                         points[j] = point;
                     }
                     path.AddLines(points);

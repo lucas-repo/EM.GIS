@@ -34,10 +34,10 @@ namespace EM.GIS.Controls
         /// </summary>
         IProgressHandler ProgressHandler { get; set; }
         /// <summary>
-        /// 重绘指定范围
+        /// 重绘指定区域
         /// </summary>
-        /// <param name="extent"></param>
-        void Invalidate(IExtent extent);
+        /// <param name="rectangle"></param>
+        void Invalidate(RectangleF rectangle);
         /// <summary>
         /// 重绘整个地图
         /// </summary>
