@@ -111,7 +111,6 @@ namespace EM.GIS.Symbology
                 item.Dispose();
             }
             DataSet.SetSpatialFilter(null);
-            ProgressHandler?.Progress(100, "绘制要素中...");
         }
         private Dictionary<IFeature, IFeatureCategory> GetFeatureAndCategoryDic(List<IFeature> features)
         {
