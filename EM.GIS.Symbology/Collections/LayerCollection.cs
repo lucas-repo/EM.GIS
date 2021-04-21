@@ -43,7 +43,6 @@ namespace EM.GIS.Symbology
             IFeatureLayer res = null;
             if (featureSet == null) return null;
 
-            featureSet.ProgressHandler = ProgressHandler;
             if (featureSet.FeatureType == FeatureType.Point || featureSet.FeatureType == FeatureType.MultiPoint)
             {
                 res = new PointLayer(featureSet);
@@ -72,7 +71,6 @@ namespace EM.GIS.Symbology
             IRasterLayer rasterLayer = null;
             if (raster != null)
             {
-                raster.ProgressHandler = ProgressHandler;
                 rasterLayer = new RasterLayer(raster)
                 {
                     IsVisible = isVisible

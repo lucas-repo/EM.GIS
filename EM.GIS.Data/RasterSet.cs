@@ -55,7 +55,7 @@ namespace EM.GIS.Data
             return GetBitmap(envelope, new Rectangle(new Point(0, 0), size));
         }
 
-        public virtual Bitmap GetBitmap(IExtent envelope, Rectangle window)
+        public virtual Bitmap GetBitmap(IExtent envelope, Rectangle window, Action<int> progressAction = null)
         {
             return null;
         }

@@ -34,10 +34,6 @@ namespace EM.GIS.Data
         /// </summary>
         ProjectionInfo Projection { get; }
         /// <summary>
-        /// 进度
-        /// </summary>
-        IProgressHandler ProgressHandler { get; set; }
-        /// <summary>
         /// 保存
         /// </summary>
         void Save();

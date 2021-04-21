@@ -174,7 +174,6 @@ namespace EM.GIS.Symbology
             IFeatureLayer featureLayer = null;
             if (featureSet == null) return null;
 
-            featureSet.ProgressHandler = ProgressHandler;
             if (featureSet.FeatureType == FeatureType.Point || featureSet.FeatureType == FeatureType.MultiPoint)
             {
                 featureLayer = new PointLayer(featureSet);
@@ -190,13 +189,7 @@ namespace EM.GIS.Symbology
 
             if (featureLayer != null)
             {
-                if (AddLayer(featureLayer, index))
-                {
-                    if (featureSet.ProgressHandler == null && ProgressHandler != null)
-                    {
-                        featureSet.ProgressHandler = ProgressHandler;
-                    }
-                }
+                AddLayer(featureLayer, index);
             }
             return featureLayer;
         }
@@ -206,15 +199,8 @@ namespace EM.GIS.Symbology
             IRasterLayer rasterLayer = null;
             if (rasterSet != null)
             {
-                rasterSet.ProgressHandler = ProgressHandler;
                 rasterLayer = new RasterLayer(rasterSet);
-                if (AddLayer(rasterLayer, index))
-                {
-                    if (rasterSet.ProgressHandler == null && ProgressHandler != null)
-                    {
-                        rasterSet.ProgressHandler = ProgressHandler;
-                    }
-                }
+                AddLayer(rasterLayer, index);
             }
             return rasterLayer;
         }

@@ -167,14 +167,7 @@ namespace EM.GIS.Gdals
 
         #region Methods
 
-        /// <summary>
-        /// This needs to return the actual image and override the base
-        /// behavior that handles the internal variables only.
-        /// </summary>
-        /// <param name="envelope">The envelope to grab image data for.</param>
-        /// <param name="window">A Rectangle</param>
-        /// <returns>The image.</returns>
-        public override Bitmap GetBitmap(IExtent envelope, Rectangle window)
+        public override Bitmap GetBitmap(IExtent envelope, Rectangle window, Action<int> progressAction = null)
         {
             if (window.Width == 0 || window.Height == 0)
             {
@@ -184,15 +177,14 @@ namespace EM.GIS.Gdals
             var result = new Bitmap(window.Width, window.Height);
             using (var g = Graphics.FromImage(result))
             {
-                DrawGraphics(g, envelope, window);
+                DrawGraphics(g, envelope, window, progressAction);
             }
 
             return result;
         }
-        private void DrawGraphics(Graphics g, IExtent envelope, Rectangle window)
+        private void DrawGraphics(Graphics g, IExtent envelope, Rectangle window,Action<int> progressAction=null)
         {
-            var layerIsDrawing = $"{Name} 绘制中...";
-            ProgressHandler?.Progress(5, layerIsDrawing);
+            progressAction?.Invoke(5);
 
             // Gets the scaling factor for converting from geographic to pixel coordinates
             double dx = window.Width / envelope.Width;
@@ -237,7 +229,7 @@ namespace EM.GIS.Gdals
             if (bRx < 0) bRx = 0;
             if (bRy < 0) bRy = 0;
 
-            ProgressHandler?.Progress(10, layerIsDrawing);
+            progressAction?.Invoke(10);
 
             // gets the affine scaling factors.
             float m11 = Convert.ToSingle(a[1] * dx);
@@ -282,7 +274,7 @@ namespace EM.GIS.Gdals
                 }
             }
 
-            ProgressHandler?.Progress(15, layerIsDrawing);
+            progressAction?.Invoke(15);
 
             var overviewPow = Math.Pow(2, _overview + 1);
             m11 *= (float)overviewPow;
@@ -341,7 +333,8 @@ namespace EM.GIS.Gdals
             }
             int redundancy = (int)Math.Ceiling(Math.Abs(1 / Math.Min(m11, m22)));
 
-            ProgressHandler?.Progress(20, $"{Name} 绘制中...");
+            progressAction?.Invoke(20);
+
             var increment = 70.0 / nbX / nbY;
             double progressPercent = 20;
 
@@ -364,10 +357,11 @@ namespace EM.GIS.Gdals
                         }
                     }
                     progressPercent += increment;
-                    ProgressHandler?.Progress((int)progressPercent, $"{Name} 绘制中...");
+
+                    progressAction?.Invoke((int)progressPercent);
                 }
             }
-            ProgressHandler?.Progress(99, $"{Name} 绘制中...");
+            progressAction?.Invoke(100);
         }
         private Bitmap ReadGrayIndex(int xOffset, int yOffset, int xSize, int ySize)
         {
@@ -779,19 +773,6 @@ namespace EM.GIS.Gdals
                 }
             }
             base.Dispose(disposing);
-        }
-
-        /// <summary>
-        /// Handles the callback progress content.
-        /// </summary>
-        /// <param name="complete">Percent of completeness.</param>
-        /// <param name="message">Message is not used.</param>
-        /// <param name="data">Data is not used.</param>
-        /// <returns>0</returns>
-        private int GdalProgressFunc(double complete, IntPtr message, IntPtr data)
-        {
-            ProgressHandler?.Progress(Convert.ToInt32(complete), "Copy Progress");
-            return 0;
         }
 
         private ColorTable GetColorTable()

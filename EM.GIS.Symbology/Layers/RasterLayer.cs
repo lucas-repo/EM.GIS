@@ -43,14 +43,21 @@ namespace EM.GIS.Symbology
             {
                 return;
             }
-            using (var bmp = DataSet.GetBitmap(extent, rectangle))
+            using (var bmp = DataSet.GetBitmap(extent, rectangle, ReportProgress))
             {
-                ProgressHandler?.Progress(50, ProgressMessage);
                 if (bmp != null)
                 {
                     graphics.DrawImage(bmp, rectangle);
                 }
             }
+            ProgressHandler?.Progress(100, ProgressMessage);
+        }
+        private void ReportProgress(int progress)
+        {
+            int minProgress = 0;
+            int maxProgress = 80;
+            double progressD = progress / 100.0 * (maxProgress - minProgress);
+            ProgressHandler?.Progress((int)progressD, ProgressMessage);
         }
     }
 }

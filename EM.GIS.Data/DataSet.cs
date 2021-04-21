@@ -37,10 +37,6 @@ namespace EM.GIS.Data
 
         public string Name { get; set; }
 
-        [Browsable(false)]
-        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        public virtual IProgressHandler ProgressHandler { get; set; }
-
         public bool IsDisposed { get; private set; }
 
         #endregion

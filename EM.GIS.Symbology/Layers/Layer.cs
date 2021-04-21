@@ -110,7 +110,6 @@ namespace EM.GIS.Symbology
                 return;
             }
             OnDraw(graphics, rectangle, extent, selected, cancelFunc,  invalidateMapFrameAction );
-            ProgressHandler?.Progress(99, ProgressMessage);
         }
         protected abstract void OnDraw(Graphics graphics, Rectangle rectangle, IExtent extent, bool selected = false, Func<bool> cancelFunc = null, Action invalidateMapFrameAction = null);
         public bool GetVisible(IExtent extent, Rectangle rectangle)

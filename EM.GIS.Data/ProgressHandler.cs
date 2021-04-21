@@ -4,6 +4,9 @@ using System.Text;
 
 namespace EM.GIS.Data
 {
+    /// <summary>
+    /// 进度处理类
+    /// </summary>
     public class ProgressHandler : IProgressHandler
     {
         public Action<int, string> Handler { get; set; }
