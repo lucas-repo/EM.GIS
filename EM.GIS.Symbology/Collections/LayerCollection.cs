@@ -33,7 +33,7 @@ namespace EM.GIS.Symbology
             }
             if (dataSet != null)
             {
-                layer.Text = dataSet.Name; 
+                layer.Text = dataSet.Name;
             }
             return layer;
         }
@@ -73,7 +73,8 @@ namespace EM.GIS.Symbology
             {
                 rasterLayer = new RasterLayer(raster)
                 {
-                    IsVisible = isVisible
+                    IsVisible = isVisible,
+                    ProgressHandler = ProgressHandler
                 };
                 Insert(0, rasterLayer);
             }

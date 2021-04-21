@@ -52,6 +52,7 @@ namespace EM.GIS.Symbology
             }
             DataSet.SetSpatialExtentFilter(extent);
             long featureCount = DataSet.FeatureCount;
+            ProgressHandler?.Progress(5, ProgressMessage);
             var features = new List<IFeature>();
             long drawnFeatureCount = 0;
             int threshold = 262144;
@@ -120,7 +121,6 @@ namespace EM.GIS.Symbology
             {
                 item.Dispose();
             }
-            ProgressHandler?.Progress(95, ProgressMessage);
             DataSet.SetSpatialFilter(null);
         }
         private Dictionary<IFeature, IFeatureCategory> GetFeatureAndCategoryDic(List<IFeature> features)

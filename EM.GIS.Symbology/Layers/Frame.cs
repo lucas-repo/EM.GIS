@@ -78,7 +78,7 @@ namespace EM.GIS.Symbology
             ViewBoundChanged?.Invoke(this, new EventArgs());
         }
 
-        protected virtual void OnBufferChanged()
+        protected virtual void OnBackBufferChanged()
         {
             BufferChanged?.Invoke(this, new EventArgs());
         }
@@ -98,15 +98,11 @@ namespace EM.GIS.Symbology
                     _backBuffer?.Dispose();
                     _backBuffer = value;
                 }
+                _viewBound = new Rectangle(0, 0, _width, _height);
                 OnBackBufferChanged();
             }
         }
 
-        private void OnBackBufferChanged()
-        {
-            _viewBound = new Rectangle(0, 0, _width, _height);
-            OnBufferChanged();
-        }
 
         public virtual IExtent ViewExtent
         {
@@ -179,7 +175,6 @@ namespace EM.GIS.Symbology
                     bw.RunWorkerAsync();
                     return;
                 }
-
                 ProgressHandler?.Progress(0, string.Empty);
             }
         }
@@ -203,8 +198,14 @@ namespace EM.GIS.Symbology
                         tmpBuffer = new Bitmap(Width, Height);
                         Action resetBufferAction = () =>
                         {
-                            Bitmap bmpCopy = (Bitmap)tmpBuffer.Clone();
-                            BackBuffer = bmpCopy;
+                            if (BackBuffer != tmpBuffer)
+                            {
+                                BackBuffer = tmpBuffer;
+                            }
+                            else
+                            {
+                                OnBackBufferChanged();
+                            }
                         };
                         #region 绘制BackBuffer
                         Rectangle rectangle = Bound;
@@ -226,10 +227,7 @@ namespace EM.GIS.Symbology
                             }
                         }
                         #endregion
-                    }
-                    if (!CancellationPending())
-                    {
-                        BackBuffer = tmpBuffer;
+                        resetBufferAction();
                     }
                 }
             }

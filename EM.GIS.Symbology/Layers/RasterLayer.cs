@@ -50,7 +50,6 @@ namespace EM.GIS.Symbology
                     graphics.DrawImage(bmp, rectangle);
                 }
             }
-            ProgressHandler?.Progress(100, ProgressMessage);
         }
         private void ReportProgress(int progress)
         {
