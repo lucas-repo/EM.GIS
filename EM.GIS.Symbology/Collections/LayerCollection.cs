@@ -1,5 +1,6 @@
 ﻿using EM.GIS.Data;
 using System.Collections;
+using System.Linq;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 
@@ -10,13 +11,36 @@ namespace EM.GIS.Symbology
     /// </summary>
     public class LayerCollection : LegendItemCollection, ILayerCollection
     {
-        #region 重写部分
         public new ILayer this[int index] { get => Items[index] as ILayer; set => Items[index] = value; }
         public new IGroup Parent { get => base.Parent as IGroup; set => base.Parent = value; }
 
-        #endregion
-
-
+        public IGroup AddGroup(string groupName = null)
+        {
+            string destGroupName = groupName;
+            if (string.IsNullOrEmpty(groupName))
+            {
+                destGroupName = GetDifferenctName("分组");
+            }
+            IGroup group = new Group()
+            {
+                Text = destGroupName,
+                IsVisible=true
+            };
+            return group;
+        }
+        private string GetDifferenctName(string prefix, int i=0)
+        {
+            string name = $"{prefix}{i}";
+            foreach (ILegendItem item in this)
+            {
+                if (item.Text == name)
+                {
+                    name = GetDifferenctName(prefix, ++i);
+                    break;
+                }
+            }
+            return name;
+        }
         public ILayer AddLayer(IDataSet dataSet, bool isVisible = true)
         {
             ILayer layer = null;

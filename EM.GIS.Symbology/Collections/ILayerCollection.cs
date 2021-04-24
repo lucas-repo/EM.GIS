@@ -50,5 +50,11 @@ namespace EM.GIS.Symbology
         /// <param name="isVisible"></param>
         /// <returns></returns>
         IRasterLayer AddLayer(IRasterSet raster, bool isVisible = true);
+        /// <summary>
+        /// 添加分组
+        /// </summary>
+        /// <param name="groupName">分组名</param>
+        /// <returns>分组</returns>
+        IGroup AddGroup(string groupName = null);
     }
 }

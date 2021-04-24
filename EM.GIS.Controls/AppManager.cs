@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.ComponentModel.Composition.Hosting;
-using System.ComponentModel.Composition.Primitives;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -61,6 +60,9 @@ namespace EM.GIS.Controls
         private AggregateCatalog Catalog { get; set; }
 
         private CompositionContainer CompositionContainer { get; set; }
+
+        public ICommandFactory CommandFactory { get; }
+
         public AppManager()
         {
             Plugins = new List<IPlugin>();
@@ -69,6 +71,7 @@ namespace EM.GIS.Controls
             {
                 "Plugins"
             };
+            CommandFactory = new CommandFactory();
             AppDomain.CurrentDomain.AssemblyResolve += CurrentDomainAssemblyResolve;
         }
         private AggregateCatalog GetCatalog()

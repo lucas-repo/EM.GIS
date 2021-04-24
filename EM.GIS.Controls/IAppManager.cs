@@ -36,6 +36,10 @@ namespace EM.GIS.Controls
         /// </summary>
         List<string> Directories { get; }
         /// <summary>
+        /// 命令工厂
+        /// </summary>
+        ICommandFactory CommandFactory { get; }
+        /// <summary>
         /// 读取插件
         /// </summary>
         void LoadPlugins();

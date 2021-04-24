@@ -1,10 +1,10 @@
 ﻿using EM.GIS.Data;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Drawing;
-
-
+using System.Windows.Input;
 
 namespace EM.GIS.Symbology
 {
@@ -39,7 +39,7 @@ namespace EM.GIS.Symbology
         public string Text { get; set; }
         public ILegendItem Parent { get; set; }
 
-        public List<SymbologyMenuItem> ContextMenuItems { get; set; }
+        public ObservableCollection<IBaseCommand> ContextCommands { get; } = new ObservableCollection<IBaseCommand>();
         public LegendMode LegendSymbolMode { get; set; }
         public LegendType LegendType { get; set; }
 

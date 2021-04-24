@@ -4,13 +4,14 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Drawing;
+using System.Windows.Input;
 
 namespace EM.GIS.Symbology
 {
     /// <summary>
     /// 图例元素接口
     /// </summary>
-    public interface ILegendItem : IChangeItem, IParentItem<ILegendItem>,ICloneable, INotifyPropertyChanged
+    public interface ILegendItem : IChangeItem, IParentItem<ILegendItem>, ICloneable, INotifyPropertyChanged
     {
         /// <summary>
         /// 是否展开
@@ -37,9 +38,9 @@ namespace EM.GIS.Symbology
         /// </summary>
         ILegendItemCollection LegendItems { get; }
         /// <summary>
-        /// 右键菜单项
+        /// 右键菜单命令集合
         /// </summary>
-        List<SymbologyMenuItem> ContextMenuItems { get; set; }
+        ObservableCollection<IBaseCommand> ContextCommands { get; }
         /// <summary>
         /// 图例类型
         /// </summary>
