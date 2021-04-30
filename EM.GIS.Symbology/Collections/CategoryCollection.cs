@@ -11,8 +11,6 @@ namespace EM.GIS.Symbology
     /// </summary>
     public abstract class CategoryCollection : LegendItemCollection, ICategoryCollection
     {
-        public CategoryCollection()
-        { }
         public CategoryCollection(ILayer parent) : base(parent)
         { }
         #region 重写部分

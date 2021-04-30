@@ -11,6 +11,10 @@ namespace EM.GIS.Symbology
     /// </summary>
     public class LayerCollection : LegendItemCollection, ILayerCollection
     {
+        public LayerCollection(IGroup parent) : base(parent)
+        {
+        }
+
         public new ILayer this[int index] { get => Items[index] as ILayer; set => Items[index] = value; }
         public new IGroup Parent { get => base.Parent as IGroup; set => base.Parent = value; }
 
@@ -24,11 +28,12 @@ namespace EM.GIS.Symbology
             IGroup group = new Group()
             {
                 Text = destGroupName,
-                IsVisible=true
+                IsVisible = true,
+                Parent = Parent
             };
             return group;
         }
-        private string GetDifferenctName(string prefix, int i=0)
+        private string GetDifferenctName(string prefix, int i = 0)
         {
             string name = $"{prefix}{i}";
             foreach (ILegendItem item in this)
@@ -64,30 +69,31 @@ namespace EM.GIS.Symbology
 
         public IFeatureLayer AddLayer(IFeatureSet featureSet, bool isVisible = true)
         {
-            IFeatureLayer res = null;
+            IFeatureLayer layer = null;
             if (featureSet == null) return null;
 
             if (featureSet.FeatureType == FeatureType.Point || featureSet.FeatureType == FeatureType.MultiPoint)
             {
-                res = new PointLayer(featureSet);
+                layer = new PointLayer(featureSet);
             }
             else if (featureSet.FeatureType == FeatureType.Polyline)
             {
-                res = new LineLayer(featureSet);
+                layer = new LineLayer(featureSet);
             }
             else if (featureSet.FeatureType == FeatureType.Polygon)
             {
-                res = new PolygonLayer(featureSet);
+                layer = new PolygonLayer(featureSet);
             }
 
-            if (res != null)
+            if (layer != null)
             {
-                res.IsVisible = isVisible;
-                res.ProgressHandler = ProgressHandler;
-                Insert(0, res);
+                layer.IsVisible = isVisible;
+                layer.ProgressHandler = ProgressHandler;
+                layer.Parent = Parent;
+                Insert(0, layer);
             }
 
-            return res;
+            return layer;
         }
 
         public IRasterLayer AddLayer(IRasterSet raster, bool isVisible = true)
@@ -98,7 +104,8 @@ namespace EM.GIS.Symbology
                 rasterLayer = new RasterLayer(raster)
                 {
                     IsVisible = isVisible,
-                    ProgressHandler = ProgressHandler
+                    ProgressHandler = ProgressHandler,
+                    Parent = Parent
                 };
                 Insert(0, rasterLayer);
             }
@@ -110,6 +117,5 @@ namespace EM.GIS.Symbology
             IDataSet dataSet = DataFactory.Default.DriverFactory.Open(path);
             return AddLayer(dataSet, isVisible);
         }
-
     }
 }

@@ -26,9 +26,6 @@ namespace EM.GIS.Symbology
                 }
             }
         }
-        public LegendItemCollection() 
-        {
-        }
         public LegendItemCollection(ILegendItem parent) : base(parent)
         { }
     }
