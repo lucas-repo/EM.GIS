@@ -135,6 +135,7 @@ namespace EM.GIS.Symbology
         /// 是否已释放
         /// </summary>
         public bool IsDisposed { get; private set; }
+        public new IGroup Parent { get => base.Parent as IGroup; set => base.Parent = value; }
 
         protected virtual void Dispose(bool disposing)
         {

@@ -9,14 +9,14 @@ namespace EM.GIS.Symbology
       
         public PolygonSymbolizer()
         {
-            Symbols = new PolygonSymbolCollection();
+            Symbols = new PolygonSymbolCollection(this);
             PolygonSimpleSymbol polygonSymbol = new PolygonSimpleSymbol();
             Symbols.Add(polygonSymbol);
         }
 
         public PolygonSymbolizer(bool selected) 
         {
-            Symbols = new PolygonSymbolCollection();
+            Symbols = new PolygonSymbolCollection(this);
             IPolygonSymbol polygonSymbol = new PolygonSimpleSymbol();
             if (selected)
             {

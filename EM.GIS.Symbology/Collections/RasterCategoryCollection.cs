@@ -16,8 +16,6 @@ namespace EM.GIS.Symbology
         }
         public new IRasterLayer Parent { get => base.Parent as IRasterLayer; set => base.Parent = value; }
 
-        public RasterCategoryCollection()
-        { }
         public RasterCategoryCollection(IRasterLayer parent) : base(parent)
         { }
 

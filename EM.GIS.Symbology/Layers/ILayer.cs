@@ -32,6 +32,10 @@ namespace EM.GIS.Symbology
         /// </summary>
         ISelection Selection { get; }
         /// <summary>
+        /// 父图层组
+        /// </summary>
+        new IGroup Parent { get; set; }
+        /// <summary>
         /// 在指定范围是否可见
         /// </summary>
         /// <param name="extent"></param>

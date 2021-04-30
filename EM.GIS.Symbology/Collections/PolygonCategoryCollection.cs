@@ -9,8 +9,6 @@ namespace EM.GIS.Symbology
     {
         public new IPolygonCategory this[int index] { get => Items[index] as IPolygonCategory; set => Items[index] = value; }
 
-        public PolygonCategoryCollection()
-        { }
         public PolygonCategoryCollection(IFeatureLayer parent) : base(parent)
         { }
     }

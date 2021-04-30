@@ -9,8 +9,6 @@ namespace EM.GIS.Symbology
     {
         public new ILineCategory this[int index] { get => Items[index] as ILineCategory; set => Items[index] = value; }
 
-        public LineCategoryCollection()
-        { }
         public LineCategoryCollection(IFeatureLayer parent) : base(parent)
         { }
     }

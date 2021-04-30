@@ -54,7 +54,7 @@ namespace EM.GIS.Symbology
         public LineSymbolizer()
         {
             var symbol = new LineSimpleSymbol();
-            Symbols = new LineSymbolCollection
+            Symbols = new LineSymbolCollection(this)
             {
                 symbol
             };
@@ -62,7 +62,7 @@ namespace EM.GIS.Symbology
         public LineSymbolizer(Color color)
         {
             var symbol = new LineSimpleSymbol(color);
-            Symbols = new LineSymbolCollection
+            Symbols = new LineSymbolCollection(this)
             {
                 symbol
             };
@@ -70,7 +70,7 @@ namespace EM.GIS.Symbology
         public LineSymbolizer(Color color, float width)
         {
             var symbol = new LineSimpleSymbol(color, width);
-            Symbols = new LineSymbolCollection
+            Symbols = new LineSymbolCollection(this)
             {
                 symbol
             };
@@ -86,7 +86,7 @@ namespace EM.GIS.Symbology
             {
                 symbol = new LineSimpleSymbol();
             }
-            Symbols = new LineSymbolCollection
+            Symbols = new LineSymbolCollection(this)
             {
                 symbol
             };

@@ -11,8 +11,6 @@ namespace EM.GIS.Symbology
 
         public new IFeatureCategory this[int index] { get => base[index] as IFeatureCategory; set => base[index] = value; }
 
-        public FeatureCategoryCollection()
-        { }
         public FeatureCategoryCollection(IFeatureLayer parent) : base(parent)
         { }
 

@@ -38,45 +38,44 @@ namespace EM.GIS.Symbology
 
         public PointSymbolizer()
         {
-            Configure();
-        }
-        public PointSymbolizer(bool selected) : this()
-        {
-            if (!selected) return;
-
-            IPointSymbol pointSymbol = Symbols[0];
-            if (pointSymbol != null)
-            {
-                pointSymbol.Color = Color.Cyan;
-            }
-        }
-        public PointSymbolizer(IPointSymbol symbol) : this()
-        {
-            Symbols.Add(symbol);
-        }
-        public PointSymbolizer(IEnumerable<IPointSymbol> symbols) : this()
-        {
-            foreach (var item in symbols)
-            {
-                Symbols.Add(item);
-            }
-        }
-
-        public PointSymbolizer(Color color, PointShape shape, float size) : this()
-        {
-            IPointSymbol ss = new PointSimpleSymbol(color, shape, size);
-            Symbols.Add(ss);
-        }
-
-        private void Configure()
-        {
-            Symbols = new PointSymbolCollection();
+            Symbols = new PointSymbolCollection(this);
             IPointSimpleSymbol ss = new PointSimpleSymbol
             {
                 Color = SymbologyGlobal.RandomColor(),
                 Opacity = 1F,
                 PointShape = PointShape.Rectangle
             };
+            Symbols.Add(ss);
+        }
+        public PointSymbolizer(bool selected)
+        {
+            Symbols = new PointSymbolCollection(this);
+            IPointSimpleSymbol ss = new PointSimpleSymbol
+            {
+                Color = selected ? Color.Cyan: SymbologyGlobal.RandomColor(),
+                Opacity = 1F,
+                PointShape = PointShape.Rectangle
+            };
+            Symbols.Add(ss);
+        }
+        public PointSymbolizer(IPointSymbol symbol) 
+        {
+            Symbols = new PointSymbolCollection(this);
+            Symbols.Add(symbol);
+        }
+        public PointSymbolizer(IEnumerable<IPointSymbol> symbols)
+        {
+            Symbols = new PointSymbolCollection(this);
+            foreach (var item in symbols)
+            {
+                Symbols.Add(item);
+            }
+        }
+
+        public PointSymbolizer(Color color, PointShape shape, float size)
+        {
+            Symbols = new PointSymbolCollection(this);
+            IPointSymbol ss = new PointSimpleSymbol(color, shape, size);
             Symbols.Add(ss);
         }
 
