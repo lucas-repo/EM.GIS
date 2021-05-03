@@ -46,10 +46,8 @@ namespace EM.GIS.Symbology
         }
 
         public CancellationTokenSource CancellationTokenSource { get; set; }
-        private int _width;
-        public int Width => _width;
-        private int _height;
-        public int Height => _height;
+        public int Width { get; private set; }
+        public int Height { get; private set; }
 
         private Color _backGround = Color.Transparent;
         public Color BackGround
@@ -98,7 +96,7 @@ namespace EM.GIS.Symbology
                     _backBuffer?.Dispose();
                     _backBuffer = value;
                 }
-                _viewBound = new Rectangle(0, 0, _width, _height);
+                _viewBound = new Rectangle(0, 0, Width, Height);
                 OnBackBufferChanged();
             }
         }
@@ -123,7 +121,7 @@ namespace EM.GIS.Symbology
 
         public Rectangle Bound
         {
-            get => new Rectangle(0, 0, _width, _height);
+            get => new Rectangle(0, 0, Width, Height);
             set
             { }
         }
@@ -146,9 +144,9 @@ namespace EM.GIS.Symbology
         }
         public Frame(int width, int height)
         {
-            _width = width;
-            _height = height;
-            _viewBound = new Rectangle(0, 0, _width, _height);
+            Width = width;
+            Height = height;
+            _viewBound = new Rectangle(0, 0, Width, Height);
             _bw = new BackgroundWorker
             {
                 WorkerSupportsCancellation = true,
@@ -248,9 +246,9 @@ namespace EM.GIS.Symbology
             if (newEnv == null) return;
 
             // It isn't exactly an exception, but rather just an indication not to do anything here.
-            if (_height == 0 || _width == 0) return;
+            if (Height == 0 || Width == 0) return;
 
-            double controlAspect = (double)_width / _height;
+            double controlAspect = (double)Width / Height;
             double envelopeAspect = newEnv.Width / newEnv.Height;
             var center = newEnv.Center;
 
@@ -342,9 +340,9 @@ namespace EM.GIS.Symbology
         }
         public Point ProjToBuffer(Coordinate location)
         {
-            if (_width == 0 || _height == 0) return new Point(0, 0);
-            int x = (int)((location.X - ViewExtent.MinX) * (_width / ViewExtent.Width)) + ViewBound.X;
-            int y = (int)((ViewExtent.MaxY - location.Y) * (_height / ViewExtent.Height)) + ViewBound.Y;
+            if (Width == 0 || Height == 0) return new Point(0, 0);
+            int x = (int)((location.X - ViewExtent.MinX) * (Width / ViewExtent.Width)) + ViewBound.X;
+            int y = (int)((ViewExtent.MaxY - location.Y) * (Height / ViewExtent.Height)) + ViewBound.Y;
             return new Point(x, y);
         }
         public Rectangle ProjToBuffer(IExtent extent)
@@ -368,12 +366,12 @@ namespace EM.GIS.Symbology
         {
             if (BackBuffer != null && g != null)
             {
-                Rectangle clipView = ParentToView(rectangle);
+                Rectangle srcRectangle = GetRectangleToView(rectangle);
                 try
                 {
                     lock (_lockObject)
                     {
-                        g.DrawImage(BackBuffer, rectangle, clipView, GraphicsUnit.Pixel);
+                        g.DrawImage(BackBuffer, rectangle, srcRectangle, GraphicsUnit.Pixel);
                     }
                 }
                 catch (Exception e)
@@ -383,18 +381,18 @@ namespace EM.GIS.Symbology
             }
         }
         /// <summary>
-        /// 通过将当前视图矩形与父控件的大小进行比较，获得相对于背景图像的矩形
+        /// 获得相对于背景图像的矩形范围
         /// </summary>
-        /// <param name="clip"></param>
-        /// <returns></returns>
-        public Rectangle ParentToView(Rectangle clip)
+        /// <param name="rectangle">矩形范围</param>
+        /// <returns>相对于背景图像的矩形范围</returns>
+        public Rectangle GetRectangleToView(Rectangle rectangle)
         {
             Rectangle result = new Rectangle
             {
-                X = ViewBound.X + (clip.X * ViewBound.Width / _width),
-                Y = ViewBound.Y + (clip.Y * ViewBound.Height / _height),
-                Width = clip.Width * ViewBound.Width / _width,
-                Height = clip.Height * ViewBound.Height / _height
+                X = ViewBound.X + (rectangle.X * ViewBound.Width / Width),
+                Y = ViewBound.Y + (rectangle.Y * ViewBound.Height / Height),
+                Width = rectangle.Width * ViewBound.Width / Width,
+                Height = rectangle.Height * ViewBound.Height / Height
             };
             return result;
         }
@@ -418,8 +416,8 @@ namespace EM.GIS.Symbology
             Coordinate coordinate = null;
             if (ViewExtent != null)
             {
-                double x = (position.X * ViewExtent.Width / _width) + ViewExtent.MinX;
-                double y = ViewExtent.MaxY - (position.Y * ViewExtent.Height / _height);
+                double x = (position.X * ViewExtent.Width / Width) + ViewExtent.MinX;
+                double y = ViewExtent.MaxY - (position.Y * ViewExtent.Height / Height);
                 coordinate = new Coordinate(x, y, 0.0);
             }
             return coordinate;
@@ -427,8 +425,8 @@ namespace EM.GIS.Symbology
 
         public void Resize(int width, int height)
         {
-            var dx = width - _width;
-            var dy = height - _height;
+            var dx = width - Width;
+            var dy = height - Height;
             var destWidth = ViewBound.Width + dx;
             var destHeight = ViewBound.Height + dy;
 
@@ -439,8 +437,8 @@ namespace EM.GIS.Symbology
             _viewBound = new Rectangle(ViewBound.X, ViewBound.Y, destWidth, destHeight);
             ResetViewExtent();
 
-            _width = width;
-            _height = height;
+            Width = width;
+            Height = height;
         }
 
         public void ZoomToMaxExtent()

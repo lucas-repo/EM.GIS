@@ -61,10 +61,10 @@ namespace EM.GIS.Symbology
         /// </summary>
         Task ResetBuffer();
         /// <summary>
-        /// 打印
+        /// 绘制背景图至指定画板的指定范围
         /// </summary>
-        /// <param name="g"></param>
-        /// <param name="rectangle"></param>
+        /// <param name="g">画板</param>
+        /// <param name="rectangle">范围</param>
         void Draw(Graphics g, Rectangle rectangle);
 
         /// <summary>

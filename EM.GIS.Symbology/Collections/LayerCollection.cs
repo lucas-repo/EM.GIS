@@ -31,6 +31,7 @@ namespace EM.GIS.Symbology
                 IsVisible = true,
                 Parent = Parent
             };
+            Insert(0, group);
             return group;
         }
         private string GetDifferenctName(string prefix, int i = 0)
