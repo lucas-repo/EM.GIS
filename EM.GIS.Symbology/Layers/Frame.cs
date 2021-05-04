@@ -18,6 +18,8 @@ namespace EM.GIS.Symbology
     /// </summary>
     public class Frame : Group, IFrame
     {
+        private int _extentChangedSuspensionCount;
+        private bool _extentsChanged;
         private object _lockObject = new object();
         private BackgroundWorker _bw;
         private int _busyCount;
@@ -114,8 +116,13 @@ namespace EM.GIS.Symbology
                 if (value == null) return;
                 IExtent ext = value.Copy();
                 ResetAspectRatio(ext);
+
+                // 重新绘制背景图片
+                SuspendExtentChanged();
                 _viewExtents = ext;
-                OnViewExtentsChanged(_viewExtents);
+                _extentsChanged = true;
+                ResetBuffer();
+                ResumeExtentChanged(); // fires the needed event.
             }
         }
 
@@ -186,15 +193,14 @@ namespace EM.GIS.Symbology
                 }
                 else
                 {
-                    if (ViewExtent == null || ViewExtent.IsEmpty() || Width * Height == 0 || CancellationPending())
+                    if (ViewExtent == null || ViewExtent.IsEmpty() || Width <= 0 || Height <= 0 || CancellationPending())
                     {
                         return;
                     }
-                    Bitmap tmpBuffer = null;
-                    if (Width > 0 && Height > 0)
+                    Image tmpBuffer = new Bitmap(Width, Height);
+                    Action resetBufferAction = () =>
                     {
-                        tmpBuffer = new Bitmap(Width, Height);
-                        Action resetBufferAction = () =>
+                        if (!CancellationPending())
                         {
                             if (BackBuffer != tmpBuffer)
                             {
@@ -204,28 +210,28 @@ namespace EM.GIS.Symbology
                             {
                                 OnBackBufferChanged();
                             }
-                        };
-                        #region 绘制BackBuffer
-                        Rectangle rectangle = Bound;
-                        using (Graphics g = Graphics.FromImage(tmpBuffer))
-                        {
-                            using (Brush brush = new SolidBrush(BackGround))
-                            {
-                                g.FillRectangle(brush, rectangle);
-                            }
-                            int count = 2;
-                            for (int i = 0; i < count; i++)
-                            {
-                                if (CancellationPending())
-                                {
-                                    break;
-                                }
-                                bool selected = i == 1;
-                                Draw(g, rectangle, ViewExtent, selected, CancellationPending, resetBufferAction);
-                            }
                         }
-                        #endregion
-                        resetBufferAction();
+                    };
+                    #region 绘制BackBuffer
+                    using (Graphics g = Graphics.FromImage(tmpBuffer))
+                    {
+                        g.Clear(BackGround); //填充背景色
+                        int count = 2;
+                        for (int i = 0; i < count; i++)
+                        {
+                            if (CancellationPending())
+                            {
+                                break;
+                            }
+                            bool selected = i == 1;
+                            Draw(g, Bound, ViewExtent, selected, CancellationPending, resetBufferAction);
+                        }
+                    }
+                    #endregion
+                    resetBufferAction();
+                    if (BackBuffer != tmpBuffer && CancellationPending())//若取消绘制则释放图片
+                    {
+                        tmpBuffer.Dispose();
                     }
                 }
             }
@@ -239,7 +245,7 @@ namespace EM.GIS.Symbology
             bool ret = CancellationTokenSource?.IsCancellationRequested == true || _bw.CancellationPending;
             return ret;
         }
-       
+
         protected void ResetAspectRatio(IExtent newEnv)
         {
             // Aspect Ratio Handling
@@ -463,7 +469,6 @@ namespace EM.GIS.Symbology
             return maxExtent;
         }
         private IExtent _viewExtents;
-        private int _extentChangedSuspensionCount;
         public event EventHandler UpdateMap;
         public event EventHandler<ExtentArgs> ViewExtentsChanged;
 
@@ -471,13 +476,38 @@ namespace EM.GIS.Symbology
 
         public SmoothingMode SmoothingMode { get; set; } = SmoothingMode.AntiAlias;
 
-
         public ILayerCollection DrawingLayers { get; }
 
+        /// <summary>
+        /// 恢复ViewExtentsChanged
+        /// </summary>
+        protected void ResumeExtentChanged()
+        {
+            _extentChangedSuspensionCount--;
+            if (_extentChangedSuspensionCount == 0)
+            {
+                if (_extentsChanged)
+                {
+                    OnViewExtentsChanged(_viewExtents);
+                }
+            }
+        }
+
+        /// <summary>
+        /// 暂停触发ViewExtentsChanged
+        /// </summary>
+        protected void SuspendExtentChanged()
+        {
+            if (_extentChangedSuspensionCount == 0) _extentsChanged = false;
+            _extentChangedSuspensionCount++;
+        }
+        /// <summary>
+        /// 触发视图范围改变事件
+        /// </summary>
+        /// <param name="ext"></param>
         protected virtual void OnViewExtentsChanged(IExtent ext)
         {
             if (_extentChangedSuspensionCount > 0) return;
-            ResetBuffer();
             ViewExtentsChanged?.Invoke(this, new ExtentArgs(ext));
         }
 
