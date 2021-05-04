@@ -129,8 +129,6 @@ namespace EM.GIS.Symbology
         public Rectangle Bound
         {
             get => new Rectangle(0, 0, Width, Height);
-            set
-            { }
         }
         private int _isBusyIndex;
         public bool IsBusy

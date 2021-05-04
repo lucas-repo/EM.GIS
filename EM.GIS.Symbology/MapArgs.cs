@@ -11,8 +11,8 @@ namespace EM.GIS.Symbology
     public class MapArgs :  IProj
     {
         public Graphics Device { get; }
-        public IExtent Extent { get; set; }
-        public Rectangle Bound { get; set; }
+        public IExtent Extent { get; }
+        public Rectangle Bound { get; }
         public double Dx { get; }
         public double Dy { get; }
         public MapArgs(Rectangle rectangle, IExtent extent )

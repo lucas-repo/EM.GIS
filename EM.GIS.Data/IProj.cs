@@ -4,17 +4,17 @@ using System.Drawing;
 namespace EM.GIS.Data
 {
     /// <summary>
-    /// 带范围和边界的接口
+    /// 投影接口，用于计算像素坐标与世界坐标的转换
     /// </summary>
     public interface IProj
     {
         /// <summary>
-        /// 范围
+        /// 世界范围
         /// </summary>
-        IExtent Extent { get; set; }
+        IExtent Extent { get; }
         /// <summary>
-        /// 边界
+        /// 像素范围
         /// </summary>
-        Rectangle Bound { get; set; }
+        Rectangle Bound { get; }
     }
 }

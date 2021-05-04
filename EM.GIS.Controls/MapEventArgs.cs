@@ -60,12 +60,12 @@ namespace EM.GIS.Controls
         /// <summary>
         /// Gets the geographic bounds of the content of the buffer.
         /// </summary>
-        public IExtent Extent { get; set; }
+        public IExtent Extent { get; }
 
         /// <summary>
         /// Gets the rectangle dimensions of what the buffer should be in pixels
         /// </summary>
-        public Rectangle Bound { get; set; }
+        public Rectangle Bound { get; }
 
         /// <summary>
         /// Gets the maximum Y value
