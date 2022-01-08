@@ -13,8 +13,4 @@
     <OutputPath>..\bin\Release\</OutputPath>
   </PropertyGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\EM.GIS\EM.GIS.csproj" />
-  </ItemGroup>
-
 </Project>

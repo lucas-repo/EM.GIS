@@ -22,9 +22,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\EM.GIS.Data\EM.GIS.Data.csproj">
-      <Private>false</Private>
-    </ProjectReference>
     <ProjectReference Include="..\EM.GIS.Geometries\EM.GIS.Geometries.csproj">
       <Private>false</Private>
     </ProjectReference>

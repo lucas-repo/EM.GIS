@@ -18,14 +18,4 @@
     <OutputPath>..\bin\Release\</OutputPath>
   </PropertyGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\EM.GIS.Data\EM.GIS.Data.csproj">
-      <Private>false</Private>
-    </ProjectReference>
-    <ProjectReference Include="..\EM.GIS.Geometries\EM.GIS.Geometries.csproj">
-      <Private>false</Private>
-    </ProjectReference>
-    <ProjectReference Include="..\EM.GIS\EM.GIS.csproj" />
-  </ItemGroup>
-
 </Project>

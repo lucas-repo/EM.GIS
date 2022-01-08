@@ -9,39 +9,7 @@ namespace EM.GIS.Gdals
     public static class GeometryExtensions
     {
         #region 几何体
-        public static int GetPointCount(this Feature feature)
-        {
-            int count = 0;
-            if (feature != null)
-            {
-                using (var geometry = feature.GetGeometryRef())
-                {
-                    geometry.GetPointCount(ref count);
-                }
-            }
-            return count;
-        }
-        public static void GetPointCount(this OSGeo.OGR.Geometry geometry, ref int count)
-        {
-            if (geometry != null)
-            {
-                int geoCount = geometry.GetGeometryCount();
-                if (geoCount > 0)
-                {
-                    for (int i = 0; i < geoCount; i++)
-                    {
-                        using (var childGeo = geometry.GetGeometryRef(i))
-                        {
-                            childGeo.GetPointCount(ref count);
-                        }
-                    }
-                }
-                else
-                {
-                    count += geometry.GetPointCount();
-                }
-            }
-        }
+      
         public static ICoordinate ToCoordinate(this IEnumerable<double> array)
         {
             ICoordinate coordinate = null;
@@ -92,34 +60,6 @@ namespace EM.GIS.Gdals
             return ogrGeometry;
         }
 
-        private static void AddPoint(this OSGeo.OGR.Geometry geometry, double x, double y, double z = double.NaN, double m = double.NaN)
-        {
-            if (geometry != null)
-            {
-                if (double.IsNaN(z))
-                {
-                    if (double.IsNaN(m))
-                    {
-                        geometry.AddPoint_2D(x, y);
-                    }
-                    else
-                    {
-                        geometry.AddPointM(x, y, m);
-                    }
-                }
-                else
-                {
-                    if (double.IsNaN(m))
-                    {
-                        geometry.AddPoint(x, y, z);
-                    }
-                    else
-                    {
-                        geometry.AddPointZM(x, y, z, m);
-                    }
-                }
-            }
-        }
         private static void AddPoint(this OSGeo.OGR.Geometry geometry, ICoordinate coordinate)
         {
             if (geometry != null && coordinate != null)
