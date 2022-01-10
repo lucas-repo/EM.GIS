@@ -5,7 +5,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Text;
 
-namespace EM.GIS.Gdals
+namespace EM.GIS.GdalExtensions
 {
     public static class DatasetExtensions
     {

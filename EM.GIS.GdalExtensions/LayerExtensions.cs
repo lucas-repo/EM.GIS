@@ -3,9 +3,9 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace EM.GIS.Gdals
+namespace EM.GIS.GdalExtensions
 {
-    public static class GdalLayerExtensions
+    public static class LayerExtensions
     {
         public static Envelope GetEnvelope(this Layer layer)
         {

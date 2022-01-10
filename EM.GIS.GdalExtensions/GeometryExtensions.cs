@@ -1,12 +1,13 @@
-﻿using System;
+﻿using OSGeo.OGR;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace EM.GIS.Gdals
+namespace EM.GIS.GdalExtensions
 {
-    public static class GdalGeometryExtensions
+    public static class GeometryExtensions
     {
-        public static void GetPointCount(this OSGeo.OGR.Geometry geometry, ref int count)
+        public static void GetPointCount(this Geometry geometry, ref int count)
         {
             if (geometry != null)
             {
@@ -27,7 +28,7 @@ namespace EM.GIS.Gdals
                 }
             }
         }
-        public static void AddPoint(this OSGeo.OGR.Geometry geometry, double x, double y, double z = double.NaN, double m = double.NaN)
+        public static void AddPoint(this Geometry geometry, double x, double y, double z = double.NaN, double m = double.NaN)
         {
             if (geometry != null)
             {

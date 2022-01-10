@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace EM.GIS.Gdals
+namespace EM.GIS.GdalExtensions
 {
     /// <summary>
     /// 范围扩展
