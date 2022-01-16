@@ -1,4 +1,5 @@
-﻿using System;
+﻿using EM.GIS.GdalExtensions;
+using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
@@ -16,6 +17,7 @@ namespace EM.GIS.Tools
     {
         public App()
         {
+            GdalConfiguration.ConfigureOgr();
         }
     }
 }

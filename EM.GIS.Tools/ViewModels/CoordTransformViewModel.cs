@@ -75,7 +75,6 @@ namespace EM.GIS.Tools
             SelectPathCmd=new DelegateCommand<string>(SelectPath);
             TransformCmd =new DelegateCommand(Transform, CanTransform);
             PropertyChanged+=CoordTransformViewModel_PropertyChanged;
-            GdalConfiguration.ConfigureOgr();
         }
 
         private void SelectPath(string? pathName)
@@ -192,7 +191,7 @@ namespace EM.GIS.Tools
             var layerCount = destDataSource.GetLayerCount();
             if (layerCount>0)
             {
-                using var layer = destDataSource.GetLayerByIndex(0);
+                var layer = destDataSource.GetLayerByIndex(0);
                 var featureCount = layer.GetFeatureCount(1);
                 if (featureCount>0)
                 {

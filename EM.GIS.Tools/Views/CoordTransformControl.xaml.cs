@@ -16,7 +16,7 @@ using System.Windows.Shapes;
 namespace EM.GIS.Tools
 {
     /// <summary>
-    /// CoordTransformControl.xaml 的交互逻辑
+    /// 坐标转换控件
     /// </summary>
     public partial class CoordTransformControl : UserControl
     {

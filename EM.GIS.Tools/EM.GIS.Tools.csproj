@@ -20,13 +20,13 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Update="CoordTransformControl.xaml.cs">
+    <Compile Update="Views\CoordTransformControl.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
   </ItemGroup>
 
   <ItemGroup>
-    <Page Update="CoordTransformControl.xaml">
+    <Page Update="Views\CoordTransformControl.xaml">
       <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
       <SubType>Designer</SubType>
     </Page>

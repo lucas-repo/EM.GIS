@@ -1,6 +1,7 @@
 ﻿using OSGeo.OGR;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace EM.GIS.GdalExtensions
@@ -22,10 +23,8 @@ namespace EM.GIS.GdalExtensions
                 {
                     for (int i = 0; i < geoCount; i++)
                     {
-                        using (var childGeo = geometry.GetGeometryRef(i))
-                        {
-                            count+= childGeo.GetTotalPointCount();
-                        }
+                        var childGeo = geometry.GetGeometryRef(i);
+                        count+= childGeo.GetTotalPointCount();
                     }
                 }
                 else
@@ -125,6 +124,73 @@ namespace EM.GIS.GdalExtensions
                     childGeometry.TransformCoord(transformCoordAction);
                 }
             }
+        }
+
+        /// <summary>
+        /// 设置点坐标（geometry必须为线或点类型,coord长度必须与几何体维度一致）
+        /// </summary>
+        /// <param name="geometry">几何体</param>
+        /// <param name="pointIndex">点索引</param>
+        /// <param name="coord">坐标</param>
+        /// <returns>设置成功为true反之false</returns>
+        public static bool SetPoint(this Geometry geometry, int pointIndex, double[] coord)
+        {
+            bool ret = false;
+            if (geometry!=null&&pointIndex>=0&&pointIndex<geometry.GetPointCount()&&coord?.Length==geometry.GetCoordinateDimension())
+            {
+                switch (coord.Length)
+                {
+                    case 2:
+                        geometry.SetPoint_2D(pointIndex, coord[0], coord[1]);
+                        break;
+                    case 3:
+                        if (geometry.Is3D()==1)
+                        {
+                            geometry.SetPoint(pointIndex, coord[0], coord[1], coord[2]);
+                        }
+                        else if (geometry.IsMeasured()==1)
+                        {
+                            geometry.SetPointM(pointIndex, coord[0], coord[1], coord[2]);
+                        }
+                        break;
+                    case 4:
+                        geometry.SetPointZM(pointIndex, coord[0], coord[1], coord[2], coord[3]);
+                        break;
+                }
+                ret=true;
+            }
+            return ret;
+        }
+        /// <summary>
+        /// 计算几何体集合的质心
+        /// </summary>
+        /// <param name="geometries">几何体集合</param>
+        /// <returns>质心</returns>
+        public static Geometry GetCentroid(this IEnumerable<Geometry> geometries)
+        {
+            Geometry centroid = null;
+            if (geometries!=null&&geometries.Count()>0)
+            {
+                var firstGeometry = geometries.First();
+                var dimension = firstGeometry.GetCoordinateDimension();
+                double[] destCoord = new double[dimension];
+                foreach (var geometry in geometries)
+                {
+                    double[] coord = new double[dimension];
+                    geometry.Centroid().GetPoint(0, coord);
+                    for (int i = 0; i < dimension; i++)
+                    {
+                        destCoord[i] += coord[i];
+                    }
+                }
+                for (int i = 0; i < dimension; i++)
+                {
+                    destCoord[i]/=geometries.Count();
+                }
+                centroid=new Geometry(wkbGeometryType.wkbPoint);
+                centroid.SetPoint(0, destCoord);
+            }
+            return centroid;
         }
     }
 }

@@ -1,0 +1,3 @@
+﻿using Driver driver =DataSource.GetDriver();//自行释放
+using var feature = Layer.GetFeature(i);//自行释放
+var geometry = Feature.GetGeometryRef();//返回的几何图形仍归容器所有，不应修改
