@@ -98,24 +98,26 @@ namespace EM.GIS.GdalExtensions
             {
                 throw new Exception("参数设置错误");
             }
-            using var fieldDefn = feature.GetFieldDefnRef(index);
             object value;
-            switch (fieldDefn.GetFieldType())
+            using (var fieldDefn = feature.GetFieldDefnRef(index))
             {
-                case OSGeo.OGR.FieldType.OFTString:
-                    value = feature.GetFieldAsString(index);
-                    break;
-                case OSGeo.OGR.FieldType.OFTInteger:
-                    value = feature.GetFieldAsInteger(index);
-                    break;
-                case OSGeo.OGR.FieldType.OFTInteger64:
-                    value = feature.GetFieldAsInteger64(index);
-                    break;
-                case OSGeo.OGR.FieldType.OFTReal:
-                    value = feature.GetFieldAsDouble(index);
-                    break;
-                default:
-                    throw new NotImplementedException();
+                switch (fieldDefn.GetFieldType())
+                {
+                    case OSGeo.OGR.FieldType.OFTString:
+                        value = feature.GetFieldAsString(index);
+                        break;
+                    case OSGeo.OGR.FieldType.OFTInteger:
+                        value = feature.GetFieldAsInteger(index);
+                        break;
+                    case OSGeo.OGR.FieldType.OFTInteger64:
+                        value = feature.GetFieldAsInteger64(index);
+                        break;
+                    case OSGeo.OGR.FieldType.OFTReal:
+                        value = feature.GetFieldAsDouble(index);
+                        break;
+                    default:
+                        throw new NotImplementedException();
+                }
             }
             return value;
         }
@@ -125,24 +127,26 @@ namespace EM.GIS.GdalExtensions
             {
                 throw new Exception("参数设置错误");
             }
-            using var fieldDefn = feature.GetFieldDefnRef(fieldName);
             object value;
-            switch (fieldDefn.GetFieldType())
+            using (var fieldDefn = feature.GetFieldDefnRef(fieldName))
             {
-                case OSGeo.OGR.FieldType.OFTString:
-                    value = feature.GetFieldAsString(fieldName);
-                    break;
-                case OSGeo.OGR.FieldType.OFTInteger:
-                    value = feature.GetFieldAsInteger(fieldName);
-                    break;
-                case OSGeo.OGR.FieldType.OFTInteger64:
-                    value = feature.GetFieldAsInteger64(fieldName);
-                    break;
-                case OSGeo.OGR.FieldType.OFTReal:
-                    value = feature.GetFieldAsDouble(fieldName);
-                    break;
-                default:
-                    throw new NotImplementedException();
+                switch (fieldDefn.GetFieldType())
+                {
+                    case OSGeo.OGR.FieldType.OFTString:
+                        value = feature.GetFieldAsString(fieldName);
+                        break;
+                    case OSGeo.OGR.FieldType.OFTInteger:
+                        value = feature.GetFieldAsInteger(fieldName);
+                        break;
+                    case OSGeo.OGR.FieldType.OFTInteger64:
+                        value = feature.GetFieldAsInteger64(fieldName);
+                        break;
+                    case OSGeo.OGR.FieldType.OFTReal:
+                        value = feature.GetFieldAsDouble(fieldName);
+                        break;
+                    default:
+                        throw new NotImplementedException();
+                }
             }
             return value;
         }
@@ -185,7 +189,7 @@ namespace EM.GIS.GdalExtensions
             {
                 using (var geometry = feature.GetGeometryRef())
                 {
-                    geometry.GetPointCount(ref count);
+                    count = geometry.GetTotalPointCount();
                 }
             }
             return count;

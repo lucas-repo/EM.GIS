@@ -1,0 +1,37 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31912.275
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EM.GIS.CoordinateTransformation", "EM.GIS.CoordinateTransformation\EM.GIS.CoordinateTransformation.csproj", "{4F7C9EE8-4C14-49CB-98A6-B02E17D82331}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EM.GIS.Tools", "EM.GIS.Tools\EM.GIS.Tools.csproj", "{19B8B3AA-B8B6-449A-A580-8198B20E51D6}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EM.GIS.GdalExtensions", "EM.GIS.GdalExtensions\EM.GIS.GdalExtensions.csproj", "{43581136-4C4C-4DC6-A348-3775AD0DB416}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{4F7C9EE8-4C14-49CB-98A6-B02E17D82331}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4F7C9EE8-4C14-49CB-98A6-B02E17D82331}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4F7C9EE8-4C14-49CB-98A6-B02E17D82331}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4F7C9EE8-4C14-49CB-98A6-B02E17D82331}.Release|Any CPU.Build.0 = Release|Any CPU
+		{19B8B3AA-B8B6-449A-A580-8198B20E51D6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{19B8B3AA-B8B6-449A-A580-8198B20E51D6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{19B8B3AA-B8B6-449A-A580-8198B20E51D6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{19B8B3AA-B8B6-449A-A580-8198B20E51D6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{43581136-4C4C-4DC6-A348-3775AD0DB416}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{43581136-4C4C-4DC6-A348-3775AD0DB416}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{43581136-4C4C-4DC6-A348-3775AD0DB416}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{43581136-4C4C-4DC6-A348-3775AD0DB416}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {0C673807-3D8D-407D-92C7-69037FADDD64}
+	EndGlobalSection
+EndGlobal

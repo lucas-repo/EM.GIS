@@ -1,0 +1,35 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net6.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <UseWPF>true</UseWPF>
+    <AssemblyName>GIS工具</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="EM.WpfBase" Version="1.0.0-alpha" />
+    <PackageReference Include="Gdal.Core" Version="2.3.0-beta-023" />
+    <PackageReference Include="Gdal.Core.WindowsRuntime" Version="2.3.0-beta-023" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\EM.GIS.CoordinateTransformation\EM.GIS.CoordinateTransformation.csproj" />
+    <ProjectReference Include="..\EM.GIS.GdalExtensions\EM.GIS.GdalExtensions.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="CoordTransformControl.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Page Update="CoordTransformControl.xaml">
+      <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
+      <SubType>Designer</SubType>
+    </Page>
+  </ItemGroup>
+
+</Project>
