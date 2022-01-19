@@ -23,6 +23,19 @@ namespace EM.GIS.Tools
         public MainWindow()
         {
             InitializeComponent();
+            if (computeCenterPointControl.DataContext is ComputeCenterPointViewModel viewModel)
+            {
+                viewModel.ProgressAction=ReportProgress;
+            }
+        }
+
+        private void ReportProgress(string message, int percent)
+        {
+            Dispatcher.Invoke(() =>
+            {
+                progressTextBlock.Text=message;
+                progressBar.Value=percent;
+            });
         }
     }
 }

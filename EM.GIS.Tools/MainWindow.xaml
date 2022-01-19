@@ -5,10 +5,20 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:EM.GIS.Tools"
         mc:Ignorable="d"
-        Title="GIS工具" Height="450" Width="800">
-    <TabControl>
-        <TabItem Header="国内地图纠偏">
-            <local:CoordTransformControl/>
-        </TabItem>
-    </TabControl>
+        Title="GIS工具" Height="450" Width="800" WindowStartupLocation="CenterScreen">
+
+    <Grid>
+        <TabControl BorderThickness="0">
+            <TabItem Header="国内地图纠偏">
+                <local:CoordTransformControl/>
+            </TabItem>
+            <TabItem Header="计算中心点">
+                <local:ComputeCenterPointControl x:Name="computeCenterPointControl"/>
+            </TabItem>
+        </TabControl>
+        <Grid VerticalAlignment="Bottom" Height="20">
+            <ProgressBar x:Name="progressBar" Background="Transparent" BorderThickness="0"/>
+            <TextBlock x:Name="progressTextBlock" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="20,0,0,0"/>
+        </Grid>
+    </Grid>
 </Window>

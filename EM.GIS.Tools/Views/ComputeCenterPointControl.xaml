@@ -5,8 +5,29 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:EM.GIS.Tools"
              mc:Ignorable="d" 
-             d:DesignHeight="450" d:DesignWidth="800">
-    <Grid>
-            
-    </Grid>
+             d:DesignHeight="250" d:DesignWidth="800">
+    <DockPanel Margin="20" IsEnabled="{Binding IsFree}">
+        <Button Content="执行" Command="{Binding ExcuteCmd}" Margin="0,20,0,0" DockPanel.Dock="Bottom"/>
+        <StackPanel>
+            <DockPanel>
+                <Label Content="原始数据："/>
+                <Button Content="浏览" Style="{StaticResource BrowseButtonStyle}" Command="{Binding SelectPathCmd}" CommandParameter="SrcPath" DockPanel.Dock="Right" Margin="5,0,0,0"/>
+                <TextBox Text="{Binding SrcPath}" />
+            </DockPanel>
+            <DockPanel Margin="0,10,0,0">
+                <Label Content="叠加数据："/>
+                <Button Content="浏览" Style="{StaticResource BrowseButtonStyle}" Command="{Binding SelectPathCmd}" CommandParameter="MaskPath" DockPanel.Dock="Right" Margin="5,0,0,0"/>
+                <TextBox Text="{Binding MaskPath}" />
+            </DockPanel>
+            <DockPanel Margin="0,10,0,0">
+                <Label Content="保存路径："/>
+                <Button Content="浏览" Style="{StaticResource BrowseButtonStyle}" Command="{Binding SelectPathCmd}" CommandParameter="DestPath" DockPanel.Dock="Right" Margin="5,0,0,0"/>
+                <TextBox Text="{Binding DestPath}" />
+            </DockPanel>
+            <WrapPanel Margin="0,10,0,0">
+                <Label Content="迭代次数："/>
+                <TextBox Text="{Binding IterationCount}" Width="100"/>
+            </WrapPanel>
+        </StackPanel>
+    </DockPanel>
 </UserControl>

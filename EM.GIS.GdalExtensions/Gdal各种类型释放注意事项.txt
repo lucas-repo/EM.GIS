@@ -1,3 +1,5 @@
 ﻿using Driver driver =DataSource.GetDriver();//自行释放
+var srcSpatialReference = Layer.GetSpatialRef();//指向内部对象的指针。它不应被更改或释放。它的生命周期将是数据集对象之一，或者直到下一次调用此方法。
 using var feature = Layer.GetFeature(i);//自行释放
 var geometry = Feature.GetGeometryRef();//返回的几何图形仍归容器所有，不应修改
+var featureDefn = destLayer.GetLayerDefn();//应用程序不应修改或释放。它封装了图层特征的属性模式

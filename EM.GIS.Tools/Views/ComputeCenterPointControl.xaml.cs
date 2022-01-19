@@ -23,6 +23,7 @@ namespace EM.GIS.Tools
         public ComputeCenterPointControl()
         {
             InitializeComponent();
+            DataContext=new ComputeCenterPointViewModel(this);
         }
     }
 }

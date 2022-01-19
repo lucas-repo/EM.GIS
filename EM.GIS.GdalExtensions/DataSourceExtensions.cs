@@ -28,7 +28,7 @@ namespace EM.GIS.GdalExtensions
                 {
                     var srcFieldDefn = srcFeatureDefn.GetFieldDefn(i);
                     FieldDefn destFieldDefn = new FieldDefn(srcFieldDefn.GetName(), srcFieldDefn.GetFieldType());
-                    destFeatureDefn.AddFieldDefn(destFieldDefn);
+                    destFeatureDefn.AddFieldDefn(destFieldDefn); 
                 }
             }
             return destLayer;
