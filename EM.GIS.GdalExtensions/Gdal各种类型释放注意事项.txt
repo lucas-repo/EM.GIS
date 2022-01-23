@@ -1,5 +1,9 @@
 ﻿using Driver driver =DataSource.GetDriver();//自行释放
+var layer = DataSource.GetLayerByIndex(i);//按索引获取图层。返回的图层仍归 OGRDataSource 所有，不应被应用程序删除。
 var srcSpatialReference = Layer.GetSpatialRef();//指向内部对象的指针。它不应被更改或释放。它的生命周期将是数据集对象之一，或者直到下一次调用此方法。
 using var feature = Layer.GetFeature(i);//自行释放
 var geometry = Feature.GetGeometryRef();//返回的几何图形仍归容器所有，不应修改
 var featureDefn = destLayer.GetLayerDefn();//应用程序不应修改或释放。它封装了图层特征的属性模式
+var fieldDefn= FeatureDefn.GetFieldDefn(i)//应用程序不应修改或释放此对象
+Layer.CreateField(FieldDefn fieldDefn, int approx_ok);//在图层上创建一个新字段。您必须使用它在真实图层上创建新字段。应用程序不应该直接修改层使用的OGRFeatureDefn。当存在使用先前图层定义获得或创建的要素对象时，不应调用此方法
+FeatureDefn.AddFieldDefn(FieldDefn fieldDefn);//添加新的字段定义。要将新字段定义添加到图层定义，请不要直接使用此函数，而是使用Layer.CreateField()。只有在不存在基于此OGRFeatureDefn的OGRFeature对象时才应调用此方法。传入的OGRFieldDefn被复制，并由调用者负责。

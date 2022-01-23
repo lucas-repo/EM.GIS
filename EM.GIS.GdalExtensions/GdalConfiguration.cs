@@ -147,6 +147,16 @@ namespace EM.GIS.GdalExtensions
             // Register drivers
             Ogr.RegisterAll();
             ConfigEncoding();
+            try
+            {
+                Encoding gbk = Encoding.GetEncoding(FeatureExtensions.GdalEncoding);
+            }
+            catch (Exception e)//如果无法获取GBK编码，则需注册编码
+            {
+                Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+            }
+            Gdal.SetConfigOption("SHAPE_ENCODING", "utf-8");//设置shape编码为UTF8，防止属性乱码
+            //Gdal.SetConfigOption("SHAPE_ENCODING", "GB18030");
             //var shapeEncoding = Gdal.GetConfigOption("SHAPE_ENCODING", string.Empty);
             //if (shapeEncoding==string.Empty)
             //{
