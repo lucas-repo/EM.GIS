@@ -187,8 +187,7 @@ namespace EM.GIS.Tools
                 return;
             }
             using var driver = srcDataSource.GetDriver();
-            string[] options = { "ENCODING=UTF-8" };//添加.cpg文件，以解决写入中文乱码
-            using var destDataSource = driver.CopyDataSource(srcDataSource, DestPath, options);
+            using var destDataSource = driver.CopyDataSourceUTF8(srcDataSource, DestPath, null);
              var layerCount = destDataSource.GetLayerCount();
             if (layerCount>0)
             {

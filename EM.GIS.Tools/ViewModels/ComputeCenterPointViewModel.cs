@@ -18,7 +18,7 @@ namespace EM.GIS.Tools
     /// <summary>
     /// 计算中心点视图模型
     /// </summary>
-    public class ComputeCenterPointViewModel : ViewModel<ComputeCenterPointControl>
+    public class ComputeCenterPointViewModel : ViewModel<ComputeCenterPointControl>, IDisposable
     {
         private string _srcPath;
         /// <summary>
@@ -105,7 +105,21 @@ namespace EM.GIS.Tools
             SelectPathCmd=new DelegateCommand<string>(SelectPath);
             Fields=new ObservableCollection<CheckableFieldInfo>();
             PropertyChanged+=ComputeCenterPointViewModel_PropertyChanged;
+            t.Loaded+=T_Loaded;
         }
+
+        private void T_Loaded(object sender, RoutedEventArgs e)
+        {
+            var window = Window.GetWindow(View);
+            window.Closed-=Window_Closed;
+            window.Closed+=Window_Closed;
+        }
+
+        private void Window_Closed(object? sender, EventArgs e)
+        {
+            Dispose();
+        }
+
         private OpenFileDialog OpenShpDialog()
         {
             var openFileDialog = new OpenFileDialog()
@@ -171,21 +185,48 @@ namespace EM.GIS.Tools
                     break;
             }
         }
+        private DataSource _maskDataSource;
+        /// <summary>
+        /// 叠加数据源
+        /// </summary>
+        private DataSource? MaskDataSource
+        {
+            get
+            {
+                if (_maskDataSource==null&&File.Exists(MaskPath))
+                {
+                    _maskDataSource= Ogr.Open(MaskPath, 0);
+                }
+                return _maskDataSource;
+            }
+            set
+            {
+                if (_maskDataSource!=value)
+                {
+                    if (_maskDataSource!=null)
+                    {
+                        _maskDataSource.Dispose();
+                    }
+                    _maskDataSource = value;
+                }
+            }
+        }
+
         private void ComputeCenterPointViewModel_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
             switch (e.PropertyName)
             {
                 case nameof(SrcPath):
-                case nameof(DestPointPath):
+                case nameof(DestPath):
                 case nameof(MaskPath):
+                case nameof(DestPointPath):
                     ExcuteCmd.RaiseCanExecuteChanged();
                     if (e.PropertyName==nameof(MaskPath))
                     {
                         Fields.Clear();
-                        using DataSource dataSource = Ogr.Open(MaskPath, 0);
-                        if (dataSource!=null)
+                        if (MaskDataSource!=null)
                         {
-                            using var layer = dataSource.GetLayerByIndex(0);
+                            var layer = MaskDataSource.GetLayerByIndex(0);
                             if (layer!=null)
                             {
                                 var featureDefn = layer.GetLayerDefn();
@@ -193,6 +234,22 @@ namespace EM.GIS.Tools
                                 {
                                     var fieldDefn = featureDefn.GetFieldDefn(i);
                                     Fields.Add(new CheckableFieldInfo(fieldDefn));
+                                }
+                            }
+                        }
+                    }
+                    if (e.PropertyName==nameof(SrcPath))
+                    {
+                        if (string.IsNullOrEmpty(DestPath))
+                        {
+                            if (File.Exists(SrcPath))
+                            {
+                                var directory = Path.GetDirectoryName(SrcPath);
+                                if (directory!=null)
+                                {
+                                    var name = Path.GetFileNameWithoutExtension(SrcPath);
+                                    DestPath=Path.Combine(directory, $"{name}_输出.shp");
+                                    DestPointPath=Path.Combine(directory, $"中心点.shp");
                                 }
                             }
                         }
@@ -223,7 +280,7 @@ namespace EM.GIS.Tools
                      ShowMessage($"无法打开{SrcPath}");
                      return;
                  }
-                 using var srcLayer = srcDataSource.GetLayerByIndex(0);
+                 var srcLayer = srcDataSource.GetLayerByIndex(0);
                  if (srcLayer==null)
                  {
                      ShowMessage($"{nameof(SrcPath)}没有图层数据");
@@ -235,13 +292,12 @@ namespace EM.GIS.Tools
                      ShowMessage($"{nameof(SrcPath)}没有数据");
                      return;
                  }
-                 using DataSource maskDataSource = Ogr.Open(MaskPath, 0);
-                 if (maskDataSource==null)
+                 if (MaskDataSource==null)
                  {
                      ShowMessage($"无法打开{nameof(MaskPath)}");
                      return;
                  }
-                 using var maskLayer = maskDataSource.GetLayerByIndex(0);
+                 var maskLayer = MaskDataSource.GetLayerByIndex(0);
                  if (maskLayer==null)
                  {
                      ShowMessage($"{nameof(MaskPath)}没有图层数据");
@@ -273,20 +329,21 @@ namespace EM.GIS.Tools
                  sw.Start();
                  using Driver driver = srcDataSource.GetDriver();
                  //创建目标数据
-                 using var destDataSource = driver.CopyDataSource(srcDataSource, DestPath, null);//将源数据复制到目标数据
-                 using var destLayer = destDataSource.GetLayerByIndex(0);
+                 using var destDataSource = driver.CopyDataSourceUTF8(srcDataSource, DestPath, null);//将源数据复制到目标数据
+                 var destLayer = destDataSource.GetLayerByIndex(0);
 
                  //创建中心点数据
                  var srcSpatialReference = srcLayer.GetSpatialRef();
-                 using var destPointDataSource = driver.CreateDataSource(DestPointPath, null);
-                 using var destPointLayer = destPointDataSource.CreateLayer(Path.GetFileNameWithoutExtension(DestPointPath), srcSpatialReference, wkbGeometryType.wkbPoint, null);//创建中心点图层
-                 
+                 using var destPointDataSource = driver.CreateDataSourceUTF8(DestPointPath, null);
+                 var options = DriverExtensions.GetOptionsWithUTF8(null);
+                 using var destPointLayer = destPointDataSource.CreateLayer(Path.GetFileNameWithoutExtension(DestPointPath), srcSpatialReference, wkbGeometryType.wkbPoint, options);//创建中心点图层
+
                  #region 添加选择的字段
                  var checkedFields = Fields.Where(x => x.IsChecked).ToList();//已选择的字段集合
                  foreach (var item in checkedFields)
                  {
-                     var ret0 = destLayer.CreateField(item.FieldName, item.FieldType);
-                     var ret1 = destPointLayer.CreateField(item.FieldName, item.FieldType);
+                     var ret0 = destLayer.CreateField(item.FieldDefn, 1);
+                     var ret1 = destPointLayer.CreateField(item.FieldDefn, 1);
                  }
                  #endregion
 
@@ -300,7 +357,7 @@ namespace EM.GIS.Tools
                      using var srcFeature = destLayer.GetNextFeature();
                      if (srcFeature!=null)
                      {
-                         var centerPointInfo = new CenterPointInfo(maskFeature.GetFID(), srcFeature.GetGeometryRef().Centroid()); 
+                         var centerPointInfo = new CenterPointInfo(maskFeature.GetFID(), srcFeature.GetGeometryRef().Centroid());
                          centerPointInfos.Add(centerPointInfo);
                      }
                  }
@@ -378,7 +435,7 @@ namespace EM.GIS.Tools
                                  {
                                      featureCopy.SetField(maskFeature, copyField.FieldName);
                                  }
-                                 destLayer.CreateFeature(featureCopy);
+                                 var ret = destLayer.CreateFeature(featureCopy);
                              }
                              //中心点图层创建要素
                              Feature destPointFeature = new(destPointFeatureDefn);
@@ -388,6 +445,7 @@ namespace EM.GIS.Tools
                              {
                                  destPointFeature.SetField(maskFeature, copyField.FieldName);
                              }
+                             destPointLayer.CreateFeature(destPointFeature);
                              item.Features.ForEach(x => x.Dispose());
                          }
                      }
@@ -404,6 +462,15 @@ namespace EM.GIS.Tools
                      IsFree=true;
                  });
              });
+        }
+
+        public void Dispose()
+        {
+            if (MaskDataSource!=null)
+            {
+                MaskDataSource.Dispose();
+                MaskDataSource = null;
+            }
         }
     }
 }

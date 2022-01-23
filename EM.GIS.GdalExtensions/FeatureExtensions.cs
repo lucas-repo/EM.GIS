@@ -84,8 +84,8 @@ namespace EM.GIS.GdalExtensions
         {
             if (destFeature!=null&&srcFeature!=null)
             {
-                var destFieldIndex = destFeature.GetDefnRef().GetFieldIndex(fieldName);
-                var srcFieldIndex = srcFeature.GetDefnRef().GetFieldIndex(fieldName);
+                var destFieldIndex = destFeature.GetDefnRef().GetFieldIndexUTF8(fieldName);
+                var srcFieldIndex = srcFeature.GetDefnRef().GetFieldIndexUTF8(fieldName);
                 if (destFieldIndex!=-1&&srcFieldIndex!=-1)
                 {
                     destFeature.SetField(destFieldIndex, srcFeature, srcFieldIndex);

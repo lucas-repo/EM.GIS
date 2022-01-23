@@ -1,4 +1,5 @@
-﻿using EM.WpfBase;
+﻿using EM.GIS.GdalExtensions;
+using EM.WpfBase;
 using OSGeo.OGR;
 using System;
 using System.Collections.Generic;
@@ -22,24 +23,14 @@ namespace EM.GIS.Tools
             get { return _isChecked; }
             set { SetProperty(ref _isChecked, value); }
         }
-        private string _fieldName;
         /// <summary>
         /// 字段名
         /// </summary>
-        public string FieldName
-        {
-            get { return _fieldName; }
-            set { SetProperty(ref _fieldName, value); }
-        }
-        private FieldType _fieldType;
+        public string FieldName { get; }
         /// <summary>
-        /// 字段类型
+        /// 字段定义
         /// </summary>
-        public FieldType FieldType
-        {
-            get { return _fieldType; }
-            set { SetProperty(ref _fieldType, value); }
-        }
+        public FieldDefn FieldDefn { get; }
 
         public CheckableFieldInfo(FieldDefn fieldDefn)
         {
@@ -47,14 +38,8 @@ namespace EM.GIS.Tools
             {
                 throw new ArgumentNullException(nameof(fieldDefn));
             }
-            _fieldName=fieldDefn.GetName();
-            _fieldType=fieldDefn.GetFieldType();
-        }
-
-        public CheckableFieldInfo(string fieldName, FieldType fieldType)
-        {
-            _fieldName=fieldName;
-            _fieldType=fieldType;
+            FieldDefn=fieldDefn;
+            FieldName =fieldDefn.GetNameUTF8();
         }
 
         public override string ToString()
