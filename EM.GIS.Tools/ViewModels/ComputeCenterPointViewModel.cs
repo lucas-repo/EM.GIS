@@ -353,13 +353,16 @@ namespace EM.GIS.Tools
                  {
                      using var maskFeature = maskLayer.GetFeature(i);
                      var maskGeometry = maskFeature.GetGeometryRef();//返回的几何图形仍归容器所有，不应修改
-                     destLayer.SetSpatialFilter(maskGeometry);
-                     using var srcFeature = destLayer.GetNextFeature();
-                     if (srcFeature!=null)
-                     {
-                         var centerPointInfo = new CenterPointInfo(maskFeature.GetFID(), srcFeature.GetGeometryRef().Centroid());
-                         centerPointInfos.Add(centerPointInfo);
-                     }
+                                                                     //destLayer.SetSpatialFilter(maskGeometry);
+                                                                     //using var srcFeature = destLayer.GetNextFeature();
+                                                                     //if (srcFeature!=null)
+                                                                     //{
+                                                                     //    var centerPointInfo = new CenterPointInfo(maskFeature.GetFID(), srcFeature.GetGeometryRef().Centroid());
+                                                                     //    centerPointInfos.Add(centerPointInfo);
+                                                                     //}
+                     var centergeometry = maskGeometry.Centroid();
+                     var centerPointInfo = new CenterPointInfo(maskFeature.GetFID(), centergeometry);
+                     centerPointInfos.Add(centerPointInfo);
                  }
                  ProgressAction?.Invoke("开始迭代...", 10);
                  #endregion
@@ -409,12 +412,17 @@ namespace EM.GIS.Tools
 
                          //ProgressAction?.Invoke($"第{i}次迭代，计算中心点中...", 10+(int)(srcFeatureCount*i+srcFeatureIndex));
                          #region 重新计算中心点
-                         foreach (var item in centerPointInfos)
+                         for (int numCenterPointInfo = centerPointInfos.Count-1; numCenterPointInfo>=0; numCenterPointInfo--)
                          {
-                             var newCentroid = item.Features.Select(x => x.GetGeometryRef()).GetCentroid();
-                             var oldCentrolid = item.Geometry;
-                             item.Geometry=newCentroid;
+                             var centerPointInfo = centerPointInfos[numCenterPointInfo];
+                             var newCentroid = centerPointInfo.Features.Select(x => x.GetGeometryRef()).GetCentroid();
+                             var oldCentrolid = centerPointInfo.Geometry;
+                             centerPointInfo.Geometry=newCentroid;
                              oldCentrolid.Dispose();
+                             if (newCentroid==null)
+                             {
+                                 centerPointInfos.RemoveAt(numCenterPointInfo);
+                             }
                          }
                          #endregion
                      }
