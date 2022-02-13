@@ -125,7 +125,7 @@ namespace EM.GIS.GdalExtensions
                 }
             }
         }
-
+       
         /// <summary>
         /// 设置点坐标（geometry必须为线或点类型,coord长度必须与几何体维度一致）
         /// </summary>

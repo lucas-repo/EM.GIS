@@ -155,7 +155,7 @@ namespace EM.GIS.GdalExtensions
             {
                 Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
             }
-            Gdal.SetConfigOption("SHAPE_ENCODING", "utf-8");//设置shape编码为UTF8，防止属性乱码
+            //Gdal.SetConfigOption("SHAPE_ENCODING", "utf-8");//设置shape编码为UTF8，防止属性乱码
             //Gdal.SetConfigOption("SHAPE_ENCODING", "GB18030");
             //var shapeEncoding = Gdal.GetConfigOption("SHAPE_ENCODING", string.Empty);
             //if (shapeEncoding==string.Empty)

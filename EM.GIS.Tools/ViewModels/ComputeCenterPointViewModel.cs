@@ -18,7 +18,7 @@ namespace EM.GIS.Tools
     /// <summary>
     /// 计算中心点视图模型
     /// </summary>
-    public class ComputeCenterPointViewModel : ViewModel<ComputeCenterPointControl>, IDisposable
+    public class ComputeCenterPointViewModel : ViewModel<ComputeCenterPointControl>, IDisposable,IReportable
     {
         private string _srcPath;
         /// <summary>
@@ -111,8 +111,11 @@ namespace EM.GIS.Tools
         private void T_Loaded(object sender, RoutedEventArgs e)
         {
             var window = Window.GetWindow(View);
-            window.Closed-=Window_Closed;
-            window.Closed+=Window_Closed;
+            if (window!=null)
+            {
+                window.Closed-=Window_Closed;
+                window.Closed+=Window_Closed;
+            }
         }
 
         private void Window_Closed(object? sender, EventArgs e)
@@ -260,7 +263,7 @@ namespace EM.GIS.Tools
 
         private bool CanExcute()
         {
-            return File.Exists(SrcPath)&&!string.IsNullOrEmpty(DestPath)&&File.Exists(MaskPath)&&!string.IsNullOrEmpty(DestPointPath);
+            return File.Exists(SrcPath)&&File.Exists(MaskPath)&&!string.IsNullOrEmpty(DestPointPath);
         }
         void ShowMessage(string text)
         {
@@ -309,11 +312,6 @@ namespace EM.GIS.Tools
                      ShowMessage($"{nameof(MaskPath)}没有数据");
                      return;
                  }
-                 if (string.IsNullOrEmpty(DestPath))
-                 {
-                     ShowMessage($"{nameof(DestPath)}不能为空");
-                     return;
-                 }
                  if (string.IsNullOrEmpty(DestPointPath))
                  {
                      ShowMessage($"{nameof(DestPointPath)}不能为空");
@@ -330,7 +328,7 @@ namespace EM.GIS.Tools
                  using Driver driver = srcDataSource.GetDriver();
                  //创建目标数据
                  using var destDataSource = driver.CopyDataSourceUTF8(srcDataSource, DestPath, null);//将源数据复制到目标数据
-                 var destLayer = destDataSource.GetLayerByIndex(0);
+                 var destLayer = destDataSource?.GetLayerByIndex(0);
 
                  //创建中心点数据
                  var srcSpatialReference = srcLayer.GetSpatialRef();
@@ -342,7 +340,10 @@ namespace EM.GIS.Tools
                  var checkedFields = Fields.Where(x => x.IsChecked).ToList();//已选择的字段集合
                  foreach (var item in checkedFields)
                  {
-                     var ret0 = destLayer.CreateField(item.FieldDefn, 1);
+                     if (destLayer!=null)
+                     {
+                         var ret0 = destLayer.CreateField(item.FieldDefn, 1);
+                     }
                      var ret1 = destPointLayer.CreateField(item.FieldDefn, 1);
                  }
                  #endregion
@@ -391,7 +392,7 @@ namespace EM.GIS.Tools
                                  oldProgress=newProgress;
                                  ProgressAction?.Invoke($"第{i}次迭代，计算中心点周围要素中...", oldProgress);
                              }
-                             var tmpFeature = destLayer.GetFeature(srcFeatureIndex);
+                             Feature tmpFeature = srcLayer.GetFeature(srcFeatureIndex);
                              double minDistance = double.MaxValue;
                              CenterPointInfo? minDistanceCenterPointInfo = null;
                              foreach (var item in centerPointInfos)
@@ -436,14 +437,19 @@ namespace EM.GIS.Tools
                          {
                              using var maskFeature = maskLayer.GetFeature(item.Fid);
                              //目标图层创建要素
-                             foreach (var feature in item.Features)
+                             if (destLayer!=null)
                              {
-                                 var featureCopy = feature.Clone();
-                                 foreach (var copyField in checkedFields)
+                                 foreach (var feature in item.Features)
                                  {
-                                     featureCopy.SetField(maskFeature, copyField.FieldName);
+                                     var srcFid = feature.GetFID();
+                                     Console.WriteLine($"{srcFid}");
+                                     var featureCopy = destLayer.GetFeature(srcFid).Clone();
+                                     foreach (var copyField in checkedFields)
+                                     {
+                                         featureCopy.SetField(maskFeature, copyField.FieldName);
+                                     }
+                                     var ret = destLayer.CreateFeature(featureCopy);
                                  }
-                                 var ret = destLayer.CreateFeature(featureCopy);
                              }
                              //中心点图层创建要素
                              Feature destPointFeature = new(destPointFeatureDefn);
@@ -457,7 +463,7 @@ namespace EM.GIS.Tools
                              item.Features.ForEach(x => x.Dispose());
                          }
                      }
-                     destDataSource.FlushCache();
+                     destDataSource?.FlushCache();
                      destPointDataSource.FlushCache();
                      #endregion
                  }

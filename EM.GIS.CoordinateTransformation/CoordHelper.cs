@@ -149,6 +149,5 @@ namespace EM.GIS.CoordinateTransformation
             var Wgs84 = Gcj02ToWgs84(gcj02.Lat, gcj02.Lon);
             return Wgs84;
         }
-
     }
 }

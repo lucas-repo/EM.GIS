@@ -23,9 +23,9 @@ namespace EM.GIS.Tools
         public MainWindow()
         {
             InitializeComponent();
-            if (computeCenterPointControl.DataContext is ComputeCenterPointViewModel viewModel)
+            if (computeCenterPointControl.DataContext is IReportable reportable)
             {
-                viewModel.ProgressAction=ReportProgress;
+                reportable.ProgressAction=ReportProgress;
             }
         }
 

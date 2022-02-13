@@ -2,6 +2,7 @@ using EM.GIS.CoordinateTransformation;
 using EM.GIS.GdalExtensions;
 using EM.WpfBase;
 using Microsoft.Win32;
+using Microsoft.WindowsAPICodePack.Dialogs;
 using OSGeo.OGR;
 using System;
 using System.Collections.ObjectModel;
@@ -24,14 +25,14 @@ namespace EM.GIS.Tools
             get { return _srcOffsetType; }
             set { SetProperty(ref _srcOffsetType, value); }
         }
-        private string _srcPath;
+        private string _srcDirectory;
         /// <summary>
-        /// 原文件路径
+        /// 原文件目录
         /// </summary>
-        public string SrcPath
+        public string SrcDirectory
         {
-            get { return _srcPath; }
-            set { SetProperty(ref _srcPath, value); }
+            get { return _srcDirectory; }
+            set { SetProperty(ref _srcDirectory, value); }
         }
         /// <summary>
         /// 偏移类型集合
@@ -47,14 +48,14 @@ namespace EM.GIS.Tools
             set { SetProperty(ref _destOffsetType, value); }
         }
 
-        private string _destPath;
+        private string _destDirectory;
         /// <summary>
-        /// 目标文件路径
+        /// 目标文件目录
         /// </summary>
-        public string DestPath
+        public string DestDirectory
         {
-            get { return _destPath; }
-            set { SetProperty(ref _destPath, value); }
+            get { return _destDirectory; }
+            set { SetProperty(ref _destDirectory, value); }
         }
         /// <summary>
         /// 选择目录命令
@@ -76,32 +77,29 @@ namespace EM.GIS.Tools
             TransformCmd =new DelegateCommand(Transform, CanTransform);
             PropertyChanged+=CoordTransformViewModel_PropertyChanged;
         }
-
+        public static string GetSelectedDirectory()
+        {
+            string directory = string.Empty;
+            var dialog = new CommonOpenFileDialog
+            {
+                IsFolderPicker = true,
+                Title="请选择目录"
+            };
+            if (dialog.ShowDialog()== CommonFileDialogResult.Ok)
+            {
+                directory = dialog.FileName;
+            }
+            return directory;
+        }
         private void SelectPath(string? pathName)
         {
             switch (pathName)
             {
-                case nameof(SrcPath):
-                    OpenFileDialog openFileDialog = new OpenFileDialog()
-                    {
-                        Title="选择要转换的要素",
-                        Filter="*.shp|*.shp"
-                    };
-                    if (openFileDialog.ShowDialog()==true)
-                    {
-                        SrcPath=openFileDialog.FileName;
-                    }
+                case nameof(SrcDirectory):
+                    SrcDirectory=GetSelectedDirectory();
                     break;
-                case nameof(DestPath):
-                    SaveFileDialog saveFileDialog = new SaveFileDialog()
-                    {
-                        Title="选择要保存的位置",
-                        Filter="*.shp|*.shp"
-                    };
-                    if (saveFileDialog.ShowDialog()==true)
-                    {
-                        DestPath=saveFileDialog.FileName;
-                    }
+                case nameof(DestDirectory):
+                    DestDirectory=GetSelectedDirectory();
                     break;
                 default:
                     return;
@@ -112,8 +110,8 @@ namespace EM.GIS.Tools
         {
             switch (e.PropertyName)
             {
-                case nameof(SrcPath):
-                case nameof(DestPath):
+                case nameof(SrcDirectory):
+                case nameof(DestDirectory):
                     TransformCmd.RaiseCanExecuteChanged();
                     break;
             }
@@ -121,19 +119,19 @@ namespace EM.GIS.Tools
 
         private bool CanTransform()
         {
-            return File.Exists(SrcPath)&&!string.IsNullOrEmpty(DestPath);
+            return !string.IsNullOrEmpty(SrcDirectory)&&!string.IsNullOrEmpty(DestDirectory);
         }
         /// <summary>
         /// 获取坐标转换匿名方法
         /// </summary>
         /// <returns>坐标转换匿名方法</returns>
-        private Func<double, double, (double Lat, double Lon)> GetTransformFunc()
+        private static Func<double, double, (double Lat, double Lon)> GetTransformFunc(OffsetType srcOffsetType, OffsetType destOffsetType)
         {
             Func<double, double, (double Lat, double Lon)> ret = (lat, lon) => (lat, lon);
-            switch (SrcOffsetType)
+            switch (srcOffsetType)
             {
                 case OffsetType.None:
-                    switch (DestOffsetType)
+                    switch (destOffsetType)
                     {
                         case OffsetType.Gcj02:
                             ret = (lat, lon) => CoordHelper.Wgs84ToGcj02(lat, lon);
@@ -144,7 +142,7 @@ namespace EM.GIS.Tools
                     }
                     break;
                 case OffsetType.Gcj02:
-                    switch (DestOffsetType)
+                    switch (destOffsetType)
                     {
                         case OffsetType.None:
                             ret =(lat, lon) => CoordHelper.Gcj02ToWgs84(lat, lon);
@@ -155,7 +153,7 @@ namespace EM.GIS.Tools
                     }
                     break;
                 case OffsetType.Bd09:
-                    switch (DestOffsetType)
+                    switch (destOffsetType)
                     {
                         case OffsetType.None:
                             ret =(lat, lon) => CoordHelper.Bd09ToWgs84(lat, lon);
@@ -168,27 +166,36 @@ namespace EM.GIS.Tools
             }
             return ret;
         }
-        private void Transform()
+        /// <summary>
+        /// 校正坐标
+        /// </summary>
+        /// <param name="srcPath">源数据</param>
+        /// <param name="destPath">目标数据</param>
+        /// <param name="srcOffsetType">原坐标类型</param>
+        /// <param name="destOffsetType">目标坐标类型</param>
+        public static void CorrectCoords(string srcPath, string destPath, OffsetType srcOffsetType, OffsetType destOffsetType)
         {
-            if (SrcOffsetType== DestOffsetType)
-            {
-                MessageBox.Show(Window.GetWindow(View), "不能选择相同偏移类型");
-                return;
-            }
-            if (SrcPath==DestPath)
-            {
-                MessageBox.Show(Window.GetWindow(View), "目标数据目录不能与原始数据目录相同");
-                return;
-            }
-            using var srcDataSource = Ogr.Open(SrcPath, 0);
+            var transformFunc = GetTransformFunc(srcOffsetType, destOffsetType);
+            CorrectCoords(srcPath, destPath, transformFunc);
+        }
+        /// <summary>
+        /// 校正坐标
+        /// </summary>
+        /// <param name="srcPath">源数据</param>
+        /// <param name="destPath">目标数据</param>
+        /// <param name="transformFunc">校正方法</param>
+        public static void CorrectCoords(string srcPath, string destPath, Func<double, double, (double Lat, double Lon)> transformFunc)
+        {
+            using var srcDataSource = Ogr.Open(srcPath, 0);
             if (srcDataSource==null)
             {
-                MessageBox.Show(Window.GetWindow(View), $"无法读取{SrcPath}");
+                Console.WriteLine($"无法读取{srcPath}");
+                //MessageBox.Show(Window.GetWindow(View), $"无法读取{srcPath}");
                 return;
             }
-            using var driver = srcDataSource.GetDriver();
-            using var destDataSource = driver.CopyDataSourceUTF8(srcDataSource, DestPath, null);
-             var layerCount = destDataSource.GetLayerCount();
+            using var driver = Ogr.GetDriverByName("ESRI Shapefile");
+            using var destDataSource = driver.CopyDataSourceUTF8(srcDataSource, destPath, null);
+            var layerCount = destDataSource.GetLayerCount();
             if (layerCount>0)
             {
                 var layer = destDataSource.GetLayerByIndex(0);
@@ -202,7 +209,6 @@ namespace EM.GIS.Tools
                         switch (authorityNameAndCode.AuthorityCode)
                         {
                             case "4326":
-                                var transformFunc = GetTransformFunc();
                                 Action<double[]> transformCoordAction = (coord) =>
                                 {
                                     if (transformFunc!=null&& coord!=null&& coord.Length>1)
@@ -233,14 +239,38 @@ namespace EM.GIS.Tools
                                     layer.SetFeature(feature);
                                     destDataSource.FlushCache();
                                 }
-                                MessageBox.Show(Window.GetWindow(View), "转换成功");
                                 break;
                             default:
-                                MessageBox.Show(Window.GetWindow(View), "坐标系必须为4326");
+                                Console.WriteLine("坐标系必须为4326");
                                 break;
                         }
                     }
                 }
+            }
+        }
+        private void Transform()
+        {
+            if (SrcOffsetType== DestOffsetType)
+            {
+                MessageBox.Show(Window.GetWindow(View), "不能选择相同偏移类型");
+                return;
+            }
+            if (SrcDirectory==DestDirectory)
+            {
+                MessageBox.Show(Window.GetWindow(View), "目标数据目录不能与原始数据目录相同");
+                return;
+            }
+            var srcFiles = Directory.GetFiles(SrcDirectory);
+            if (srcFiles.Length>0)
+            {
+                var transformFunc = GetTransformFunc(SrcOffsetType, DestOffsetType);
+                foreach (var srcFile in srcFiles)
+                {
+                    var name = Path.GetFileNameWithoutExtension(srcFile);
+                    var destFile = Path.Combine(DestDirectory, $"{name}.shp");
+                    CorrectCoords(srcFile, destFile, transformFunc);
+                }
+                MessageBox.Show(Window.GetWindow(View), "转换成功");
             }
         }
     }
