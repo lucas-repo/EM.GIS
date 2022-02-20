@@ -63,8 +63,6 @@ namespace EM.GIS.GdalExtensions
             byte[] srcBytes = Encoding.UTF8.GetBytes(value);
             byte[] destBytes = Encoding.Convert(Encoding.UTF8, Encoding.GetEncoding(GdalEncoding), srcBytes);
             var destStr = Encoding.GetEncoding(GdalEncoding).GetString(destBytes);
-            if (value.Contains("龙泉"))
-            { }
             GCHandle handle = GCHandle.Alloc(destBytes, GCHandleType.Pinned);
             IntPtr intptr = handle.AddrOfPinnedObject();
             OGR_F_SetFieldString(handleRef, fieldIndex, intptr);
@@ -101,6 +99,10 @@ namespace EM.GIS.GdalExtensions
         /// <param name="srcFieldIndex">来源字段索引</param>
         public static void SetField(this Feature destFeature, int destFieldIndex, Feature srcFeature, int srcFieldIndex)
         {
+            if (destFieldIndex<0||srcFieldIndex<0)
+            {
+                return;
+            }
             var destFieldDefn = destFeature?.GetFieldDefnRef(destFieldIndex);
             var srcFieldFromDefn = srcFeature?.GetFieldDefnRef(srcFieldIndex);
             if (destFieldDefn!=null&&srcFieldFromDefn!=null)

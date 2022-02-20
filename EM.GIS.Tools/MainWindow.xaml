@@ -8,25 +8,26 @@
         TextElement.Foreground="{DynamicResource MaterialDesignBody}" TextElement.FontWeight="Regular" TextElement.FontSize="13" TextOptions.TextFormattingMode="Ideal" TextOptions.TextRenderingMode="Auto"  Background="{DynamicResource MaterialDesignPaper}" FontFamily="{DynamicResource MaterialDesignFont}"
         mc:Ignorable="d"
         Title="GIS工具" Height="450" Width="800" WindowStartupLocation="CenterScreen">
-
     <Grid>
-        <TabControl BorderThickness="0">
-            <TabItem Header="国内地图纠偏">
-                <local:CoordTransformControl/>
-            </TabItem>
-            <TabItem Header="迭代计算中心点">
-                <local:ComputeCenterPointControl x:Name="computeCenterPointControl"/>
-            </TabItem>
-            <TabItem Header="计算中心点">
-                <local:ComputeSimpleCenterPointControl x:Name="computeSimpleCenterPointControl"/>
-            </TabItem>
-            <TabItem Header="计算中心点">
-                <local:DownloadBoundariesControl/>
-            </TabItem>
-        </TabControl>
+        <materialDesign:Card>
+            <TabControl BorderThickness="0" materialDesign:ColorZoneAssist.Mode="PrimaryLight">
+                <TabItem Header="国内地图纠偏">
+                    <local:CoordTransformControl/>
+                </TabItem>
+                <TabItem Header="迭代计算中心点">
+                    <local:ComputeCenterPointControl x:Name="computeCenterPointControl"/>
+                </TabItem>
+                <TabItem Header="计算中心点">
+                    <local:ComputeSimpleCenterPointControl x:Name="computeSimpleCenterPointControl"/>
+                </TabItem>
+                <TabItem Header="下载行政界线">
+                    <local:DownloadBoundariesControl/>
+                </TabItem>
+            </TabControl>
+        </materialDesign:Card>
         <Grid VerticalAlignment="Bottom" Height="20">
-            <ProgressBar x:Name="progressBar" Background="Transparent" BorderThickness="0"/>
-            <TextBlock x:Name="progressTextBlock" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="20,0,0,0"/>
+                <ProgressBar x:Name="progressBar" Background="Transparent" BorderThickness="0"/>
+                <TextBlock x:Name="progressTextBlock" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="20,0,0,0"/>
+            </Grid>
         </Grid>
-    </Grid>
 </Window>

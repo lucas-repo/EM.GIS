@@ -16,7 +16,7 @@ namespace EM.GIS.GdalExtensions
         /// <returns>索引</returns>
         public static int GetFieldIndexUTF8(this FeatureDefn featureDefn, string fieldName)
         {
-            int fieldIndex = 0;
+            int fieldIndex = -1;
             if (featureDefn!=null&&!string.IsNullOrEmpty(fieldName))
             {
                 for (int i = 0; i < featureDefn.GetFieldCount(); i++)
