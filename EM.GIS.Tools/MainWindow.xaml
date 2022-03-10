@@ -23,6 +23,9 @@
                 <TabItem Header="下载行政界线">
                     <local:DownloadBoundariesControl/>
                 </TabItem>
+                <TabItem Header="下载在线地图">
+                    <local:DownloadWebMapControl/>
+                </TabItem>
             </TabControl>
         </materialDesign:Card>
         <Grid VerticalAlignment="Bottom" Height="20">

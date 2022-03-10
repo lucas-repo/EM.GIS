@@ -38,7 +38,13 @@ namespace EM.GIS.GdalExtensions
             }
             return dataset;
         }
-
+        /// <summary>
+        /// 创建金字塔
+        /// </summary>
+        /// <param name="dataset"></param>
+        /// <param name="resampling"></param>
+        /// <param name="overviewlist"></param>
+        /// <returns></returns>
         public static int CreateOverview(this Dataset dataset, string resampling = "NEAREST", int[] overviewlist = null)
         {
             int value = -1;

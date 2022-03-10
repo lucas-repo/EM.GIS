@@ -12,15 +12,15 @@
                 <Label Content="版本："/>
                 <ComboBox Width="100" ItemsSource="{Binding Versions}" SelectedItem="{Binding Version}"/>
                 <Label Content="国家："  Margin="20,0,0,0"/>
-                <ComboBox Width="150" ItemsSource="{Binding Countries}" SelectedItem="{Binding Country}" DisplayMemberPath="{Binding Text}"/>
+                <ComboBox Width="150" ItemsSource="{Binding Countries}" SelectedItem="{Binding Country}" DisplayMemberPath="Text"/>
             </WrapPanel>
             <WrapPanel Margin="0,20,0,0">
                 <Label Content="省：" />
-                <ComboBox Width="150" ItemsSource="{Binding Provinces}" SelectedItem="{Binding Province}" DisplayMemberPath="{Binding Text}"/>
+                <ComboBox Width="150" ItemsSource="{Binding Provinces}" SelectedItem="{Binding Province}" DisplayMemberPath="Text"/>
                 <Label Content="市："  Margin="20,0,0,0"/>
-                <ComboBox Width="150" ItemsSource="{Binding Cities}" SelectedItem="{Binding City}" DisplayMemberPath="{Binding Text}"/>
+                <ComboBox Width="150" ItemsSource="{Binding Cities}" SelectedItem="{Binding City}" DisplayMemberPath="Text"/>
                 <Label Content="区："  Margin="20,0,0,0"/>
-                <ComboBox Width="150" ItemsSource="{Binding Districts}" SelectedItem="{Binding District}" DisplayMemberPath="{Binding Text}"/>
+                <ComboBox Width="150" ItemsSource="{Binding Districts}" SelectedItem="{Binding District}" DisplayMemberPath="Text"/>
             </WrapPanel>
             <WrapPanel Margin="0,20,0,0">
                 <CheckBox Content="包含子区域" IsChecked="{Binding IncludeChildren}"/>

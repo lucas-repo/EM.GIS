@@ -29,72 +29,9 @@ namespace EM.GIS.GdalExtensions
         [return: MarshalAs(UnmanagedType.Bool)]
         static extern bool AddDllDirectory(string lpPathName);
 
-        //static GdalConfiguration()
-        //{
-        //    string executingDirectory = null, gdalPath = null, nativePath = null;
-        //    try
-        //    {
-        //        if (!IsWindows)
-        //        {
-        //            const string notSet = "_Not_set_";
-        //            string tmp = Gdal.GetConfigOption("GDAL_DATA", notSet);
-        //            _usable = tmp != notSet;
-        //            return;
-        //        }
-
-        //        string executingAssemblyFile = new Uri(Assembly.GetExecutingAssembly().GetName().CodeBase).LocalPath;
-        //        executingDirectory = Path.GetDirectoryName(executingAssemblyFile);
-
-        //        if (string.IsNullOrEmpty(executingDirectory))
-        //            throw new InvalidOperationException("cannot get executing directory");
-
-
-        //        // modify search place and order
-        //        SetDefaultDllDirectories(DllSearchFlags);
-
-        //        gdalPath = Path.Combine(executingDirectory, "gdal");
-        //        nativePath = Path.Combine(gdalPath, GetPlatform());
-        //        if (!Directory.Exists(nativePath))
-        //            throw new DirectoryNotFoundException($"GDAL native directory not found at '{nativePath}'");
-        //        if (!File.Exists(Path.Combine(nativePath, "gdal_wrap.dll")))
-        //            throw new FileNotFoundException(
-        //                $"GDAL native wrapper file not found at '{Path.Combine(nativePath, "gdal_wrap.dll")}'");
-
-        //        // Add directories
-        //        AddDllDirectory(nativePath);
-        //        AddDllDirectory(Path.Combine(nativePath, "plugins"));
-
-        //        // Set the additional GDAL environment variables.
-        //        string gdalData = Path.Combine(gdalPath, "data");
-        //        Environment.SetEnvironmentVariable("GDAL_DATA", gdalData);
-        //        Gdal.SetConfigOption("GDAL_DATA", gdalData);
-
-        //        string driverPath = Path.Combine(nativePath, "plugins");
-        //        Environment.SetEnvironmentVariable("GDAL_DRIVER_PATH", driverPath);
-        //        Gdal.SetConfigOption("GDAL_DRIVER_PATH", driverPath);
-
-        //        Environment.SetEnvironmentVariable("GEOTIFF_CSV", gdalData);
-        //        Gdal.SetConfigOption("GEOTIFF_CSV", gdalData);
-
-        //        string projSharePath = Path.Combine(gdalPath, "share");
-        //        Environment.SetEnvironmentVariable("PROJ_LIB", projSharePath);
-        //        Gdal.SetConfigOption("PROJ_LIB", projSharePath);
-
-        //        _usable = true;
-        //    }
-        //    catch (Exception e)
-        //    {
-        //        _usable = false;
-        //        Trace.WriteLine(e, "error");
-        //        Trace.WriteLine($"Executing directory: {executingDirectory}", "error");
-        //        Trace.WriteLine($"gdal directory: {gdalPath}", "error");
-        //        Trace.WriteLine($"native directory: {nativePath}", "error");
-
-        //        //throw;
-        //    }
-        //}
         static GdalConfiguration()
         {
+            string executingDirectory = null, gdalPath = null;
             try
             {
                 if (!IsWindows)
@@ -105,14 +42,70 @@ namespace EM.GIS.GdalExtensions
                     return;
                 }
 
+                string executingAssemblyFile = new Uri(Assembly.GetExecutingAssembly().GetName().CodeBase).LocalPath;
+                executingDirectory = Path.GetDirectoryName(executingAssemblyFile);
+
+                if (string.IsNullOrEmpty(executingDirectory))
+                    throw new InvalidOperationException("cannot get executing directory");
+
+
+                // modify search place and order
+                //SetDefaultDllDirectories(DllSearchFlags);
+
+                gdalPath = Path.Combine(executingDirectory, "gdal");
+
+                // Add directories
+                //AddDllDirectory(gdalPath);
+                //string driverPath = Path.Combine(gdalPath, "plugins");
+                //AddDllDirectory(driverPath);
+
+                // Set the additional GDAL environment variables.
+                string gdalData = Path.Combine(gdalPath, "gdal-data");
+                Environment.SetEnvironmentVariable("GDAL_DATA", gdalData);
+                Gdal.SetConfigOption("GDAL_DATA", gdalData);
+
+                //Environment.SetEnvironmentVariable("GDAL_DRIVER_PATH", driverPath);
+                //Gdal.SetConfigOption("GDAL_DRIVER_PATH", driverPath);
+
+                Environment.SetEnvironmentVariable("GEOTIFF_CSV", gdalData);
+                Gdal.SetConfigOption("GEOTIFF_CSV", gdalData);
+
+                string projSharePath = Path.Combine(gdalPath, "SHARE");
+                Environment.SetEnvironmentVariable("PROJ_LIB", projSharePath);
+                Gdal.SetConfigOption("PROJ_LIB", projSharePath);
+
                 _usable = true;
             }
             catch (Exception e)
             {
                 _usable = false;
                 Trace.WriteLine(e, "error");
+                Trace.WriteLine($"Executing directory: {executingDirectory}", "error");
+                Trace.WriteLine($"gdal directory: {gdalPath}", "error");
+
+                //throw;
             }
         }
+        //static GdalConfiguration()
+        //{
+        //    try
+        //    {
+        //        if (!IsWindows)
+        //        {
+        //            const string notSet = "_Not_set_";
+        //            string tmp = Gdal.GetConfigOption("GDAL_DATA", notSet);
+        //            _usable = tmp != notSet;
+        //            return;
+        //        }
+
+        //        _usable = true;
+        //    }
+        //    catch (Exception e)
+        //    {
+        //        _usable = false;
+        //        Trace.WriteLine(e, "error");
+        //    }
+        //}
         /// <summary>
         /// 是否正确设置了GDAL包
         /// </summary>

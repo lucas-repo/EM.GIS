@@ -1,0 +1,30 @@
+﻿<UserControl x:Class="EM.GIS.Tools.DownloadWebMapControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:EM.GIS.Tools"
+             mc:Ignorable="d" 
+               d:DesignHeight="450" d:DesignWidth="800">
+    <Grid  Margin="20">
+        <StackPanel>
+            <DockPanel Margin="0,20,0,0">
+                <Label Content="边界：" DockPanel.Dock="Left" VerticalAlignment="Center"/>
+                <Button Content="浏览" DockPanel.Dock="Right" Command="{Binding BrowseCmd}" CommandParameter="BoundPath"/>
+                <TextBox Text="{Binding BoundPath}" Margin="5,0"/>
+            </DockPanel>
+            <WrapPanel Margin="0,20,0,0">
+                <Label Content="地图：" />
+                <ComboBox Width="200" ItemsSource="{Binding WebMaps}" SelectedItem="{Binding WebMap}" DisplayMemberPath="Name"/>
+                <CheckBox Content="整个下载" IsChecked="{Binding IsEntire}" Margin="10,0,0,0"/>
+            </WrapPanel>
+            <DockPanel Margin="0,20,0,0">
+                <Label Content="输出：" DockPanel.Dock="Left" VerticalAlignment="Center"/>
+                <Button Content="浏览" DockPanel.Dock="Right" Command="{Binding BrowseCmd}" CommandParameter="DestPath"/>
+                <TextBox Text="{Binding DestPath}" Margin="5,0"/>
+            </DockPanel>
+           
+        </StackPanel>
+        <Button Content="下载" Command="{Binding DownloadCmd}" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="20"/>
+    </Grid>
+</UserControl>
