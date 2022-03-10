@@ -24,7 +24,7 @@ namespace EM.GIS.Gdals
             {
                 if (SpatialReferenceDisposable)
                 {
-                    SetProperty(ref _spatialReference, value, true);
+                    SetProperty(ref _spatialReference, value);
                 }
                 else
                 {

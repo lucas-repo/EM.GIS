@@ -1,4 +1,5 @@
-﻿using EM.GIS.Data;
+﻿using EM.Bases;
+using EM.GIS.Data;
 using EM.GIS.Geometries;
 using OSGeo.OGR;
 using System;
@@ -17,7 +18,7 @@ namespace EM.GIS.Gdals
             get { return _feature; }
             set
             {
-                if (SetProperty(ref _feature, value, true))
+                if (SetProperty(ref _feature, value))
                 {
                     _geometry = _feature?.GetGeometryRef()?.ToGeometry();
                 }

@@ -5,7 +5,7 @@ namespace EM.GIS.Symbology
     /// <summary>
     /// 可改变类
     /// </summary>
-    public class Changeable:Disposable,IChangeable
+    public class Changeable:IChangeable
     {
         #region Fields
 

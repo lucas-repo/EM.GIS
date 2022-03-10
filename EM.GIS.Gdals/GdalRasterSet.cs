@@ -27,7 +27,7 @@ namespace EM.GIS.Gdals
             get { return _dataset; }
             private set
             {
-                if (SetProperty(ref _dataset, value, true))
+                if (SetProperty(ref _dataset, value))
                 {
                     OnDatasetChanged();
                 }
@@ -182,7 +182,7 @@ namespace EM.GIS.Gdals
 
             return result;
         }
-        private void DrawGraphics(Graphics g, IExtent envelope, Rectangle window,Action<int> progressAction=null)
+        private void DrawGraphics(Graphics g, IExtent envelope, Rectangle window, Action<int> progressAction = null)
         {
             progressAction?.Invoke(5);
 
@@ -378,7 +378,7 @@ namespace EM.GIS.Gdals
                 firstBand = _band;
             }
             int width, height;
-            GdalExtensions.NormalizeSizeToBand(xOffset, yOffset, xSize, ySize, firstBand, out width, out height);
+            firstBand.NormalizeSizeToBand(xOffset, yOffset, xSize, ySize, out width, out height);
             if (width > 0 && height > 0)
             {
                 byte[] rBuffer = firstBand.ReadBand(xOffset, yOffset, width, height, width, height);
@@ -416,7 +416,7 @@ namespace EM.GIS.Gdals
             }
 
             int width, height;
-            GdalExtensions.NormalizeSizeToBand(xOffset, yOffset, xSize, ySize, rBand, out width, out height);
+            rBand.NormalizeSizeToBand(xOffset, yOffset, xSize, ySize, out width, out height);
             if (width > 0 && height > 0)
             {
                 byte[] rBuffer = rBand.ReadBand(xOffset, yOffset, width, height, width, height);
@@ -460,7 +460,7 @@ namespace EM.GIS.Gdals
                 aBand = (Bands[3] as GdalRasterSet<T>)._band;
             }
 
-            GdalExtensions.NormalizeSizeToBand(xOffset, yOffset, xSize, ySize, rBand, out int width, out int height);
+            rBand.NormalizeSizeToBand(xOffset, yOffset, xSize, ySize, out int width, out int height);
             if (width > 0 && height > 0)
             {
                 byte[] aBuffer = aBand.ReadBand(xOffset, yOffset, width, height, width, height);
@@ -507,7 +507,7 @@ namespace EM.GIS.Gdals
                 bBand = (Bands[3] as GdalRasterSet<T>)._band;
             }
 
-            GdalExtensions.NormalizeSizeToBand(xOffset, yOffset, xSize, ySize, rBand, out int width, out int height);
+            rBand.NormalizeSizeToBand(xOffset, yOffset, xSize, ySize, out int width, out int height);
             if (width > 0 && height > 0)
             {
                 byte[] aBuffer = aBand.ReadBand(xOffset, yOffset, width, height, width, height);
@@ -563,7 +563,7 @@ namespace EM.GIS.Gdals
             }
 
             int width, height;
-            GdalExtensions.NormalizeSizeToBand(xOffset, yOffset, xSize, ySize, firstBand, out width, out height);
+            firstBand.NormalizeSizeToBand(xOffset, yOffset, xSize, ySize, out width, out height);
             if (width > 0 && height > 0)
             {
                 byte[] indexBuffer = firstBand.ReadBand(xOffset, yOffset, width, height, width, height);

@@ -1,4 +1,5 @@
-﻿using EM.GIS.Geometries;
+﻿using EM.Bases;
+using EM.GIS.Geometries;
 using EM.GIS.Projection;
 using System;
 using System.ComponentModel;

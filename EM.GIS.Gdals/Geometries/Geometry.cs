@@ -1,4 +1,5 @@
-﻿using EM.GIS.Geometries;
+﻿using EM.Bases;
+using EM.GIS.Geometries;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -22,7 +23,7 @@ namespace EM.GIS.Gdals
             get { return _ogrGeometry; }
             protected set
             {
-                if (SetProperty(ref _ogrGeometry, value, true))
+                if (SetProperty(ref _ogrGeometry, value))
                 {
                     OnOgrGeometryChanged();
                 }

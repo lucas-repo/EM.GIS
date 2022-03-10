@@ -1,4 +1,5 @@
-﻿using System.Drawing;
+﻿using EM.Bases;
+using System.Drawing;
 
 namespace EM.GIS.Symbology
 {

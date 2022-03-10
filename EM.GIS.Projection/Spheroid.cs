@@ -1,4 +1,6 @@
-﻿namespace EM.GIS.Projection
+﻿using EM.Bases;
+
+namespace EM.GIS.Projection
 {
     /// <summary>
     /// 椭球体

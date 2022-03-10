@@ -22,7 +22,7 @@ namespace EM.GIS.Gdals
             get { return _dataSource; }
             private set
             {
-                SetProperty(ref _dataSource, value, true);
+                SetProperty(ref _dataSource, value);
             }
         }
         private Layer _layer;

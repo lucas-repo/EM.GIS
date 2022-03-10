@@ -19,6 +19,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EM.GIS.Serialization", "EM.
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EM.GIS.Symbology", "EM.GIS.Symbology\EM.GIS.Symbology.csproj", "{DCDD72F6-6682-4307-B7AD-4AE432CC5809}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EM.GIS.GdalExtensions", "EM.GIS.GdalExtensions\EM.GIS.GdalExtensions.csproj", "{A6EADE1C-DEE1-4FFC-93C9-4D9F4EBA6921}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -57,6 +59,10 @@ Global
 		{DCDD72F6-6682-4307-B7AD-4AE432CC5809}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DCDD72F6-6682-4307-B7AD-4AE432CC5809}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DCDD72F6-6682-4307-B7AD-4AE432CC5809}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A6EADE1C-DEE1-4FFC-93C9-4D9F4EBA6921}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A6EADE1C-DEE1-4FFC-93C9-4D9F4EBA6921}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A6EADE1C-DEE1-4FFC-93C9-4D9F4EBA6921}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A6EADE1C-DEE1-4FFC-93C9-4D9F4EBA6921}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

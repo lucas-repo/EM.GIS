@@ -1,4 +1,5 @@
-﻿using EM.GIS.Symbology;
+﻿using EM.Bases;
+using EM.GIS.Symbology;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
