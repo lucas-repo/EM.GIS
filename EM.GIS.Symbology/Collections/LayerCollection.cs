@@ -11,13 +11,14 @@ namespace EM.GIS.Symbology
     /// </summary>
     public class LayerCollection : LegendItemCollection, ILayerCollection
     {
-        public LayerCollection(IGroup parent) : base(parent)
+        public LayerCollection(IFrame frame ,IGroup parent) : base(parent)
         {
+            Frame= frame;
         }
 
         public new ILayer this[int index] { get => Items[index] as ILayer; set => Items[index] = value; }
         public new IGroup Parent { get => base.Parent as IGroup; set => base.Parent = value; }
-
+         public IFrame Frame { get; set; }
         public IGroup AddGroup(string groupName = null)
         {
             string destGroupName = groupName;

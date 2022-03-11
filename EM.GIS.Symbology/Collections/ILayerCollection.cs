@@ -21,6 +21,10 @@ namespace EM.GIS.Symbology
         /// </summary>
         new IGroup Parent { get; set; }
         #endregion
+        /// <summary>
+        /// 地图框架
+        /// </summary>
+        IFrame Frame { get; set; }
 
         /// <summary>
         /// 添加图层

@@ -36,6 +36,10 @@ namespace EM.GIS.Symbology
         /// </summary>
         new IGroup Parent { get; set; }
         /// <summary>
+        /// 地图框架
+        /// </summary>
+        IFrame Frame { get; set; }
+        /// <summary>
         /// 在指定范围是否可见
         /// </summary>
         /// <param name="extent"></param>

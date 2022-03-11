@@ -21,7 +21,7 @@ namespace EM.GIS.Symbology
         public int LayerCount => GetLayers().Count();
         public Group()
         {
-            LegendItems = new LayerCollection(this);
+            LegendItems = new LayerCollection(Frame, this);
             LegendItems.CollectionChanged += Items_CollectionChanged;
         }
 

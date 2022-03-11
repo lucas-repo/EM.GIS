@@ -162,7 +162,7 @@ namespace EM.GIS.Symbology
             _bw.RunWorkerCompleted += BwRunWorkerCompleted;
             _bw.ProgressChanged += BwProgressChanged;
 
-            DrawingLayers = new LayerCollection(this);
+            DrawingLayers = new LayerCollection(this,this);
             LegendItems.CollectionChanged += Layers_CollectionChanged;
         }
         private void BwProgressChanged(object sender, ProgressChangedEventArgs e)
