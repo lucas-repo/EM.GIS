@@ -6,7 +6,7 @@ namespace EM.GIS.Data
     /// <summary>
     /// 栅格数据集
     /// </summary>
-    public interface IRasterSet:IDataSet, IGetBitmap
+    public interface IRasterSet:IDataSet, IGetImage
     {
         /// <summary>
         /// 栅格类型
@@ -32,7 +32,7 @@ namespace EM.GIS.Data
         /// <summary>
         /// 无数据值
         /// </summary>
-        double NoDataValue { get; set; }
+        double? NoDataValue { get; set; }
         /// <summary>
         /// 栅格范围
         /// </summary>

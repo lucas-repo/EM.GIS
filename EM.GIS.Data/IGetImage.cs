@@ -7,13 +7,13 @@ namespace EM.GIS.Data
     /// <summary>
     /// 获取图片接口
     /// </summary>
-    public interface IGetBitmap
+    public interface IGetImage
     {
         /// <summary>
         /// 获取图片
         /// </summary>
         /// <returns>图片</returns>
-        Bitmap GetBitmap();
+        Image GetImage();
 
         /// <summary>
         /// 获取图片
@@ -21,7 +21,7 @@ namespace EM.GIS.Data
         /// <param name="envelope">世界范围</param>
         /// <param name="size">图片大小</param>
         /// <returns>图片</returns>
-        Bitmap GetBitmap(IExtent envelope, Size size);
+        Image GetImage(IExtent envelope, Size size);
 
         /// <summary>
         /// 获取图片
@@ -30,6 +30,6 @@ namespace EM.GIS.Data
         /// <param name="rectangle">屏幕范围</param>
         /// <param name="progressAction">进度委托</param>
         /// <returns>图片</returns>
-        Bitmap GetBitmap(IExtent extent, Rectangle rectangle, Action<int> progressAction = null);
+        Image GetImage(IExtent extent, Rectangle rectangle, Action<int> progressAction = null);
     }
 }

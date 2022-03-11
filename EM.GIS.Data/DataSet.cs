@@ -16,7 +16,7 @@ namespace EM.GIS.Data
 
         #region Properties
 
-        public IExtent Extent { get; protected set; }
+        public virtual IExtent Extent { get; protected set; }
 
         private string _filename;
         public string Filename

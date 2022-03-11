@@ -43,7 +43,7 @@ namespace EM.GIS.Symbology
             {
                 return;
             }
-            using (var bmp = DataSet.GetBitmap(extent, rectangle, ReportProgress))
+            using (var bmp = DataSet.GetImage(extent, rectangle, ReportProgress))
             {
                 if (bmp != null)
                 {

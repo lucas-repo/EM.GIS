@@ -66,24 +66,6 @@ namespace EM.GIS.Data
             throw new NotImplementedException("This should be overridden by classes that specify a file format.");
         }
 
-        private static int GetByteSize(object value)
-        {
-            if (value is byte) return 1;
-            if (value is short) return 2;
-            if (value is int) return 4;
-            if (value is long) return 8;
-            if (value is float) return 4;
-            if (value is double) return 8;
-
-            if (value is sbyte) return 1;
-            if (value is ushort) return 2;
-            if (value is uint) return 4;
-            if (value is ulong) return 8;
-
-            if (value is bool) return 1;
-
-            return 0;
-        }
 
         #endregion
     }

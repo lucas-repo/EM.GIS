@@ -139,7 +139,7 @@ namespace EM.GIS.Gdals
         /// <summary>
         /// Gets or sets the NoDataValue.
         /// </summary>
-        public override double NoDataValue
+        public override double? NoDataValue
         {
             get
             {
@@ -149,9 +149,9 @@ namespace EM.GIS.Gdals
             set
             {
                 base.NoDataValue = value;
-                if (_band != null)
+                if (_band != null&&value.HasValue)
                 {
-                    _band.SetNoDataValue(value);
+                    _band.SetNoDataValue(value.Value);
                 }
                 else
                 {
@@ -167,7 +167,7 @@ namespace EM.GIS.Gdals
 
         #region Methods
 
-        public override Bitmap GetBitmap(IExtent envelope, Rectangle window, Action<int> progressAction = null)
+        public override Image GetImage(IExtent envelope, Rectangle window, Action<int> progressAction = null)
         {
             if (window.Width == 0 || window.Height == 0)
             {

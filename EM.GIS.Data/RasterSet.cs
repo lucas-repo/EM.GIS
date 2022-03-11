@@ -16,21 +16,12 @@ namespace EM.GIS.Data
         public abstract int ByteSize { get; }
         [Category("Data")]
         [Description("Gets or sets a  double showing the no-data value for this raster.")]
-        public virtual double NoDataValue { get; set; }
-        private IRasterBounds _bounds;
-        public IRasterBounds Bounds
-        {
-            get { return _bounds; }
-            set
-            {
-                _bounds = value;
-                OnBoundsChanged();
-            }
-        }
-
-        private void OnBoundsChanged()
-        {
-            Extent = Bounds?.Extent;
+        public virtual double? NoDataValue { get; set; }
+        public IRasterBounds Bounds { get; set; }
+        public override IExtent Extent
+        { 
+            get => Bounds.Extent; 
+            protected set => Bounds.Extent=value; 
         }
 
         public int PixelSpace { get; set; }
@@ -45,17 +36,17 @@ namespace EM.GIS.Data
         {
             Bands = new List<IRasterSet>();
         }
-        public virtual Bitmap GetBitmap()
+        public virtual Image GetImage()
         {
             return null;
         }
 
-        public Bitmap GetBitmap(IExtent envelope, Size size)
+        public Image GetImage(IExtent envelope, Size size)
         {
-            return GetBitmap(envelope, new Rectangle(new Point(0, 0), size));
+            return GetImage(envelope, new Rectangle(new Point(0, 0), size));
         }
 
-        public virtual Bitmap GetBitmap(IExtent envelope, Rectangle window, Action<int> progressAction = null)
+        public virtual Image GetImage(IExtent envelope, Rectangle window, Action<int> progressAction = null)
         {
             return null;
         }
@@ -75,6 +66,32 @@ namespace EM.GIS.Data
         public virtual Statistics GetStatistics()
         {
             throw new NotImplementedException();
+        }
+
+
+        /// <summary>
+        /// 获取字节大小
+        /// </summary>
+        /// <typeparam name="TValue">类型</typeparam>
+        /// <param name="value">值</param>
+        /// <returns>字节大小</returns>
+        public static int GetByteSize<TValue>(TValue value)
+        {
+            if (value is byte) return 1;
+            if (value is short) return 2;
+            if (value is int) return 4;
+            if (value is long) return 8;
+            if (value is float) return 4;
+            if (value is double) return 8;
+
+            if (value is sbyte) return 1;
+            if (value is ushort) return 2;
+            if (value is uint) return 4;
+            if (value is ulong) return 8;
+
+            if (value is bool) return 1;
+
+            return 0;
         }
     }
 }
