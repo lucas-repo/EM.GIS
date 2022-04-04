@@ -1,7 +1,7 @@
+using EM.Bases;
 using EM.GIS.CoordinateTransformation;
 using EM.GIS.GdalExtensions;
-using EM.WpfBase;
-using Microsoft.Win32;
+using EM.WpfBases;
 using Microsoft.WindowsAPICodePack.Dialogs;
 using OSGeo.OGR;
 using System;
@@ -14,7 +14,7 @@ namespace EM.GIS.Tools
     /// <summary>
     /// 坐标转换视图模型
     /// </summary>
-    public class CoordTransformViewModel : WpfBase.ViewModel<CoordTransformControl>
+    public class CoordTransformViewModel : ViewModel<CoordTransformControl>
     {
         private OffsetType _srcOffsetType;
         /// <summary>

@@ -1,17 +1,16 @@
-﻿using EM.WpfBase;
+﻿using EM.Bases;
+using EM.GIS.GdalExtensions;
+using EM.WpfBases;
 using Microsoft.Win32;
 using OSGeo.OGR;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
-using EM.GIS.GdalExtensions;
-using System.Threading;
-using System.Diagnostics;
-using System.Collections.ObjectModel;
 
 namespace EM.GIS.Tools
 {

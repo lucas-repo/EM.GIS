@@ -1,12 +1,7 @@
 ﻿using EM.GIS.Data;
 using EM.GIS.Geometries;
 using System;
-using System.Collections.Generic;
 using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading;
-
 
 namespace EM.GIS.Symbology
 {
@@ -18,32 +13,6 @@ namespace EM.GIS.Symbology
     {
         public virtual IExtent Extent { get; set; }
 
-        public ICategory DefaultCategory
-        {
-            get
-            {
-                ICategory category = null;
-                if (Categories?.Count > 0)
-                {
-                    category = Categories[Categories.Count - 1];
-                }
-                return category;
-            }
-            set
-            {
-                if (Categories != null)
-                {
-                    if (Categories.Count > 0)
-                    {
-                        Categories[Categories.Count - 1] = value;
-                    }
-                    else
-                    {
-                        Categories.Add(value);
-                    }
-                }
-            }
-        }
         public bool UseDynamicVisibility { get; set; }
         public double MaxInverseScale { get; set; }
         public double MinInverseScale { get; set; }
@@ -86,32 +55,21 @@ namespace EM.GIS.Symbology
             Extent = extent;
         }
 
-
-        public ICategoryCollection Categories { get => LegendItems as ICategoryCollection; }
-        public virtual ISelection Selection { get; protected set; }
         public Layer()
         { }
         public Layer(IDataSet dataSet)
         {
             DataSet = dataSet;
         }
-        private void GetResolution(IExtent envelope, int pixelWidth, int pixelHeight, out double xRes, out double yRes)
-        {
-            double worldWidth = envelope.MaxX - envelope.MinX;
-            double worldHeight = envelope.MaxY - envelope.MinY;
-            xRes = worldWidth / pixelWidth;
-            yRes = worldHeight / pixelHeight;
-        }
-
         public void Draw(Graphics graphics, Rectangle rectangle, IExtent extent, bool selected = false, Func<bool> cancelFunc = null, Action invalidateMapFrameAction = null)
         {
             if (graphics == null || rectangle.Width * rectangle.Height == 0 || extent == null || extent.Width * extent.Height == 0 || cancelFunc?.Invoke() == true)
             {
                 return;
             }
-            ProgressHandler?.Progress(0, ProgressMessage);
+            Progress?.Invoke(0, ProgressMessage);
             OnDraw(graphics, rectangle, extent, selected, cancelFunc, invalidateMapFrameAction);
-            ProgressHandler?.Progress(100, ProgressMessage);
+            Progress?.Invoke(100, ProgressMessage);
         }
         protected abstract void OnDraw(Graphics graphics, Rectangle rectangle, IExtent extent, bool selected = false, Func<bool> cancelFunc = null, Action invalidateMapFrameAction = null);
         public bool GetVisible(IExtent extent, Rectangle rectangle)

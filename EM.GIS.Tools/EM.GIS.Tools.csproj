@@ -12,7 +12,8 @@
   <ItemGroup>
     <PackageReference Include="BruTile" Version="4.0.0" />
     <PackageReference Include="BruTile.MbTiles" Version="4.0.0" />
-    <PackageReference Include="EM.WpfBase" Version="1.0.0" />
+    <PackageReference Include="EM.Bases" Version="1.0.0" />
+    <PackageReference Include="EM.WpfBases" Version="1.0.0" />
     <PackageReference Include="Gdal.Core" Version="2.3.0-beta-023" />
     <PackageReference Include="Gdal.Core.WindowsRuntime" Version="2.3.0-beta-023" />
     <PackageReference Include="MaterialDesignThemes" Version="4.3.0" />

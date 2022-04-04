@@ -10,10 +10,8 @@ namespace EM.GIS.Data
     public interface IProgressHandler
     {
         /// <summary>
-        /// 汇报进度方法
+        /// 进度委托
         /// </summary>
-        /// <param name="percent">百分比</param>
-        /// <param name="message">消息</param>
-        void Progress(int percent,string message=null);
+        ProgressDelegate Progress { get; set; }
     }
 }

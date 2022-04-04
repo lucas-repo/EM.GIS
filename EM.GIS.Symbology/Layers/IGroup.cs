@@ -1,6 +1,8 @@
 ﻿using EM.GIS.Data;
+using EM.GIS.Geometries;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Drawing;
 
 namespace EM.GIS.Symbology
@@ -8,12 +10,12 @@ namespace EM.GIS.Symbology
     /// <summary>
     /// 分组
     /// </summary>
-    public interface IGroup : ILayer
+    public interface IGroup : ILegendItem, IDynamicVisibility, IDrawable
     {
         /// <summary>
-        /// 图层
+        /// 范围
         /// </summary>
-        ILayerCollection Layers { get; }
+        IExtent Extent { get; }
         /// <summary>
         /// 图层个数
         /// </summary>
@@ -103,5 +105,6 @@ namespace EM.GIS.Symbology
         /// 清空图层
         /// </summary>
         void ClearLayers();
+        
     }
 }

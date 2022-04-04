@@ -15,58 +15,60 @@ namespace EM.GIS.Symbology
     /// <summary>
     /// 分组
     /// </summary>
-    public class Group : Layer, IGroup
+    public class Group : LegendItem, IGroup
     {
-        public ILayerCollection Layers { get => LegendItems as ILayerCollection; }
-        public int LayerCount => GetLayers().Count();
+        public int LayerCount => Children.Count();
+
+        public IExtent Extent
+        {
+            get
+            {
+                IExtent destExtent = new Extent();
+                foreach (var item in Children)
+                {
+                    IExtent extent = null;
+                    switch (item)
+                    {
+                        case ILayer layer:
+                            extent=layer.Extent;
+                            break;
+                        case IGroup group:
+                            extent=group.Extent;
+                            break;
+                    }
+                    if (extent==null)
+                    {
+                        continue;
+                    }
+                    destExtent.ExpandToInclude(extent);
+                }
+                return destExtent;
+            }
+        }
+
+        public bool UseDynamicVisibility { get; set; }
+        public double MaxInverseScale { get; set; }
+        public double MinInverseScale { get; set; }
         public Group()
         {
-            LegendItems = new LayerCollection(Frame, this);
-            LegendItems.CollectionChanged += Items_CollectionChanged;
         }
-
-        private void Items_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        public void Draw(Graphics graphics, Rectangle rectangle, IExtent extent, bool selected = false, Func<bool> cancelFunc = null, Action invalidateMapFrameAction = null)
         {
-            IExtent extent = Extent.Copy();
-            switch (e.Action)
+            if (graphics == null || rectangle.Width * rectangle.Height == 0 || extent == null || extent.Width * extent.Height == 0 || cancelFunc?.Invoke() == true)
             {
-                case NotifyCollectionChangedAction.Add:
-                    if (extent == null)
-                    {
-                        extent = new Extent();
-                    }
-                    foreach (ILayer item in e.NewItems)
-                    {
-                        extent.ExpandToInclude(item.Extent);
-                    }
-                    break;
-                case NotifyCollectionChangedAction.Remove:
-                case NotifyCollectionChangedAction.Replace:
-                    extent = new Extent();
-                    foreach (var layer in GetAllLayers())
-                    {
-                        extent.ExpandToInclude(layer.Extent);
-                    }
-                    break;
-                case NotifyCollectionChangedAction.Move:
-                    return;
-                case NotifyCollectionChangedAction.Reset:
-                    extent = new Extent();
-                    break;
+                return;
             }
-            Extent = extent;
-        }
-
-        protected override void OnDraw(Graphics graphics, Rectangle rectangle, IExtent extent, bool selected = false, Func<bool> cancelFunc = null, Action invalidateMapFrameAction = null)
-        {
-            for (int i = LegendItems.Count - 1; i >= 0; i--)
+            
+            Progress?.Invoke(0, String.Empty);
+            for (int i = Children.Count() - 1; i >= 0; i--)
             {
-                if (LegendItems[i] is ILayer layer && layer.GetVisible(extent, rectangle))
+                if (Children.ElementAt(i) is ILayer layer && layer.GetVisible(extent, rectangle))
                 {
                     layer.Draw(graphics, rectangle, extent, selected, cancelFunc, invalidateMapFrameAction);
                     invalidateMapFrameAction?.Invoke();
                 }
             }
+            Progress?.Invoke(100, String.Empty);
         }
 
         public ILayer GetLayer(int index)
@@ -218,7 +220,7 @@ namespace EM.GIS.Symbology
 
         public void RemoveLayerAt(int index)
         {
-            LegendItems.RemoveAt(index);
+            Children.RemoveAt(index);
         }
 
         public void ClearLayers()

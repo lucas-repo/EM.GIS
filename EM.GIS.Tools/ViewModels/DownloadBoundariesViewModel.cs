@@ -1,4 +1,7 @@
-﻿using EM.WpfBase;
+﻿using EM.Bases;
+using EM.GIS.GdalExtensions;
+using EM.WpfBases;
+using Microsoft.Win32;
 using OSGeo.OGR;
 using System;
 using System.Collections.Generic;
@@ -6,11 +9,7 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
-using EM.GIS.GdalExtensions;
-using Microsoft.Win32;
 
 namespace EM.GIS.Tools
 {
@@ -243,7 +242,7 @@ namespace EM.GIS.Tools
             if (ds!=null)
             {
                 var layer = ds.GetLayerByIndex(0);
-                var url = GetUrl(Country?.Value, Province?.Value, City?.Value, District?.Value);
+                var url = GetUrl(Country?.Item, Province?.Item, City?.Item, District?.Item);
                 DownLoad(layer, jsonPath, url, false);
                 ds.FlushCache();
             }
@@ -348,7 +347,7 @@ namespace EM.GIS.Tools
                 case nameof(Country):
                     if (Country!=null)
                     {
-                        url=GetUrl(Country.Value, null, null, null);
+                        url=GetUrl(Country.Item, null, null, null);
                         jsonPath = GetJsonPath(Country.Text, null, null, null);
                         DownloadJson(url, jsonPath);
                         AddTreeItems(jsonPath,Provinces);
@@ -360,7 +359,7 @@ namespace EM.GIS.Tools
                     if (Province!=null)
                     {
                         IncludeChildrenVisible=Province.ChildrenNum>0;
-                        url=   GetUrl(Country?.Value, Province.Value, null, null);
+                        url=   GetUrl(Country?.Item, Province.Item, null, null);
                         jsonPath = GetJsonPath(Country?.Text, Province.Text, null, null);
                         DownloadJson(url, jsonPath);
                         AddTreeItems(jsonPath, Cities);
@@ -370,7 +369,7 @@ namespace EM.GIS.Tools
                     if (City!=null)
                     {
                         IncludeChildrenVisible=City.ChildrenNum>0;
-                        url=   GetUrl(Country?.Value, Province?.Value, City.Value, null);
+                        url=   GetUrl(Country?.Item, Province?.Item, City.Item, null);
                         jsonPath = GetJsonPath(Country?.Text, Province?.Text, City.Text, null);
                         DownloadJson(url, jsonPath);
                         AddTreeItems(jsonPath, Districts);
@@ -380,7 +379,7 @@ namespace EM.GIS.Tools
                     if (District!=null)
                     {
                         IncludeChildrenVisible=District.ChildrenNum>0;
-                        url=   GetUrl(Country?.Value, Province?.Value, City?.Value, District.Value);
+                        url=   GetUrl(Country?.Item, Province?.Item, City?.Item, District.Item);
                         jsonPath = GetJsonPath(Country?.Text, Province?.Text, City?.Text, District.Text);
                         DownloadJson(url, jsonPath);
                     }

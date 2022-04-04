@@ -11,10 +11,10 @@ namespace EM.GIS.Data
         /// <summary>
         /// 世界范围
         /// </summary>
-        IExtent Extent { get; }
+        IExtent Extent { get; set; }
         /// <summary>
         /// 像素范围
         /// </summary>
-        Rectangle Bound { get; }
+        Rectangle Bound { get; set; }
     }
 }

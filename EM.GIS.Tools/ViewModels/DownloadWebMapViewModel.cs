@@ -2,19 +2,15 @@
 using BruTile.Cache;
 using BruTile.Predefined;
 using BruTile.Web;
-using EM.WpfBase;
+using EM.Bases;
+using EM.WpfBases;
 using Microsoft.Win32;
 using OSGeo.GDAL;
 using OSGeo.OGR;
-using OSGeo.OSR;
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Drawing;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 
 namespace EM.GIS.Tools

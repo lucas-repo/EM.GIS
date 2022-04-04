@@ -1,11 +1,8 @@
 ﻿using EM.Bases;
 using EM.GIS.Data;
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.ComponentModel;
 using System.Drawing;
-using System.Windows.Input;
 
 namespace EM.GIS.Symbology
 {
@@ -13,53 +10,29 @@ namespace EM.GIS.Symbology
     /// 图例元素
     /// </summary>
     [Serializable]
-    public abstract class LegendItem : BaseCopy, ILegendItem
+    public abstract class LegendItem : TreeItem, ILegendItem
     {
-        public event EventHandler ItemChanged;
-        public event EventHandler RemoveItem;
-
-        private bool _isVisible;
-        public bool IsVisible
-        {
-            get { return _isVisible; }
-            set { SetProperty(ref _isVisible, value, nameof(IsVisible)); }
-        }
-        private bool _isExpanded = true;
-        public bool IsExpanded
-        {
-            get { return _isExpanded; }
-            set { SetProperty(ref _isExpanded, value, nameof(IsExpanded)); }
-        }
-        private bool _isSelected;
-        public bool IsSelected
-        {
-            get { return _isSelected; }
-            set { SetProperty(ref _isSelected, value, nameof(IsSelected)); }
-        }
-
-        public string Text { get; set; }
-        public ILegendItem Parent { get; set; }
-
+        public new ILegendItem Parent { get => base.Parent as LegendItem; set => base.Parent=value; }
         public ObservableCollection<IBaseCommand> ContextCommands { get; } = new ObservableCollection<IBaseCommand>();
-        public LegendMode LegendSymbolMode { get; set; }
-        public LegendType LegendType { get; set; }
 
-        private IProgressHandler _progressHandler;
-        public IProgressHandler ProgressHandler
+        private ProgressDelegate _progress;
+        public ProgressDelegate Progress
         {
-            get { return _progressHandler; }
+            get { return _progress; }
             set
             {
-                if (SetProperty(ref _progressHandler, value, nameof(ProgressHandler)))
+                if (SetProperty(ref _progress, value, nameof(ProgressHandler)))
                 {
-                    if (LegendItems != null)
+                    foreach (var item in Children)
                     {
-                        LegendItems.ProgressHandler = _progressHandler;
+                        if (item is IProgressHandler handler)
+                        {
+                            handler.Progress=_progress;
+                        }
                     }
                 }
             }
         }
-        public ILegendItemCollection LegendItems { get; protected set; }
 
         public LegendItem()
         {
