@@ -15,11 +15,11 @@ namespace EM.GIS.Symbology
             set => base.DefaultCategory = value;
         }
 
-        public new IPolygonCategoryCollection Categories { get=> LegendItems as IPolygonCategoryCollection; }
+        public new IPolygonCategoryCollection Children { get=> base.Children as IPolygonCategoryCollection; protected set => base.Children = value; }
 
         public PolygonLayer(IFeatureSet featureSet) : base(featureSet)
         {
-            LegendItems = new PolygonCategoryCollection(this);
+            Children = new PolygonCategoryCollection(this);
             DefaultCategory = new PolygonCategory()
             {
                 Text = "默认"

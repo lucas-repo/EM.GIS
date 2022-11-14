@@ -7,9 +7,8 @@ namespace EM.GIS.Symbology
     /// </summary>
     public abstract class FeatureCategoryCollection : CategoryCollection, IFeatureCategoryCollection
     {
+        public new IFeatureCategory this[int index] { get =>Items[index] as IFeatureCategory; set => Items[index] = value; }
         public new IFeatureLayer Parent { get => base.Parent as IFeatureLayer; set => base.Parent = value; }
-
-        public new IFeatureCategory this[int index] { get => base[index] as IFeatureCategory; set => base[index] = value; }
 
         public FeatureCategoryCollection(IFeatureLayer parent) : base(parent)
         { }

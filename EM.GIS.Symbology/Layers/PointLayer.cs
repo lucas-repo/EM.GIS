@@ -11,13 +11,13 @@ namespace EM.GIS.Symbology
             get => base.DefaultCategory as IPointCategory;
             set => base.DefaultCategory = value;
         }
-        public new IPointCategoryCollection Categories { get => LegendItems as IPointCategoryCollection; }
+        public new IPointCategoryCollection Children { get => base.Children as IPointCategoryCollection; protected set => base.Children = value; }
         public PointLayer(IFeatureSet featureSet) : base(featureSet)
         {
-            LegendItems = new PointCategoryCollection(this);
+            Children = new PointCategoryCollection(this);
             DefaultCategory = new PointCategory()
             {
-                Text="默认"
+                Text = "默认"
             };
         }
 

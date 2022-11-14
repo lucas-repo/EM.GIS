@@ -163,11 +163,11 @@ namespace EM.GIS.Symbology
             _bw.ProgressChanged += BwProgressChanged;
 
             DrawingLayers = new LayerCollection(this,this);
-            LegendItems.CollectionChanged += Layers_CollectionChanged;
+            Children.CollectionChanged += Layers_CollectionChanged;
         }
         private void BwProgressChanged(object sender, ProgressChangedEventArgs e)
         {
-            ProgressHandler?.Progress(e.ProgressPercentage, "绘制中 ...");
+            Progress?.Invoke(e.ProgressPercentage, "绘制中 ...");
         }
         private void BwRunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
@@ -179,7 +179,7 @@ namespace EM.GIS.Symbology
                     bw.RunWorkerAsync();
                     return;
                 }
-                ProgressHandler?.Progress(0, string.Empty);
+                Progress?.Invoke(0, string.Empty);
             }
         }
         private void BwDoWork(object sender, DoWorkEventArgs e)
@@ -309,9 +309,9 @@ namespace EM.GIS.Symbology
             ResetBuffer();
         }
 
-        protected override void OnDraw(Graphics graphics, Rectangle rectangle, IExtent extent, bool selected = false, Func<bool> cancelFunc = null, Action invalidateMapFrameAction = null)
+        public override void Draw(Graphics graphics, Rectangle rectangle, IExtent extent, bool selected = false, Func<bool> cancelFunc = null, Action invalidateMapFrameAction = null)
         {
-            base.OnDraw(graphics, rectangle, extent, selected, cancelFunc, invalidateMapFrameAction);
+            base.Draw(graphics, rectangle, extent, selected, cancelFunc, invalidateMapFrameAction);
             var visibleDrawingFeatureLayers = new List<IFeatureLayer>();
             if (DrawingLayers != null)
             {

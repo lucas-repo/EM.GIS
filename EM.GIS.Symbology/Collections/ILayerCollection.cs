@@ -1,4 +1,5 @@
-﻿using EM.GIS.Data;
+﻿using EM.Bases;
+using EM.GIS.Data;
 using System;
 using System.Collections.Generic;
 
@@ -7,7 +8,7 @@ namespace EM.GIS.Symbology
     /// <summary>
     /// 图层集合接口
     /// </summary>
-    public interface ILayerCollection : ILegendItemCollection
+    public interface ILayerCollection : IItemCollection<IBaseItem>, IParent<IGroup>
     {
         #region 需要重写的部分
         /// <summary>
@@ -16,10 +17,6 @@ namespace EM.GIS.Symbology
         /// <param name="index"></param>
         /// <returns></returns>
         new ILayer this[int index] { get;set; }
-        /// <summary>
-        /// 父元素
-        /// </summary>
-        new IGroup Parent { get; set; }
         #endregion
         /// <summary>
         /// 地图框架

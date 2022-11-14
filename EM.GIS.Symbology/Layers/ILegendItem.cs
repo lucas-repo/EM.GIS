@@ -12,12 +12,8 @@ namespace EM.GIS.Symbology
     /// <summary>
     /// 图例元素接口
     /// </summary>
-    public interface ILegendItem :  ITreeItem, ICloneable, INotifyPropertyChanged, IProgressHandler
+    public interface ILegendItem :  ITreeItem, IProgressHandler
     {
-        /// <summary>
-        /// 父元素
-        /// </summary>
-        new ILegendItem Parent { get; set; }
         /// <summary>
         /// 右键菜单命令集合
         /// </summary>

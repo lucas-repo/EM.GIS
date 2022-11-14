@@ -1,32 +1,90 @@
-﻿using EM.GIS.Data;
+﻿using EM.Bases;
+using EM.GIS.Data;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using System.Reflection;
+using System.Transactions;
 
 namespace EM.GIS.Symbology
 {
     /// <summary>
     /// 图例元素集合
     /// </summary>
-    public abstract class LegendItemCollection:ItemCollection<ILegendItem, ILegendItem>, ILegendItemCollection
+    public abstract class LegendItemCollection:ItemCollection<ILegendItem>, ILegendItemCollection
     {
-        private IProgressHandler _progressHandler;
-        public IProgressHandler ProgressHandler
+        [NonSerialized]
+        private ILegendItem _parent;
+        /// <inheritdoc/>
+        public ILegendItem Parent
         {
-            get { return _progressHandler; }
+            get { return _parent; }
+            set { SetProperty(ref _parent, value); }
+        }
+
+        private ProgressDelegate _progress;
+        public ProgressDelegate Progress
+        {
+            get { return _progress; }
             set
             {
-                if (SetProperty(ref _progressHandler, value, nameof(ProgressHandler)))
+                if (SetProperty(ref _progress, value, nameof(Progress)))
                 {
-                    foreach (ILegendItem item in this)
+                    foreach (var item in this)
                     {
-                        item.ProgressHandler = _progressHandler;
+                        item.Progress = _progress;
                     }
                 }
             }
         }
-        public LegendItemCollection(ILegendItem parent) : base(parent)
-        { }
+        public LegendItemCollection(ILegendItem parent) 
+        {
+            _parent = parent;
+            CollectionChanged += LegendItemCollection_CollectionChanged;
+        }
+
+        private void LegendItemCollection_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            Action setOldItemsAction = new Action(() =>
+            {
+                foreach (var item in e.OldItems)
+                {
+                    if (item is ILegendItem t)
+                    {
+                        t.Parent = default;
+                    }
+                }
+            });
+            Action setNewItemsAction = new Action(() =>
+            {
+                foreach (var item in e.NewItems)
+                {
+                    if (item is ILegendItem t)
+                    {
+                        t.Parent = Parent;
+                    }
+                }
+            });
+            switch (e.Action)
+            {
+                case NotifyCollectionChangedAction.Add:
+                    setNewItemsAction.Invoke();
+                    break;
+                case NotifyCollectionChangedAction.Remove:
+                    setOldItemsAction.Invoke();
+                    break;
+                case NotifyCollectionChangedAction.Replace:
+                    setOldItemsAction.Invoke();
+                    setNewItemsAction.Invoke();
+                    break;
+                case NotifyCollectionChangedAction.Move:
+                    break;
+                case NotifyCollectionChangedAction.Reset:
+                    setOldItemsAction.Invoke();
+                    break;
+            }
+        }
+      
     }
 }

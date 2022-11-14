@@ -11,7 +11,7 @@ namespace EM.GIS.Symbology
         /// <summary>
         /// 分类集合
         /// </summary>
-        new IRasterCategoryCollection Categories { get; }
+        new IRasterCategoryCollection Children { get; }
         /// <summary>
         /// 默认分类
         /// </summary>

@@ -9,10 +9,6 @@ namespace EM.GIS.Data
     /// </summary>
     public class ProgressHandler : IProgressHandler
     {
-        public Action<int, string> Handler { get; set; }
-        public void Progress(int percent, string message = null)
-        {
-            Handler?.Invoke(percent, message);
-        }
+        public ProgressDelegate Progress { get; set; }
     }
 }

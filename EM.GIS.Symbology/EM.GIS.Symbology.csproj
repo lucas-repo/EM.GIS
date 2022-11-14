@@ -19,7 +19,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="EM.Bases" Version="1.0.0" />
+    <PackageReference Include="EM.Bases" Version="1.0.5-pre20221112-1" />
   </ItemGroup>
 
   <ItemGroup>

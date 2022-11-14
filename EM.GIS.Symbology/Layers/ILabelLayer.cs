@@ -20,7 +20,7 @@ namespace EM.GIS.Symbology
         /// <summary>
         /// 分类集合
         /// </summary>
-        new ILabelCategoryCollection Categories { get; }
+        new ILabelCategoryCollection Children { get; }
         /// <summary>
         /// 默认分类
         /// </summary>

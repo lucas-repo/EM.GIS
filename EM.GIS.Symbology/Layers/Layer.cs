@@ -11,6 +11,44 @@ namespace EM.GIS.Symbology
     [Serializable]
     public abstract class Layer : LegendItem, ILayer
     {
+        public ICategory DefaultCategory
+        {
+            get
+            {
+                ICategory category = null;
+                if (Children?.Count > 0)
+                {
+                    category = Children[Children.Count - 1];
+                }
+                return category;
+            }
+            set
+            {
+                if (Children != null)
+                {
+                    if (Children.Count > 0)
+                    {
+                        Children[Children.Count - 1] = value;
+                    }
+                    else
+                    {
+                        Children.Add(value);
+                    }
+                }
+            }
+        }
+        public virtual ISelection Selection { get; protected set; }
+        public new IGroup Parent
+        {
+            get => base.Parent as IGroup;
+            set => base.Parent = value;
+        }
+        public new ICategoryCollection Children
+        {
+            get => base.Children as ICategoryCollection;
+            protected set => base.Children = value;
+        }
+
         public virtual IExtent Extent { get; set; }
 
         public bool UseDynamicVisibility { get; set; }
@@ -56,8 +94,9 @@ namespace EM.GIS.Symbology
         }
 
         public Layer()
-        { }
-        public Layer(IDataSet dataSet)
+        {
+        }
+        public Layer(IDataSet dataSet):this()
         {
             DataSet = dataSet;
         }
@@ -93,7 +132,6 @@ namespace EM.GIS.Symbology
         /// 是否已释放
         /// </summary>
         public bool IsDisposed { get; private set; }
-        public new IGroup Parent { get => base.Parent as IGroup; set => base.Parent = value; }
         public IFrame Frame { get; set; }
 
         protected virtual void Dispose(bool disposing)

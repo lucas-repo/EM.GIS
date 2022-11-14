@@ -8,7 +8,7 @@
         /// <summary>
         /// 分类集合
         /// </summary>
-        new IPolygonCategoryCollection Categories { get; }
+        new IPolygonCategoryCollection Children { get; }
         /// <summary>
         /// 默认分类
         /// </summary>

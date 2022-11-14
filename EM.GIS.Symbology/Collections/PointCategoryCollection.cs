@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using EM.Bases;
+using System.Collections.Generic;
 
 namespace EM.GIS.Symbology
 {
@@ -8,8 +9,16 @@ namespace EM.GIS.Symbology
     public class PointCategoryCollection : FeatureCategoryCollection,  IPointCategoryCollection
     {
         public new IPointCategory this[int index] { get => Items[index] as IPointCategory; set => Items[index] = value; }
+        public new IPointLayer Parent { get => base.Parent as IPointLayer; set => base.Parent = value; }
 
-        public PointCategoryCollection(IFeatureLayer parent) : base(parent)
+        public PointCategoryCollection(IPointLayer parent) : base(parent)
         { }
+        public override void Add(IBaseItem item)
+        {
+            if (item is IPointCategory)
+            {
+                base.Add(item);
+            }
+        }
     }
 }

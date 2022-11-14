@@ -14,10 +14,10 @@ namespace EM.GIS.Symbology
             get => base.DefaultCategory as ILineCategory;
             set => base.DefaultCategory = value;
         }
-        public new ILineCategoryCollection Categories { get => LegendItems as ILineCategoryCollection; }
+        public new ILineCategoryCollection Children { get => base.Children as ILineCategoryCollection; protected set => base.Children = value; }
         public LineLayer(IFeatureSet featureSet) : base(featureSet)
         {
-            LegendItems = new LineCategoryCollection(this);
+            Children = new LineCategoryCollection(this);
             DefaultCategory = new LineCategory()
             {
                 Text = "默认"

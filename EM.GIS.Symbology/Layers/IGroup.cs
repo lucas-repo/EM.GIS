@@ -1,4 +1,5 @@
-﻿using EM.GIS.Data;
+﻿using EM.Bases;
+using EM.GIS.Data;
 using EM.GIS.Geometries;
 using System;
 using System.Collections.Generic;
@@ -12,6 +13,15 @@ namespace EM.GIS.Symbology
     /// </summary>
     public interface IGroup : ILegendItem, IDynamicVisibility, IDrawable
     {
+        /// <summary>
+        /// 父图层组
+        /// </summary>
+        new IGroup Parent { get; set; }
+        /// <summary>
+        /// 图层集合
+        /// </summary>
+        new ILayerCollection Children { get; }
+
         /// <summary>
         /// 范围
         /// </summary>
@@ -105,6 +115,6 @@ namespace EM.GIS.Symbology
         /// 清空图层
         /// </summary>
         void ClearLayers();
-        
+
     }
 }

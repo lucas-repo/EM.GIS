@@ -14,10 +14,9 @@ namespace EM.GIS.Symbology
             set => base.DefaultCategory = value;
         }
 
-        public new IRasterCategoryCollection Categories { get => LegendItems as IRasterCategoryCollection; }
         public RasterLayer()
         {
-            LegendItems = new RasterCategoryCollection(this);
+            Children = new RasterCategoryCollection(this);
         }
         public RasterLayer(IRasterSet rasterSet) : this()
         {
@@ -36,6 +35,12 @@ namespace EM.GIS.Symbology
         }
 
         public new IRasterSet DataSet { get => base.DataSet as IRasterSet; set => base.DataSet = value; }
+
+        public new IRasterCategoryCollection Children 
+        { 
+            get => base.Children as IRasterCategoryCollection; 
+            protected set => base.Children = value; 
+        }
 
         protected override void OnDraw(Graphics graphics, Rectangle rectangle, IExtent extent, bool selected = false, Func<bool> cancelFunc = null, Action invalidateMapFrameAction = null)
         {
@@ -56,7 +61,7 @@ namespace EM.GIS.Symbology
             int minProgress = 0;
             int maxProgress = 80;
             double progressD = progress / 100.0 * (maxProgress - minProgress);
-            ProgressHandler?.Progress((int)progressD, ProgressMessage);
+            Progress?.Invoke((int)progressD, ProgressMessage);
         }
     }
 }

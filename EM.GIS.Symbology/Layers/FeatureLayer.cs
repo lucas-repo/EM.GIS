@@ -14,6 +14,11 @@ namespace EM.GIS.Symbology
     /// </summary>
     public abstract class FeatureLayer : Layer, IFeatureLayer
     {
+        public new IFeatureCategoryCollection Children
+        {
+            get => base.Children as IFeatureCategoryCollection;
+            protected set => base.Children = value;
+        }
         public new IFeatureCategory DefaultCategory
         {
             get => base.DefaultCategory as IFeatureCategory;
@@ -35,8 +40,6 @@ namespace EM.GIS.Symbology
             }
         }
 
-        public new IFeatureCategoryCollection Categories => LegendItems as IFeatureCategoryCollection;
-
         public new IFeatureSelection Selection
         {
             get => base.Selection as IFeatureSelection;
@@ -52,7 +55,7 @@ namespace EM.GIS.Symbology
             }
             DataSet.SetSpatialExtentFilter(extent);
             long featureCount = DataSet.FeatureCount;
-            ProgressHandler?.Progress(5, ProgressMessage);
+            Progress?.Invoke(5, ProgressMessage);
             var features = new List<IFeature>();
             long drawnFeatureCount = 0;
             int threshold = 262144;
@@ -65,9 +68,9 @@ namespace EM.GIS.Symbology
                     if (cancelFunc?.Invoke() != true)
                     {
                         percent = (int)(drawnFeatureCount * 90 / featureCount);
-                        ProgressHandler?.Progress(percent, ProgressMessage);
+                        Progress?.Invoke(percent, ProgressMessage);
                         MapArgs drawArgs = new MapArgs(rectangle, extent, graphics);
-                        DrawFeatures(drawArgs, features, selected, ProgressHandler, cancelFunc);
+                        DrawFeatures(drawArgs, features, selected, Progress, cancelFunc);
                         drawnFeatureCount += features.Count;
                         invalidateMapFrameAction?.Invoke();
                     }
@@ -138,9 +141,9 @@ namespace EM.GIS.Symbology
                 {
                     DataRow row = dataTable.Rows[i];
                     IFeature feature = otherFeatures.ElementAt(i);
-                    for (int j = Categories.Count - 1; j >= 0; j--)
+                    for (int j = Children.Count - 1; j >= 0; j--)
                     {
-                        IFeatureCategory featureCategory = Categories[j];
+                        IFeatureCategory featureCategory = Children[j];
                         if (string.IsNullOrEmpty(featureCategory.FilterExpression))
                         {
                             FidCategoryDic[feature.FId]= featureCategory;
@@ -167,7 +170,7 @@ namespace EM.GIS.Symbology
         /// <param name="symbolizer"></param>
         /// <param name="geometry"></param>
         protected abstract void DrawGeometry(MapArgs drawArgs, IFeatureSymbolizer symbolizer, IGeometry geometry);
-        private void DrawFeatures(MapArgs drawArgs, List<IFeature> features, bool selected, IProgressHandler progressHandler, Func<bool> cancelFunc = null)
+        private void DrawFeatures(MapArgs drawArgs, List<IFeature> features, bool selected, ProgressDelegate progress, Func<bool> cancelFunc = null)
         {
             if (drawArgs == null || features == null || cancelFunc?.Invoke() == true)
             {

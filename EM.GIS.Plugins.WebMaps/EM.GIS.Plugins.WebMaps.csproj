@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="BruTile" Version="5.0.0" />
+    <PackageReference Include="EM.Bases" Version="1.0.5-pre20221112-1" />
+    <PackageReference Include="EM.GIS.Data" Version="1.0.0-alpha0001" />
+    <PackageReference Include="EM.GIS.Symbology" Version="1.0.0-alpha0003" />
+  </ItemGroup>
+
+</Project>

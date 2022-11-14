@@ -1,0 +1,21 @@
+﻿<fluent:RibbonWindow x:Class="EM.WpfDemo.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:wpfControls="clr-namespace:EM.GIS.WPFControls;assembly=EM.GIS.WPFControls"
+        xmlns:local="clr-namespace:EM.WpfDemo"
+        xmlns:fluent="urn:fluent-ribbon"
+        mc:Ignorable="d"
+        Title="易图" Height="759" Width="1440" Icon="/EM.GIS.Resources;Component/Images/LogoIco24.ico">
+    <fluent:RibbonWindow.Resources>
+        <!--防止72dpi图片变形-->
+        <Style TargetType="{x:Type Image}">
+            <Setter Property="Stretch" Value="Fill"/>
+            <Setter Property="Width" Value="{Binding Source.PixelWidth, Mode=OneWay, RelativeSource={RelativeSource Self}}"/>
+            <Setter Property="Height" Value="{Binding Source.PixelHeight, Mode=OneWay, RelativeSource={RelativeSource Self}}"/>
+        </Style>
+    </fluent:RibbonWindow.Resources>
+    <Grid>
+    </Grid>
+</fluent:RibbonWindow>

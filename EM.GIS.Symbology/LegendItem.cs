@@ -12,7 +12,6 @@ namespace EM.GIS.Symbology
     [Serializable]
     public abstract class LegendItem : TreeItem, ILegendItem
     {
-        public new ILegendItem Parent { get => base.Parent as LegendItem; set => base.Parent=value; }
         public ObservableCollection<IBaseCommand> ContextCommands { get; } = new ObservableCollection<IBaseCommand>();
 
         private ProgressDelegate _progress;
@@ -42,8 +41,6 @@ namespace EM.GIS.Symbology
             Parent = parent;
         }
 
-        public virtual void DrawLegend(Graphics g, Rectangle rectangle)
-        {
-        }
+        public virtual void DrawLegend(Graphics g, Rectangle rectangle) { }
     }
 }

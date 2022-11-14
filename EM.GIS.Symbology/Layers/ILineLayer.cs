@@ -5,7 +5,7 @@
         /// <summary>
         /// 分类集合
         /// </summary>
-        new ILineCategoryCollection Categories { get; }
+        new ILineCategoryCollection Children { get; }
         /// <summary>
         /// 默认分类
         /// </summary>

@@ -1,0 +1,61 @@
+﻿<TreeView xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:EM.GIS.WPFControls"
+             x:Class="EM.GIS.WPFControls.Legend"
+             mc:Ignorable="d" 
+             d:DesignHeight="800" d:DesignWidth="450" VirtualizingStackPanel.IsVirtualizing="False" ItemTemplateSelector="{DynamicResource legendItemTemplateSelector}" ItemContainerStyle="{DynamicResource treeViewItemContainerStyle}">
+    <TreeView.ContextMenu>
+        <ContextMenu ItemsSource="{Binding SelectedItem.ContextCommands}" ItemContainerStyle="{DynamicResource menuItemStyle}"/>
+    </TreeView.ContextMenu>
+    <TreeView.Style>
+        <Style TargetType="{x:Type TreeView}">
+            <EventSetter Event="TreeView.SelectedItemChanged" Handler="TreeView_SelectedItemChanged"/>
+        </Style>
+    </TreeView.Style>
+    <TreeView.Resources>
+        <local:CategoryToImage x:Key="categoryToImage"/>
+        <local:LegendItemTemplateSelector x:Key="legendItemTemplateSelector">
+            <local:LegendItemTemplateSelector.GroupTemplate>
+                <HierarchicalDataTemplate ItemsSource="{Binding LegendItems}">
+                    <WrapPanel>
+                        <Image Source="/EM.GIS.Resources;Component/Images/Layers16.png" Margin="6,0,0,0"/>
+                        <TextBlock Text="{Binding Text}" FontWeight="Bold" Margin="6,0,0,0"/>
+                    </WrapPanel>
+                </HierarchicalDataTemplate>
+            </local:LegendItemTemplateSelector.GroupTemplate>
+            <local:LegendItemTemplateSelector.LayerTemplate>
+                <HierarchicalDataTemplate ItemsSource="{Binding LegendItems}">
+                    <WrapPanel>
+                        <CheckBox IsChecked="{Binding IsVisible,Mode=TwoWay}" Margin="8,0,0,0"/>
+                        <TextBlock Text="{Binding Text}" Margin="8,0,0,0"/>
+                    </WrapPanel>
+                </HierarchicalDataTemplate>
+            </local:LegendItemTemplateSelector.LayerTemplate>
+            <local:LegendItemTemplateSelector.CategoryTemplate>
+                <HierarchicalDataTemplate ItemsSource="{Binding LegendItems}">
+                    <WrapPanel>
+                        <Image Source="{Binding Converter={StaticResource categoryToImage}}" Margin="4,0,0,0"/>
+                        <TextBlock Text="{Binding Text}" Margin="8,0,0,0"/>
+                    </WrapPanel>
+                </HierarchicalDataTemplate>
+            </local:LegendItemTemplateSelector.CategoryTemplate>
+        </local:LegendItemTemplateSelector>
+        <Style x:Key="treeViewItemContainerStyle" TargetType="{x:Type TreeViewItem}">
+            <Setter Property="IsExpanded" Value="{Binding IsExpanded}"/>
+            <Setter Property="IsSelected" Value="{Binding IsSelected,Mode=TwoWay}"/>
+            <EventSetter Event="TreeViewItem.PreviewMouseRightButtonDown" Handler="TreeViewItem_PreviewMouseRightButtonDown"/>
+        </Style>
+        <Style x:Key="menuItemStyle" TargetType="{x:Type MenuItem}">
+            <Setter Property="Header" Value="{Binding Header}"/>
+            <Setter Property="ToolTip" Value="{Binding ToolTip}"/>
+            <Setter Property="Command" Value="{Binding}"/>
+            <Setter Property="Icon">
+                <Setter.Value>
+                    <Image Source="{Binding Icon}"/>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </TreeView.Resources>
+</TreeView>

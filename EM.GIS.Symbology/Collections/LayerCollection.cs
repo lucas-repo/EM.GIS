@@ -3,22 +3,109 @@ using System.Collections;
 using System.Linq;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using EM.Bases;
+using System.Collections.Specialized;
+using System;
 
 namespace EM.GIS.Symbology
 {
     /// <summary>
     /// 图层集合
     /// </summary>
-    public class LayerCollection : LegendItemCollection, ILayerCollection
+    public class LayerCollection : ItemCollection<IBaseItem>, ILayerCollection
     {
-        public LayerCollection(IFrame frame ,IGroup parent) : base(parent)
+        public new ILayer this[int index]
         {
-            Frame= frame;
+            get => base[index] as ILayer;
+            set => base[index] = value;
+        }
+        [NonSerialized]
+        private IGroup _parent;
+        /// <inheritdoc/>
+        public IGroup Parent
+        {
+            get { return _parent; }
+            set { SetProperty(ref _parent, value); }
+        }
+        private IFrame _frame;
+        /// <inheritdoc/>
+        public IFrame Frame
+        {
+            get { return _frame; }
+            set { SetProperty(ref _frame, value); }
         }
 
-        public new ILayer this[int index] { get => Items[index] as ILayer; set => Items[index] = value; }
-        public new IGroup Parent { get => base.Parent as IGroup; set => base.Parent = value; }
-         public IFrame Frame { get; set; }
+        private ProgressDelegate _progress;
+        public ProgressDelegate Progress
+        {
+            get { return _progress; }
+            set
+            {
+                if (SetProperty(ref _progress, value, nameof(Progress)))
+                {
+                    foreach (var item in this)
+                    {
+                        if (item is ILayer layer)
+                        {
+                            layer.Progress = _progress;
+                        }
+                    }
+                }
+            }
+        }
+        public LayerCollection(IFrame frame, IGroup parent)
+        {
+            _frame = frame;
+            _parent = parent;
+            CollectionChanged += LegendItemCollection_CollectionChanged;
+        }
+        public LayerCollection(IGroup parent)
+        {
+            _parent = parent;
+            CollectionChanged += LegendItemCollection_CollectionChanged;
+        }
+        private void LegendItemCollection_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            Action setOldItemsAction = new Action(() =>
+            {
+                foreach (var item in e.OldItems)
+                {
+                    if (item is ILayer t)
+                    {
+                        t.Parent = default;
+                    }
+                }
+            });
+            Action setNewItemsAction = new Action(() =>
+            {
+                foreach (var item in e.NewItems)
+                {
+                    if (item is ILayer t)
+                    {
+                        t.Parent = Parent;
+                    }
+                }
+            });
+            switch (e.Action)
+            {
+                case NotifyCollectionChangedAction.Add:
+                    setNewItemsAction.Invoke();
+                    break;
+                case NotifyCollectionChangedAction.Remove:
+                    setOldItemsAction.Invoke();
+                    break;
+                case NotifyCollectionChangedAction.Replace:
+                    setOldItemsAction.Invoke();
+                    setNewItemsAction.Invoke();
+                    break;
+                case NotifyCollectionChangedAction.Move:
+                    break;
+                case NotifyCollectionChangedAction.Reset:
+                    setOldItemsAction.Invoke();
+                    break;
+            }
+        }
+
         public IGroup AddGroup(string groupName = null)
         {
             string destGroupName = groupName;
@@ -90,7 +177,6 @@ namespace EM.GIS.Symbology
             if (layer != null)
             {
                 layer.IsVisible = isVisible;
-                layer.ProgressHandler = ProgressHandler;
                 layer.Parent = Parent;
                 Insert(0, layer);
             }
@@ -106,7 +192,6 @@ namespace EM.GIS.Symbology
                 rasterLayer = new RasterLayer(raster)
                 {
                     IsVisible = isVisible,
-                    ProgressHandler = ProgressHandler,
                     Parent = Parent
                 };
                 Insert(0, rasterLayer);
@@ -118,6 +203,13 @@ namespace EM.GIS.Symbology
         {
             IDataSet dataSet = DataFactory.Default.DriverFactory.Open(path);
             return AddLayer(dataSet, isVisible);
+        }
+        public override void Add(IBaseItem item)
+        {
+            if (item is ILayer)
+            {
+                base.Add(item);
+            }
         }
     }
 }

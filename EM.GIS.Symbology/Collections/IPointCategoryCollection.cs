@@ -13,9 +13,13 @@ namespace EM.GIS.Symbology
         /// <summary>
         /// 获取或设置分类
         /// </summary>
-        /// <param name="index"></param>
-        /// <returns></returns>
+        /// <param name="index">索引</param>
+        /// <returns>分类</returns>
         new IPointCategory this[int index] { get; set; }
+        /// <summary>
+        /// 父图层
+        /// </summary>
+        new IPointLayer Parent { get; set; }
 
         #endregion
     }

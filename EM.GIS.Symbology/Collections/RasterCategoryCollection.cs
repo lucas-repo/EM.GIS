@@ -1,4 +1,5 @@
-﻿using System;
+﻿using EM.Bases;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -19,5 +20,12 @@ namespace EM.GIS.Symbology
         public RasterCategoryCollection(IRasterLayer parent) : base(parent)
         { }
 
+        public override void Add(IBaseItem item)
+        {
+            if (item is IRasterCategory)
+            {
+                base.Add(item);
+            }
+        }
     }
 }

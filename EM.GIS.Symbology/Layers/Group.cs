@@ -17,6 +17,16 @@ namespace EM.GIS.Symbology
     /// </summary>
     public class Group : LegendItem, IGroup
     {
+        public new IGroup Parent
+        {
+            get => base.Parent as IGroup;
+            set => base.Parent = value;
+        }
+        public new ILayerCollection Children
+        {
+            get => base.Children as ILayerCollection;
+            set => base.Children = value;
+        }
         public int LayerCount => Children.Count();
 
         public IExtent Extent
@@ -30,13 +40,13 @@ namespace EM.GIS.Symbology
                     switch (item)
                     {
                         case ILayer layer:
-                            extent=layer.Extent;
+                            extent = layer.Extent;
                             break;
                         case IGroup group:
-                            extent=group.Extent;
+                            extent = group.Extent;
                             break;
                     }
-                    if (extent==null)
+                    if (extent == null)
                     {
                         continue;
                     }
@@ -51,15 +61,16 @@ namespace EM.GIS.Symbology
         public double MinInverseScale { get; set; }
         public Group()
         {
+            Children = new LayerCollection(this);
         }
-        public void Draw(Graphics graphics, Rectangle rectangle, IExtent extent, bool selected = false, Func<bool> cancelFunc = null, Action invalidateMapFrameAction = null)
+        public virtual void Draw(Graphics graphics, Rectangle rectangle, IExtent extent, bool selected = false, Func<bool> cancelFunc = null, Action invalidateMapFrameAction = null)
         {
             if (graphics == null || rectangle.Width * rectangle.Height == 0 || extent == null || extent.Width * extent.Height == 0 || cancelFunc?.Invoke() == true)
             {
                 return;
             }
-            
-            Progress?.Invoke(0, String.Empty);
+
+            Progress?.Invoke(0, string.Empty);
             for (int i = Children.Count() - 1; i >= 0; i--)
             {
                 if (Children.ElementAt(i) is ILayer layer && layer.GetVisible(extent, rectangle))
@@ -68,7 +79,7 @@ namespace EM.GIS.Symbology
                     invalidateMapFrameAction?.Invoke();
                 }
             }
-            Progress?.Invoke(100, String.Empty);
+            Progress?.Invoke(100, string.Empty);
         }
 
         public ILayer GetLayer(int index)
@@ -83,7 +94,7 @@ namespace EM.GIS.Symbology
 
         public IEnumerable<ILayer> GetLayers()
         {
-            foreach (ILayer item in LegendItems)
+            foreach (ILayer item in Children)
             {
                 yield return item;
             }
@@ -134,19 +145,19 @@ namespace EM.GIS.Symbology
             }
             if (index.HasValue)
             {
-                if (index.Value < 0 || index.Value > LegendItems.Count)
+                if (index.Value < 0 || index.Value > Children.Count)
                 {
                     return ret;
                 }
-                LegendItems.Insert(index.Value, layer);
+                Children.Insert(index.Value, layer);
             }
             else
             {
-                LegendItems.Add(layer);
+                Children.Add(layer);
             }
-            if (layer.ProgressHandler == null && ProgressHandler != null)
+            if (layer.Progress == null && Progress != null)
             {
-                layer.ProgressHandler = ProgressHandler;
+                layer.Progress = Progress;
             }
             ret = true;
             return ret;
@@ -215,7 +226,7 @@ namespace EM.GIS.Symbology
 
         public bool RemoveLayer(ILayer layer)
         {
-            return LegendItems.Remove(layer);
+            return Children.Remove(layer);
         }
 
         public void RemoveLayerAt(int index)
@@ -225,7 +236,7 @@ namespace EM.GIS.Symbology
 
         public void ClearLayers()
         {
-            LegendItems.Clear();
+            Children.Clear();
         }
 
         public IEnumerable<IFeatureLayer> GetFeatureLayers()

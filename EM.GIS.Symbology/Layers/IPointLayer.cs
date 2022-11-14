@@ -5,7 +5,7 @@
         /// <summary>
         /// 分类集合
         /// </summary>
-        new IPointCategoryCollection Categories { get; }
+        new IPointCategoryCollection Children { get; }
         /// <summary>
         /// 默认分类
         /// </summary>

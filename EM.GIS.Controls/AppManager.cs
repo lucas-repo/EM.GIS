@@ -161,7 +161,7 @@ namespace EM.GIS.Controls
             foreach (string directory in Directories)
             {
                 string path = Path.Combine(BaseDirectory, directory);
-                assembly = AssemblyExtensions.GetAssembly(path, assemblyName);
+                assembly =Data.AssemblyExtensions.GetAssembly(path, assemblyName);
                 if (assembly != null)
                 {
                     break;
