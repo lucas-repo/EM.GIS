@@ -35,7 +35,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EM.GIS.Plugins.MainFrame", 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EM.GIS.Plugins.WebMaps", "EM.GIS.Plugins.WebMaps\EM.GIS.Plugins.WebMaps.csproj", "{1DAAAB03-0B61-49CF-B497-DAA25284E33A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EM.WpfDemo", "EM.WpfDemo\EM.WpfDemo.csproj", "{42375CF1-DA6F-4206-91D8-0B7F01EFF16A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EM.WpfDemo", "EM.WpfDemo\EM.WpfDemo.csproj", "{42375CF1-DA6F-4206-91D8-0B7F01EFF16A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

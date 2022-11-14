@@ -4,13 +4,12 @@
 		<TargetFramework>net6.0-windows</TargetFramework>
 	</PropertyGroup>
 	<PropertyGroup>
+		<BaseOutputPath>..\bin</BaseOutputPath>
+		<BaseIntermediateOutputPath>obj\</BaseIntermediateOutputPath>
+		<GenerateDocumentationFile>True</GenerateDocumentationFile>
 		<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
 		<AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
-	</PropertyGroup>
-
-	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-		<OutputPath>..\bin\Debug\Plugins</OutputPath>
-		<DocumentationFile>..\bin\Debug\EM.GIS.Plugins.MainFrame.xml</DocumentationFile>
+		<OutputPath>$(BaseOutputPath)\$(Configuration)\Plugins\</OutputPath>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -23,7 +22,9 @@
 	  <ProjectReference Include="..\EM.GIS.Resources\EM.GIS.Resources.csproj">
 	    <Private>false</Private>
 	  </ProjectReference>
-	  <ProjectReference Include="..\EM.GIS.WPFControls\EM.GIS.WPFControls.csproj" />
+	  <ProjectReference Include="..\EM.GIS.WPFControls\EM.GIS.WPFControls.csproj">
+	    <Private>False</Private>
+	  </ProjectReference>
 	</ItemGroup>
 
 </Project>
