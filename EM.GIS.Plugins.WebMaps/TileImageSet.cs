@@ -8,6 +8,7 @@ using System.Drawing.Drawing2D;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using EM.Bases;
 
 namespace EM.GIS.Plugins.WebMaps
 {
@@ -20,6 +21,7 @@ namespace EM.GIS.Plugins.WebMaps
         /// 瓦片集合
         /// </summary>
         public Dictionary<TileIndex, ImageSet> Tiles { get; }
+        /// <inheritdoc/>
         public override IExtent Extent
         {
             get
@@ -40,6 +42,7 @@ namespace EM.GIS.Plugins.WebMaps
         {
             Tiles = new Dictionary<TileIndex, ImageSet>();
         }
+        /// <inheritdoc/>
         public Image GetImage()
         {
             return null;

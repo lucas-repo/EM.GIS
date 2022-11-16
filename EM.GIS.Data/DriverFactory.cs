@@ -20,21 +20,21 @@ namespace EM.GIS.Data
         public IEnumerable<IVectorDriver> VectorDrivers => Drivers.Where(x => x is IVectorDriver).Select(x => x as IVectorDriver);
 
         public IEnumerable<IRasterDriver> RasterDrivers => Drivers.Where(x => x is IRasterDriver).Select(x => x as IRasterDriver);
-        private IProgressHandler _progressHandler;
+        private ProgressDelegate _progress;
 
         [Category("Handlers")]
         [Description("Gets or sets the object that implements the IProgressHandler interface for recieving status messages.")]
-        public IProgressHandler ProgressHandler
+        public ProgressDelegate Progress
         {
-            get { return _progressHandler; }
+            get { return _progress; }
             set
             {
-                _progressHandler = value;
+                _progress = value;
                 if (Drivers != null)
                 {
                     foreach (var item in Drivers)
                     {
-                        item.ProgressHandler = value;
+                        item.Progress = value;
                     }
                 }
             }

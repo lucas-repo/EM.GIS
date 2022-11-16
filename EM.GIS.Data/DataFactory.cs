@@ -36,19 +36,19 @@ namespace EM.GIS.Data
                 return _default;
             }
         }
-        private IProgressHandler _progressHandler;
+        private ProgressDelegate _progress;
 
         [Category("Handlers")]
         [Description("Gets or sets the object that implements the IProgressHandler interface for recieving status messages.")]
-        public IProgressHandler ProgressHandler
+        public ProgressDelegate Progress
         {
-            get { return _progressHandler; }
+            get { return _progress; }
             set
             {
-                _progressHandler = value;
+                _progress = value;
                 if (DriverFactory != null)
                 {
-                    DriverFactory.ProgressHandler = value;
+                    DriverFactory.Progress = value;
                 }
             }
         }
@@ -64,7 +64,7 @@ namespace EM.GIS.Data
         {
             DriverFactory = new DriverFactory()
             {
-                ProgressHandler = ProgressHandler
+                Progress = Progress
             };
         }
     }

@@ -71,8 +71,8 @@ namespace EM.GIS.Plugins.MainFrame
         private void AddFrameContextCommands(IFrame frame)
         {
             AddGroupContextCommands(frame);
-            frame.Layers.CollectionChanged -= Layers_CollectionChanged;
-            frame.Layers.CollectionChanged += Layers_CollectionChanged;
+            frame.Children.CollectionChanged -= Layers_CollectionChanged;
+            frame.Children.CollectionChanged += Layers_CollectionChanged;
         }
         private void Map_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
@@ -88,12 +88,12 @@ namespace EM.GIS.Plugins.MainFrame
         }
         private void AddGroupContextCommands(IGroup group)
         {
-            var command = App.CommandFactory.GetAddLayersCommand(App.Map, group.Layers);
+            var command = App.CommandFactory.GetAddLayersCommand(App.Map, group.Children);
             AddCommandToLegendItem(group.ContextCommands, command);
-            command = App.CommandFactory.GetAddGroupCommand(group.Layers);
+            command = App.CommandFactory.GetAddGroupCommand(group.Children);
             AddCommandToLegendItem(group.ContextCommands, command);
-            group.Layers.CollectionChanged -= Layers_CollectionChanged;
-            group.Layers.CollectionChanged += Layers_CollectionChanged;
+            group.Children.CollectionChanged -= Layers_CollectionChanged;
+            group.Children.CollectionChanged += Layers_CollectionChanged;
         }
         private void AddLayerContextCommands(ILayer layer)
         {

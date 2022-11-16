@@ -12,7 +12,7 @@ namespace EM.GIS.Symbology
     /// <summary>
     /// 图例元素集合
     /// </summary>
-    public abstract class LegendItemCollection:ItemCollection<ILegendItem>, ILegendItemCollection
+    public class LegendItemCollection:ItemCollection<IBaseItem>, ILegendItemCollection
     {
         [NonSerialized]
         private ILegendItem _parent;
@@ -24,6 +24,7 @@ namespace EM.GIS.Symbology
         }
 
         private ProgressDelegate _progress;
+        /// <inheritdoc/>
         public ProgressDelegate Progress
         {
             get { return _progress; }
@@ -33,11 +34,17 @@ namespace EM.GIS.Symbology
                 {
                     foreach (var item in this)
                     {
-                        item.Progress = _progress;
+                        if (item is IProgressHandler progressHandler)
+                        {
+                            progressHandler.Progress = _progress;
+                        }
                     }
                 }
             }
         }
+        /// <inheritdoc/>
+        public new ILegendItem this[int index] { get => base[index] as ILegendItem; set => base[index] =value; }
+
         public LegendItemCollection(ILegendItem parent) 
         {
             _parent = parent;

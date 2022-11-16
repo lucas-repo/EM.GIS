@@ -33,7 +33,7 @@ namespace EM.GIS.Controls
         /// <summary>
         /// 进度管理
         /// </summary>
-        IProgressHandler ProgressHandler { get; set; }
+        ProgressDelegate Progress { get; set; }
         /// <summary>
         /// 重绘指定区域
         /// </summary>

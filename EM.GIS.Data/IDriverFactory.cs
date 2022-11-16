@@ -25,7 +25,7 @@ namespace EM.GIS.Data
         /// <summary>
         /// 进度
         /// </summary>
-        IProgressHandler ProgressHandler { get; set; }
+        ProgressDelegate Progress { get; set; }
         /// <summary>
         /// 打开数据集
         /// </summary>

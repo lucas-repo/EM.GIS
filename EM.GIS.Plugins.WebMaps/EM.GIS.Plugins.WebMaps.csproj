@@ -14,8 +14,17 @@
 	<ItemGroup>
 		<PackageReference Include="BruTile" Version="5.0.0" />
 		<PackageReference Include="EM.Bases" Version="1.0.5-pre20221112-1" />
-		<PackageReference Include="EM.GIS.Data" Version="1.0.0-alpha0001" />
-		<PackageReference Include="EM.GIS.Symbology" Version="1.0.0-alpha0003" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <ProjectReference Include="..\EM.GIS.Data\EM.GIS.Data.csproj">
+	    <CopyLocalSatelliteAssemblies></CopyLocalSatelliteAssemblies>
+	    <Private>False</Private>
+	  </ProjectReference>
+	  <ProjectReference Include="..\EM.GIS.Symbology\EM.GIS.Symbology.csproj">
+	    <CopyLocalSatelliteAssemblies></CopyLocalSatelliteAssemblies>
+	    <Private>False</Private>
+	  </ProjectReference>
 	</ItemGroup>
 
 </Project>

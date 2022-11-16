@@ -12,7 +12,7 @@ namespace EM.GIS.Symbology
         /// </summary>
         object Header { get; set; }
         /// <summary>
-        /// 标题
+        /// 名称
         /// </summary>
         string Name { get; set; }
         /// <summary>

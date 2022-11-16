@@ -9,7 +9,7 @@ namespace EM.GIS.Data
     /// </summary>
     public abstract class Driver : IDriver
     {
-        public IProgressHandler ProgressHandler { get; set; }
+        public ProgressDelegate Progress { get; set; }
         public string Name { get; set; }
         public string Discription { get; set; }
 

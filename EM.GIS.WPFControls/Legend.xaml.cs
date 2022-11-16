@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
@@ -22,20 +23,20 @@ namespace EM.GIS.WPFControls
     /// </summary>
     public partial class Legend : TreeView, ILegend, INotifyPropertyChanged
     {
-        private ILegendItem _selectedItem;
+        private ILegendItem? _selectedItem;
         /// <summary>
         /// 选择的元素
         /// </summary>
-        public ILegendItem SelectedItem
+        public ILegendItem? SelectedLegendItemItem
         {
             get { return _selectedItem; }
-            set { SetProperty(ref _selectedItem, value, nameof(SelectedItem)); }
+            set { SetProperty(ref _selectedItem, value); }
         }
 
         public Legend()
         {
             InitializeComponent();
-            LegendItems = new LayerCollection(null);
+            LegendItems = new LegendItemCollection(null);
             LegendItems.CollectionChanged += LegendItems_CollectionChanged; 
             DataContext = this;
             ItemsSource = LegendItems; 
@@ -43,53 +44,40 @@ namespace EM.GIS.WPFControls
 
         private void TreeView_SelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
         {
-            SelectedItem = e.NewValue as ILegendItem;
+            SelectedLegendItemItem = e.NewValue as ILegendItem;
         }
-
-        public event PropertyChangedEventHandler PropertyChanged;
-        public virtual void OnPropertyChanged(string propertyName)
+        /// <inheritdoc/>
+        public event PropertyChangedEventHandler? PropertyChanged;
+        public virtual void OnPropertyChanged(string? propertyName)
         {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        }
-        public bool SetProperty<T>(ref T t, T value, string propertyName, bool autoDisposeOldValue = false)
-        {
-            bool flag = SetProperty(ref t, value, autoDisposeOldValue);
-            if (flag)
+            if (!string.IsNullOrEmpty(propertyName))
             {
-                OnPropertyChanged(propertyName);
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
             }
-
-            return flag;
         }
-
-        public bool SetProperty<T>(ref T t, T value, bool autoDisposeOldValue = false)
+        /// <summary>
+        /// 设置值并调用属性改变通知
+        /// </summary>
+        /// <typeparam name="T">类型</typeparam>
+        /// <param name="t">变量</param>
+        /// <param name="value">值</param>
+        /// <param name="propertyName">属性名称</param>
+        /// <param name="autoDisposeOldValue">自动释放旧值</param>
+        /// <returns>成功true，反之false</returns>
+        public bool SetProperty<T>(ref T t, T value, [CallerMemberName] string? propertyName = null, bool autoDisposeOldValue = false)
         {
-            bool result = false;
             if (!Equals(t, value))
             {
-                T val = t;
+                var oldValue = t;
                 t = value;
-                IDisposable disposable = default;
-                int num;
-                if (autoDisposeOldValue)
-                {
-                    disposable = val as IDisposable;
-                    num = ((disposable != null) ? 1 : 0);
-                }
-                else
-                {
-                    num = 0;
-                }
-
-                if (num != 0)
+                if (autoDisposeOldValue &&oldValue is IDisposable disposable)
                 {
                     disposable.Dispose();
                 }
-
-                result = true;
+                OnPropertyChanged(propertyName);
+                return true;
             }
-
-            return result;
+            return false;
         }
 
         private void HandleNewItems(NotifyCollectionChangedEventArgs e)
@@ -113,7 +101,7 @@ namespace EM.GIS.WPFControls
             }
         }
 
-        private void Item_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        private void Item_PropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
             //if (sender is ILegendItem legendItem)
             //{
@@ -136,7 +124,7 @@ namespace EM.GIS.WPFControls
             //}
         }
 
-        private void LegendItems_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        private void LegendItems_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
         {
             switch (e.Action)
             {
@@ -155,9 +143,10 @@ namespace EM.GIS.WPFControls
                     break;
             }
         }
-
+        /// <inheritdoc/>
         public ILegendItemCollection LegendItems { get; }
 
+        /// <inheritdoc/>
         public void AddMapFrame(IFrame mapFrame)
         {
             LegendItems.Add(mapFrame);
@@ -173,7 +162,7 @@ namespace EM.GIS.WPFControls
             }
         }
 
-        static DependencyObject VisualUpwardSearch<T>(DependencyObject source)
+        static DependencyObject? VisualUpwardSearch<T>(DependencyObject? source)
         {
             while (source != null && source.GetType() != typeof(T))
                 source = VisualTreeHelper.GetParent(source);

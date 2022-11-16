@@ -40,6 +40,7 @@ namespace EM.GIS.WPFControls
         public bool IsBusy { get; set; }
         private ILegend _legend;
 
+        /// <inheritdoc/>
         public ILegend Legend
         {
             get { return _legend; }
@@ -50,22 +51,31 @@ namespace EM.GIS.WPFControls
             }
         }
 
+        /// <inheritdoc/>
         public IExtent ViewExtent { get => MapFrame.ViewExtent; set => MapFrame.ViewExtent = value; }
 
-        public ILayerCollection Layers => MapFrame.Layers;
+        /// <inheritdoc/>
+        public ILayerCollection Layers => MapFrame.Children;
 
+        /// <inheritdoc/>
         public Rectangle ViewBound { get => MapFrame.ViewBound; set => MapFrame.ViewBound = value; }
+        /// <inheritdoc/>
         public List<ITool> MapTools { get; }
+        /// <inheritdoc/>
         public IExtent Extent { get => (MapFrame as IProj).Extent; }
-        public Rectangle Bound { get => MapFrame.Bound;  }
-        public IProgressHandler ProgressHandler
+        /// <inheritdoc/>
+        public Rectangle Bound { get => MapFrame.Bound; }
+        /// <inheritdoc/>
+        public ProgressDelegate Progress
         {
-            get => MapFrame.ProgressHandler;
-            set => MapFrame.ProgressHandler = value;
+            get => MapFrame.Progress;
+            set => MapFrame.Progress = value;
         }
 
+        /// <inheritdoc/>
         public event EventHandler<IGeoMouseEventArgs> GeoMouseMove;
-        public event PropertyChangedEventHandler PropertyChanged;
+        /// <inheritdoc/>
+        public event PropertyChangedEventHandler? PropertyChanged;
 
         public Map()
         {
@@ -74,9 +84,8 @@ namespace EM.GIS.WPFControls
             {
                 Text = "地图框"
             };
-            MapFrame.BufferChanged += MapFrame_BufferChanged;
-            MapFrame.ViewBoundChanged += MapFrame_ViewBoundChanged;
-            MapFrame.Layers.CollectionChanged += LegendItems_CollectionChanged;
+            MapFrame.PropertyChanged += MapFrame_PropertyChanged;
+            MapFrame.Children.CollectionChanged += LegendItems_CollectionChanged;
             var pan = new MapToolPan(this);
             var zoom = new MapToolZoom(this);
             ITool[] mapTools = { pan, zoom };
@@ -89,9 +98,17 @@ namespace EM.GIS.WPFControls
             ActivateMapToolWithZoom(pan);
         }
 
-        private void MapFrame_ViewBoundChanged(object? sender, EventArgs e)
+        private void MapFrame_PropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
-            Invalidate();
+            switch (e.PropertyName)
+            {
+                case nameof(MapFrame.BackBuffer):
+                    Invalidate();
+                    break;
+                case nameof(MapFrame.ViewBound):
+                    Invalidate();
+                    break;
+            }
         }
 
         private void MapTool_Activated(object? sender, EventArgs e)
@@ -116,11 +133,6 @@ namespace EM.GIS.WPFControls
             }
         }
 
-        private void MapFrame_BufferChanged(object? sender, EventArgs e)
-        {
-            Invalidate();
-        }
-
         public IList<ILayer> AddLayers()
         {
             var layers = new List<ILayer>();
@@ -143,10 +155,12 @@ namespace EM.GIS.WPFControls
             return layers;
         }
 
+        /// <inheritdoc/>
         public void Invalidate(RectangleF rectangle)
         {
             Invalidate();
         }
+        /// <inheritdoc/>
         public void Invalidate()
         {
             Action action = () => InvalidateVisual();
@@ -191,7 +205,7 @@ namespace EM.GIS.WPFControls
                     break;
             }
         }
-        private void LegendItems_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        private void LegendItems_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
         {
             switch (e.Action)
             {
@@ -232,7 +246,7 @@ namespace EM.GIS.WPFControls
             if (layer != null)
             {
                 layer.PropertyChanged += Layer_PropertyChanged;
-                layer.LegendItems.CollectionChanged += LegendItems_CollectionChanged;
+                layer.Children.CollectionChanged += LegendItems_CollectionChanged;
             }
         }
 
@@ -241,7 +255,7 @@ namespace EM.GIS.WPFControls
             if (layer != null)
             {
                 layer.PropertyChanged -= Layer_PropertyChanged;
-                layer.LegendItems.CollectionChanged -= LegendItems_CollectionChanged;
+                layer.Children.CollectionChanged -= LegendItems_CollectionChanged;
             }
         }
 

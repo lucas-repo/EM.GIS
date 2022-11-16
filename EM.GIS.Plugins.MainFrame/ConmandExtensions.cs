@@ -1,4 +1,5 @@
-﻿using EM.GIS.Controls;
+﻿using EM.Bases;
+using EM.GIS.Controls;
 using EM.GIS.Resources;
 using EM.GIS.Symbology;
 using EM.GIS.WPFControls;
@@ -12,6 +13,9 @@ using System.Windows.Input;
 
 namespace EM.GIS.Plugins.MainFrame
 {
+    /// <summary>
+    /// 命令扩展
+    /// </summary>
     public static class ConmandExtensions
     {
         /// <summary>
@@ -142,7 +146,7 @@ namespace EM.GIS.Plugins.MainFrame
         {
             if (layer?.Parent != null)
             {
-                layer.Parent.LegendItems.Remove(layer);
+                layer.Parent.Children.Remove(layer);
             }
         }
 
@@ -467,30 +471,33 @@ namespace EM.GIS.Plugins.MainFrame
             }
         }
 
-        private static bool IsLegendItemSelected(ILegendItemCollection legendItems)
+        private static bool IsLegendItemSelected(IItemCollection<IBaseItem> legendItems)
         {
             bool ret = false;
             if (legendItems != null)
             {
-                foreach (ILegendItem item in legendItems)
+                foreach (var item in legendItems)
                 {
-                    if (item.IsSelected)
+                    if (item is ILegendItem legendItem)
                     {
-                        ret = true;
-                    }
-                    else
-                    {
-                        ret = IsLegendItemSelected(item.LegendItems);
-                    }
-                    if (ret)
-                    {
-                        break;
+                        if ( legendItem.IsSelected)
+                        {
+                            ret = true;
+                        }
+                        else
+                        {
+                            ret = IsLegendItemSelected(legendItem.Children);
+                        }
+                        if (ret)
+                        {
+                            break;
+                        }
                     }
                 }
             }
             return ret;
         }
-        private static void RemoveSelectedLegendItems(ILegendItemCollection legendItems)
+        private static void RemoveSelectedLegendItems(IItemCollection<IBaseItem> legendItems)
         {
             if (legendItems == null)
             {
@@ -498,13 +505,16 @@ namespace EM.GIS.Plugins.MainFrame
             }
             for (int i = legendItems.Count - 1; i >= 0; i--)
             {
-                if (legendItems[i].IsSelected)
+                if (legendItems[i] is ILegendItem legendItem)
                 {
-                    legendItems.RemoveAt(i);
-                }
-                else
-                {
-                    RemoveSelectedLegendItems(legendItems[i].LegendItems);
+                    if (legendItem.IsSelected)
+                    {
+                        legendItems.RemoveAt(i);
+                    }
+                    else if (legendItems[i] is IGroup)
+                    {
+                        RemoveSelectedLegendItems(legendItem.Children);
+                    }
                 }
             }
         }
@@ -512,12 +522,12 @@ namespace EM.GIS.Plugins.MainFrame
         {
             if (map.MapFrame != null)
             {
-                bool isSelected = IsLegendItemSelected(map.MapFrame.LegendItems);
+                bool isSelected = IsLegendItemSelected(map.MapFrame.Children);
                 if (isSelected)
                 {
                     if (MessageBox.Show(Window.GetWindow(map as DependencyObject), "是否移除选择的图层？", "删除确认", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
                     {
-                        RemoveSelectedLegendItems(map.MapFrame.LegendItems);
+                        RemoveSelectedLegendItems(map.MapFrame.Children);
                     }
                 }
             }

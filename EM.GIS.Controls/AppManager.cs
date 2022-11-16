@@ -32,17 +32,17 @@ namespace EM.GIS.Controls
             get { return _legend; }
             set { SetProperty(ref _legend, value, nameof(Legend)); }
         }
-        private IProgressHandler _progressHandler;
-        public IProgressHandler ProgressHandler
+        private ProgressDelegate _progress;
+        public ProgressDelegate Progress
         {
-            get { return _progressHandler; }
+            get { return _progress; }
             set
             {
-                if (SetProperty(ref _progressHandler, value, nameof(ProgressHandler)))
+                if (SetProperty(ref _progress, value, nameof(Progress)))
                 {
                     if (Map != null)
                     {
-                        Map.ProgressHandler = _progressHandler;
+                        Map.Progress = _progress;
                     }
                 }
             }
@@ -192,7 +192,7 @@ namespace EM.GIS.Controls
             ActivateAllExtensions();
             //OnExtensionsActivated(EventArgs.Empty);
 
-            DataFactory.Default.ProgressHandler = ProgressHandler;
+            DataFactory.Default.Progress = Progress;
         }
         private void ActivateAllExtensions()
         {

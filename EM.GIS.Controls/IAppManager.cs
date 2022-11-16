@@ -14,7 +14,7 @@ namespace EM.GIS.Controls
         /// <summary>
         /// 进度处理
         /// </summary>
-        IProgressHandler ProgressHandler { get; set; }
+        ProgressDelegate Progress { get; set; }
         /// <summary>
         /// 地图
         /// </summary>

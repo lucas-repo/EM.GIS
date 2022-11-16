@@ -10,12 +10,8 @@ namespace EM.GIS.Symbology
     /// <summary>
     /// 包含图层操作的框架接口
     /// </summary>
-    public interface IFrame : IGroup, IProj
+    public interface IFrame : IGroup, IProj, ICancelable
     {
-        /// <summary>
-        /// 地图框是否忙于绘制
-        /// </summary>
-        bool IsBusy { get; set; }
         /// <summary>
         /// 临时绘制图层
         /// </summary>
@@ -45,21 +41,9 @@ namespace EM.GIS.Symbology
         /// </summary>
         IExtent ViewExtent { get; set; }
         /// <summary>
-        /// 取消标记源
-        /// </summary>
-        CancellationTokenSource CancellationTokenSource { get; set; }
-        /// <summary>
-        /// 缓存图片改变事件
-        /// </summary>
-        event EventHandler BufferChanged;
-        /// <summary>
-        /// 视图边界改变事件
-        /// </summary>
-        event EventHandler ViewBoundChanged;
-        /// <summary>
         /// 重绘缓存
         /// </summary>
-        Task ResetBuffer();
+        void ResetBuffer();
         /// <summary>
         /// 绘制背景图至指定画板的指定范围
         /// </summary>

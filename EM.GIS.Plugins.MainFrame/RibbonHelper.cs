@@ -8,6 +8,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Windows;
@@ -275,19 +276,16 @@ namespace EM.GIS.Plugins.MainFrame
                 Margin = new Thickness(5, 0, 0, 0)
             };
             wrapPanel.Children.Add(textBlock);
-            ProgressHandler progressHandler = new ProgressHandler()
+            ProgressDelegate progress = (percent, message) =>
             {
-                Handler = (percent, message) =>
+                var action = new Action(() =>
                 {
-                    var action = new Action(() =>
-                    {
-                        progressBar.Value = percent;
-                        textBlock.Text = message;
-                    });
-                    AppManager.Window.Dispatcher.BeginInvoke(action);
-                }
+                    progressBar.Value = percent;
+                    textBlock.Text = message;
+                });
+                AppManager.Window.Dispatcher.BeginInvoke(action);
             };
-            AppManager.ProgressHandler = progressHandler;
+            AppManager.Progress = progress;
             StatusBarItem statusBarItem = new StatusBarItem()
             {
                 Title = "进度",
