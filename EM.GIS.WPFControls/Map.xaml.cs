@@ -9,7 +9,6 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Drawing;
 using System.Linq;
-using System.Text;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -23,20 +22,24 @@ namespace EM.GIS.WPFControls
     /// </summary>
     public partial class Map : UserControl, IMap
     {
-        private IFrame _mapFrame;
-
-        public IFrame MapFrame
+        private IFrame _frame;
+        /// <inheritdoc/>
+        public IFrame Frame
         {
-            get { return _mapFrame; }
+            get { return _frame; }
             set
             {
-                if (_mapFrame != value)
+                if (_frame != value)
                 {
-                    _mapFrame = value;
+                    _frame = value;
                 }
             }
         }
-
+        /// <summary>
+        /// 地图视图
+        /// </summary>
+        public IView View => Frame.MapView;
+        /// <inheritdoc/>
         public bool IsBusy { get; set; }
         private ILegend _legend;
 
@@ -47,29 +50,25 @@ namespace EM.GIS.WPFControls
             set
             {
                 _legend = value;
-                _legend?.AddMapFrame(MapFrame);
+                _legend?.AddMapFrame(Frame);
             }
         }
 
         /// <inheritdoc/>
-        public IExtent ViewExtent { get => MapFrame.ViewExtent; set => MapFrame.ViewExtent = value; }
+        public IExtent Extent { get => Frame.Extent; }
+        /// <inheritdoc/>
+        public Rectangle Bound { get => View.Bound; }
 
         /// <inheritdoc/>
-        public ILayerCollection Layers => MapFrame.Children;
+        public ILayerCollection Layers => Frame.Children;
 
-        /// <inheritdoc/>
-        public Rectangle ViewBound { get => MapFrame.ViewBound; set => MapFrame.ViewBound = value; }
         /// <inheritdoc/>
         public List<ITool> MapTools { get; }
         /// <inheritdoc/>
-        public IExtent Extent { get => (MapFrame as IProj).Extent; }
-        /// <inheritdoc/>
-        public Rectangle Bound { get => MapFrame.Bound; }
-        /// <inheritdoc/>
         public ProgressDelegate Progress
         {
-            get => MapFrame.Progress;
-            set => MapFrame.Progress = value;
+            get => Frame.Progress;
+            set => Frame.Progress = value;
         }
 
         /// <inheritdoc/>
@@ -79,13 +78,13 @@ namespace EM.GIS.WPFControls
 
         public Map()
         {
-            InitializeComponent();
-            MapFrame = new Symbology.Frame((int)ActualWidth, (int)ActualHeight)
+            InitializeComponent(); 
+            Frame = new Symbology.Frame((int)ActualWidth, (int)ActualHeight)
             {
                 Text = "地图框"
             };
-            MapFrame.PropertyChanged += MapFrame_PropertyChanged;
-            MapFrame.Children.CollectionChanged += LegendItems_CollectionChanged;
+            Frame.PropertyChanged += MapFrame_PropertyChanged;
+            Frame.Children.CollectionChanged += LegendItems_CollectionChanged;
             var pan = new MapToolPan(this);
             var zoom = new MapToolZoom(this);
             ITool[] mapTools = { pan, zoom };
@@ -102,10 +101,10 @@ namespace EM.GIS.WPFControls
         {
             switch (e.PropertyName)
             {
-                case nameof(MapFrame.BackBuffer):
+                case nameof(View.BackBuffer):
                     Invalidate();
                     break;
-                case nameof(MapFrame.ViewBound):
+                case nameof(View.ViewBound):
                     Invalidate();
                     break;
             }
@@ -166,24 +165,22 @@ namespace EM.GIS.WPFControls
             Action action = () => InvalidateVisual();
             Dispatcher.BeginInvoke(action);
         }
+        /// <inheritdoc/>
         public void ZoomToMaxExtent()
         {
-            MapFrame.ZoomToMaxExtent();
+            View.ZoomToMaxExtent();
         }
+        /// <inheritdoc/>
         protected override void OnRender(DrawingContext drawingContext)
         {
-            if (MapFrame?.BackBuffer is Bitmap)
+            if (drawingContext != null && Bound.Width > 0 || Bound.Height > 0)
             {
-                if (Bound.Width <= 0 || Bound.Height <= 0)
-                {
-                    return;
-                }
-                BitmapSource bitmapSource = null;
-                using (Bitmap bmp = new Bitmap(Bound.Width, Bound.Height))
+                BitmapSource bitmapSource;
+                using (Bitmap bmp = new(Bound.Width, Bound.Height))
                 {
                     using (Graphics g = Graphics.FromImage(bmp))
                     {
-                        MapFrame.Draw(g, Bound);
+                        View.Draw(g, Bound);
                     }
                     bitmapSource = bmp.ToBitmapImage();
                 }
@@ -201,7 +198,7 @@ namespace EM.GIS.WPFControls
             switch (e.PropertyName)
             {
                 case nameof(ILegendItem.IsVisible):
-                    MapFrame.ResetBuffer();
+                    View.ResetBuffer();
                     break;
             }
         }
@@ -316,15 +313,19 @@ namespace EM.GIS.WPFControls
                 if ((f.MapToolMode & MapToolMode.AlwaysOn) != MapToolMode.AlwaysOn) f.Deactivate();
             }
         }
+        /// <inheritdoc/>
         protected override void OnRenderSizeChanged(SizeChangedInfo sizeInfo)
         {
-            if (MapFrame != null && sizeInfo.NewSize.Width > 0 && sizeInfo.NewSize.Height > 0)
+            if (Frame != null && sizeInfo.NewSize.Width > 0 && sizeInfo.NewSize.Height > 0)
             {
-                MapFrame.Resize((int)sizeInfo.NewSize.Width, (int)sizeInfo.NewSize.Height);
+                int width = (int)Math.Ceiling(sizeInfo.NewSize.Width);
+                int height = (int)Math.Ceiling(sizeInfo.NewSize.Height);
+                View.Resize(width, height);
             }
             base.OnRenderSizeChanged(sizeInfo);
         }
         #region 鼠标事件
+        /// <inheritdoc/>
         protected override void OnMouseDoubleClick(MouseButtonEventArgs e)
         {
             if (e.Handled)
@@ -339,6 +340,7 @@ namespace EM.GIS.WPFControls
             }
             base.OnMouseDoubleClick(e);
         }
+        /// <inheritdoc/>
         protected override void OnMouseDown(MouseButtonEventArgs e)
         {
             if (e.Handled)
@@ -353,6 +355,7 @@ namespace EM.GIS.WPFControls
             }
             base.OnMouseDown(e);
         }
+        /// <inheritdoc/>
         protected override void OnMouseMove(MouseEventArgs e)
         {
             if (e.Handled)
@@ -368,6 +371,7 @@ namespace EM.GIS.WPFControls
             GeoMouseMove?.Invoke(this, args);
             base.OnMouseMove(e);
         }
+        /// <inheritdoc/>
         protected override void OnMouseUp(MouseButtonEventArgs e)
         {
             if (e.Handled)
@@ -382,6 +386,7 @@ namespace EM.GIS.WPFControls
             }
             base.OnMouseUp(e);
         }
+        /// <inheritdoc/>
         protected override void OnMouseWheel(MouseWheelEventArgs e)
         {
             if (e.Handled)
@@ -396,6 +401,7 @@ namespace EM.GIS.WPFControls
             }
             base.OnMouseWheel(e);
         }
+        /// <inheritdoc/>
         protected override void OnKeyUp(System.Windows.Input.KeyEventArgs e)
         {
             if (e.Handled)
@@ -409,6 +415,7 @@ namespace EM.GIS.WPFControls
             }
             base.OnKeyUp(e);//todo 待完成
         }
+        /// <inheritdoc/>
         protected override void OnKeyDown(System.Windows.Input.KeyEventArgs e)
         {
             if (e.Handled)
@@ -423,7 +430,8 @@ namespace EM.GIS.WPFControls
             base.OnKeyDown(e);
         }
 
-        public IGroup AddGroup(string groupName = null)
+        /// <inheritdoc/>
+        public IGroup AddGroup(string groupName )
         {
             return Layers.AddGroup(groupName);
         }

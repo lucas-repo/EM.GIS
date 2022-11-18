@@ -22,7 +22,7 @@ namespace EM.GIS.Controls
         /// <summary>
         /// 绘制事件
         /// </summary>
-        event EventHandler<MapDrawArgs> Drawn;
+        event EventHandler<MapEventArgs> Drawn;
         /// <summary>
         /// 图标
         /// </summary>
@@ -62,8 +62,8 @@ namespace EM.GIS.Controls
         /// <summary>
         /// 处理绘制
         /// </summary>
-        /// <param name="e"></param>
-        void DoDraw(MapDrawArgs e);
+        /// <param name="e">参数</param>
+        void DoDraw(MapEventArgs e);
 
     }
 }

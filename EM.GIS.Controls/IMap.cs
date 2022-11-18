@@ -15,13 +15,13 @@ namespace EM.GIS.Controls
     public interface IMap : IProj, INotifyPropertyChanged
     {
         /// <summary>
-        /// 视图范围
+        /// 地图框架
         /// </summary>
-        IExtent ViewExtent { get; set; }
+        IFrame Frame { get; set; }
         /// <summary>
-        /// 视图边界
+        /// 地图框架
         /// </summary>
-        Rectangle ViewBound { get; set; }
+        IView View { get; }
         /// <summary>
         /// 是否在工作中
         /// </summary>
@@ -37,7 +37,7 @@ namespace EM.GIS.Controls
         /// <summary>
         /// 重绘指定区域
         /// </summary>
-        /// <param name="rectangle"></param>
+        /// <param name="rectangle">矩形范围</param>
         void Invalidate(RectangleF rectangle);
         /// <summary>
         /// 重绘整个地图
@@ -47,10 +47,6 @@ namespace EM.GIS.Controls
         /// 缩放至最大范围
         /// </summary>
         void ZoomToMaxExtent();
-        /// <summary>
-        /// 地图框架
-        /// </summary>
-        IFrame MapFrame { get; set; }
         /// <summary>
         /// 添加多个图层
         /// </summary>
@@ -66,7 +62,7 @@ namespace EM.GIS.Controls
         /// </summary>
         /// <param name="groupName">分组名</param>
         /// <returns>分组</returns>
-        IGroup AddGroup(string groupName = null);
+        IGroup AddGroup(string groupName);
         /// <summary>
         /// 图层
         /// </summary>

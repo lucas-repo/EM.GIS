@@ -15,22 +15,22 @@ namespace EM.GIS.Controls
         #region  Constructors
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="MapEventArgs"/> class.
+        /// 初始化实例 <see cref="MapEventArgs"/> .
         /// </summary>
-        /// <param name="bufferRectangle">The buffer rectangle.</param>
-        /// <param name="bufferEnvelope">The buffer envelope.</param>
-        public MapEventArgs(Rectangle bufferRectangle, IExtent bufferEnvelope)
+        /// <param name="rectangle">窗口范围</param>
+        /// <param name="extent">世界范围.</param>
+        public MapEventArgs(Rectangle rectangle, IExtent extent)
         {
-            Bound = bufferRectangle;
-            Extent = bufferEnvelope;
+            Bound = rectangle;
+            Extent = extent;
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="MapEventArgs"/> class, where the device is also specified, overriding the default buffering behavior.
+        /// 初始化实例 <see cref="MapEventArgs"/> .
         /// </summary>
-        /// <param name="bufferRectangle">The buffer rectangle.</param>
-        /// <param name="bufferEnvelope">The buffer envelope.</param>
-        /// <param name="g">The graphics object used for drawing.</param>
+        /// <param name="rectangle">窗口范围</param>
+        /// <param name="extent">世界范围.</param>
+        /// <param name="g">画布.</param>
         public MapEventArgs(Rectangle bufferRectangle, IExtent bufferEnvelope, Graphics g)
         {
             Bound = bufferRectangle;
@@ -43,37 +43,33 @@ namespace EM.GIS.Controls
         #region Properties
 
         /// <summary>
-        /// Gets an optional parameter that specifies a device to use instead of the normal buffers.
+        /// 画布
         /// </summary>
         public Graphics Device { get; }
 
         /// <summary>
-        /// Gets the Dx
+        /// 1个地图单位对应的X轴像素大小
         /// </summary>
         public double Dx => Extent.Width != 0.0 ? Bound.Width / Extent.Width : 0.0;
 
         /// <summary>
-        /// Gets the Dy
+        /// 1个地图单位对应的Y轴像素大小
         /// </summary>
         public double Dy => Extent.Height != 0.0 ? Bound.Height / Extent.Height : 0.0;
 
-        /// <summary>
-        /// Gets the geographic bounds of the content of the buffer.
-        /// </summary>
-        public IExtent Extent { get; }
+        /// <inheritdoc/>
+        public IExtent Extent { get;  }
+
+        /// <inheritdoc/>
+        public Rectangle Bound { get;  }
 
         /// <summary>
-        /// Gets the rectangle dimensions of what the buffer should be in pixels
-        /// </summary>
-        public Rectangle Bound { get; }
-
-        /// <summary>
-        /// Gets the maximum Y value
+        /// 最大Y值
         /// </summary>
         public double MaxY => Extent.MaxY;
 
         /// <summary>
-        /// Gets the minimum X value
+        /// 最小X值
         /// </summary>
         public double MinX => Extent.MinX;
 

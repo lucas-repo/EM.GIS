@@ -30,7 +30,7 @@ namespace EM.GIS.Controls
 
         public event EventHandler Activated;
         public event EventHandler Deactivated;
-        public event EventHandler<MapDrawArgs> Drawn;
+        public event EventHandler<MapEventArgs> Drawn;
 
 
         #endregion
@@ -69,7 +69,7 @@ namespace EM.GIS.Controls
             Deactivated?.Invoke(this, EventArgs.Empty);
         }
 
-        public virtual void DoDraw(MapDrawArgs e)
+        public virtual void DoDraw(MapEventArgs e)
         {
             Drawn?.Invoke(this, e);
         }

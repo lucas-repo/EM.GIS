@@ -61,7 +61,7 @@ namespace EM.GIS.Plugins.MainFrame
             {
                 App.Map = new Map();
                 App.Map.PropertyChanged += Map_PropertyChanged;
-                AddFrameContextCommands(App.Map.MapFrame);
+                AddFrameContextCommands(App.Map.Frame);
             }
             if (App.Map.Legend != App.Legend)
             {
@@ -80,8 +80,8 @@ namespace EM.GIS.Plugins.MainFrame
             {
                 switch (e.PropertyName)
                 {
-                    case nameof(IMap.MapFrame):
-                        AddFrameContextCommands(map.MapFrame);
+                    case nameof(IMap.Frame):
+                        AddFrameContextCommands(map.Frame);
                         break;
                 }
             }

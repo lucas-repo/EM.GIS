@@ -18,12 +18,15 @@
   <ItemGroup>
     <ProjectReference Include="..\EM.GIS.Geometries\EM.GIS.Geometries.csproj">
       <Private>false</Private>
+      <CopyLocalSatelliteAssemblies>False</CopyLocalSatelliteAssemblies>
     </ProjectReference>
     <ProjectReference Include="..\EM.GIS.Projection\EM.GIS.Projection.csproj">
       <Private>false</Private>
+      <CopyLocalSatelliteAssemblies>False</CopyLocalSatelliteAssemblies>
     </ProjectReference>
     <ProjectReference Include="..\EM.GIS.Serialization\EM.GIS.Serialization.csproj">
       <Private>false</Private>
+      <CopyLocalSatelliteAssemblies>False</CopyLocalSatelliteAssemblies>
     </ProjectReference>
   </ItemGroup>
 

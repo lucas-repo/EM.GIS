@@ -17,11 +17,18 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\EM.GIS.Data\EM.GIS.Data.csproj" />
-    <ProjectReference Include="..\EM.GIS.Geometries\EM.GIS.Geometries.csproj">
-      <Private>false</Private>
+    <ProjectReference Include="..\EM.GIS.Data\EM.GIS.Data.csproj">
+      <Private>False</Private>
+      <CopyLocalSatelliteAssemblies>False</CopyLocalSatelliteAssemblies>
     </ProjectReference>
-    <ProjectReference Include="..\EM.GIS.Projection\EM.GIS.Projection.csproj" />
+    <ProjectReference Include="..\EM.GIS.Geometries\EM.GIS.Geometries.csproj">
+      <Private>False</Private>
+      <CopyLocalSatelliteAssemblies>False</CopyLocalSatelliteAssemblies>
+    </ProjectReference>
+    <ProjectReference Include="..\EM.GIS.Projection\EM.GIS.Projection.csproj">
+      <Private>False</Private>
+      <CopyLocalSatelliteAssemblies>False</CopyLocalSatelliteAssemblies>
+    </ProjectReference>
   </ItemGroup>
 
   <ItemGroup>

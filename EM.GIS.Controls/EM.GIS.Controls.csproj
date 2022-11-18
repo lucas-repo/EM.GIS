@@ -16,14 +16,20 @@
 
   <ItemGroup>
     <ProjectReference Include="..\EM.GIS.Data\EM.GIS.Data.csproj">
-      <Private>false</Private>
+      <Private>False</Private>
+      <CopyLocalSatelliteAssemblies>False</CopyLocalSatelliteAssemblies>
     </ProjectReference>
-    <ProjectReference Include="..\EM.GIS.Gdals\EM.GIS.Gdals.csproj" />
+    <ProjectReference Include="..\EM.GIS.Gdals\EM.GIS.Gdals.csproj">
+      <Private>False</Private>
+      <CopyLocalSatelliteAssemblies>False</CopyLocalSatelliteAssemblies>
+    </ProjectReference>
     <ProjectReference Include="..\EM.GIS.Serialization\EM.GIS.Serialization.csproj">
-      <Private>false</Private>
+      <Private>False</Private>
+      <CopyLocalSatelliteAssemblies>False</CopyLocalSatelliteAssemblies>
     </ProjectReference>
     <ProjectReference Include="..\EM.GIS.Symbology\EM.GIS.Symbology.csproj">
-      <Private>false</Private>
+      <Private>False</Private>
+      <CopyLocalSatelliteAssemblies>False</CopyLocalSatelliteAssemblies>
     </ProjectReference>
   </ItemGroup>
 

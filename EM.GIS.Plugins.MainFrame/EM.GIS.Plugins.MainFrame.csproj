@@ -20,10 +20,14 @@
 
 	<ItemGroup>
 	  <ProjectReference Include="..\EM.GIS.Resources\EM.GIS.Resources.csproj">
-	    <Private>false</Private>
+	    <Private>False</Private>
+	    <CopyLocalSatelliteAssemblies>False</CopyLocalSatelliteAssemblies>
+	    <ReferenceOutputAssembly>True</ReferenceOutputAssembly>
 	  </ProjectReference>
 	  <ProjectReference Include="..\EM.GIS.WPFControls\EM.GIS.WPFControls.csproj">
 	    <Private>False</Private>
+	    <CopyLocalSatelliteAssemblies>False</CopyLocalSatelliteAssemblies>
+	    <ReferenceOutputAssembly>True</ReferenceOutputAssembly>
 	  </ProjectReference>
 	</ItemGroup>
 

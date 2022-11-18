@@ -520,14 +520,14 @@ namespace EM.GIS.Plugins.MainFrame
         }
         private static void RemoveSelectedLayers(IMap map)
         {
-            if (map.MapFrame != null)
+            if (map.Frame != null)
             {
-                bool isSelected = IsLegendItemSelected(map.MapFrame.Children);
+                bool isSelected = IsLegendItemSelected(map.Frame.Children);
                 if (isSelected)
                 {
                     if (MessageBox.Show(Window.GetWindow(map as DependencyObject), "是否移除选择的图层？", "删除确认", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
                     {
-                        RemoveSelectedLegendItems(map.MapFrame.Children);
+                        RemoveSelectedLegendItems(map.Frame.Children);
                     }
                 }
             }

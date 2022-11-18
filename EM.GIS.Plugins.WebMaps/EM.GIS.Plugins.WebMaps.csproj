@@ -18,12 +18,14 @@
 
 	<ItemGroup>
 	  <ProjectReference Include="..\EM.GIS.Data\EM.GIS.Data.csproj">
-	    <CopyLocalSatelliteAssemblies></CopyLocalSatelliteAssemblies>
+	    <CopyLocalSatelliteAssemblies>False</CopyLocalSatelliteAssemblies>
 	    <Private>False</Private>
+	    <ReferenceOutputAssembly>False</ReferenceOutputAssembly>
 	  </ProjectReference>
 	  <ProjectReference Include="..\EM.GIS.Symbology\EM.GIS.Symbology.csproj">
-	    <CopyLocalSatelliteAssemblies></CopyLocalSatelliteAssemblies>
+	    <CopyLocalSatelliteAssemblies>False</CopyLocalSatelliteAssemblies>
 	    <Private>False</Private>
+	    <ReferenceOutputAssembly>True</ReferenceOutputAssembly>
 	  </ProjectReference>
 	</ItemGroup>
 

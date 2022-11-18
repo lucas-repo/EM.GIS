@@ -22,21 +22,27 @@
 	<ItemGroup>
 	  <ProjectReference Include="..\EM.GIS.Controls\EM.GIS.Controls.csproj">
 	    <Private>False</Private>
+	    <CopyLocalSatelliteAssemblies>False</CopyLocalSatelliteAssemblies>
 	  </ProjectReference>
 	  <ProjectReference Include="..\EM.GIS.Data\EM.GIS.Data.csproj">
 	    <Private>False</Private>
+	    <CopyLocalSatelliteAssemblies>False</CopyLocalSatelliteAssemblies>
 	  </ProjectReference>
 	  <ProjectReference Include="..\EM.GIS.Geometries\EM.GIS.Geometries.csproj">
 	    <Private>False</Private>
+	    <CopyLocalSatelliteAssemblies>False</CopyLocalSatelliteAssemblies>
 	  </ProjectReference>
 	  <ProjectReference Include="..\EM.GIS.Resources\EM.GIS.Resources.csproj">
 	    <Private>False</Private>
+	    <CopyLocalSatelliteAssemblies>False</CopyLocalSatelliteAssemblies>
 	  </ProjectReference>
 	  <ProjectReference Include="..\EM.GIS.Symbology\EM.GIS.Symbology.csproj">
 	    <Private>False</Private>
+	    <CopyLocalSatelliteAssemblies>False</CopyLocalSatelliteAssemblies>
 	  </ProjectReference>
 	  <ProjectReference Include="..\EM.GIS\EM.GIS.csproj">
 	    <Private>False</Private>
+	    <CopyLocalSatelliteAssemblies>False</CopyLocalSatelliteAssemblies>
 	  </ProjectReference>
 	</ItemGroup>
 

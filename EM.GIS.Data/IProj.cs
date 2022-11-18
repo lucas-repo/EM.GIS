@@ -9,11 +9,11 @@ namespace EM.GIS.Data
     public interface IProj
     {
         /// <summary>
-        /// 世界范围
+        /// 地图范围
         /// </summary>
         IExtent Extent { get; }
         /// <summary>
-        /// 像素范围
+        /// 窗口范围
         /// </summary>
         Rectangle Bound { get; }
     }

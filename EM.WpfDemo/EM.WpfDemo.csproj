@@ -22,7 +22,10 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\EM.GIS.WPFControls\EM.GIS.WPFControls.csproj" />
+		<ProjectReference Include="..\EM.GIS.WPFControls\EM.GIS.WPFControls.csproj">
+		  <Private>False</Private>
+		  <CopyLocalSatelliteAssemblies>False</CopyLocalSatelliteAssemblies>
+		</ProjectReference>
 	</ItemGroup>
 
 	<ItemGroup>
