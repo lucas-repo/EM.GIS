@@ -53,11 +53,9 @@ namespace EM.GIS.Symbology
                 }
             }
         }
-        public LayerCollection(IFrame frame, IGroup parent)
+        public LayerCollection(IFrame frame, IGroup parent):this(parent)
         {
             _frame = frame;
-            _parent = parent;
-            CollectionChanged += LegendItemCollection_CollectionChanged;
         }
         public LayerCollection(IGroup parent)
         {
@@ -199,11 +197,11 @@ namespace EM.GIS.Symbology
             return rasterLayer;
         }
 
-        public ILayer AddLayer(string path, bool isVisible = true)
-        {
-            IDataSet dataSet = DataFactory.Default.DriverFactory.Open(path);
-            return AddLayer(dataSet, isVisible);
-        }
+        //public ILayer AddLayer(string path, bool isVisible = true)
+        //{
+        //    IDataSet dataSet = DataFactory.Default.DriverFactory.Open(path);
+        //    return AddLayer(dataSet, isVisible);
+        //}
         public override void Add(IBaseItem item)
         {
             if (item is ILayer)

@@ -5,53 +5,28 @@ using System.Text;
 
 namespace EM.GIS.Geometries
 {
-    //
-    // 摘要:
-    //     /// A lightweight class used to store coordinates on the 2-dimensional Cartesian
-    //     plane. ///
-    //     /// It is distinct from GeoAPI.Geometries.IPoint, which is a subclass of GeoAPI.Geometries.IGeometry.
-    //     /// Unlike objects of type GeoAPI.Geometries.IPoint (which contain additional
-    //     /// information such as an envelope, a precision model, and spatial reference
-    //     /// system information), a Coordinate only contains ordinate values /// and propertied.
-    //     ///
-    //     ///
-    //     /// Coordinates are two-dimensional points, with an additional Z-ordinate. ///
-    //     If an Z-ordinate value is not specified or not defined, /// constructed coordinates
-    //     have a Z-ordinate of NaN /// (which is also the value of GeoAPI.Geometries.Coordinate.NullOrdinate).
-    //     ///
-    //     ///
-    //
-    // 言论：
-    //     /// Apart from the basic accessor functions, NTS supports /// only specific operations
-    //     involving the Z-ordinate. ///
+    /// <summary>
+    /// 坐标点
+    /// </summary>
     [Serializable]
     public class Coordinate : ICoordinate
     {
-        //
-        // 摘要:
-        //     /// The X or horizontal, or longitudinal ordinate ///
+        /// <inheritdoc/>
         public double X { get; set; }
 
-        //
-        // 摘要:
-        //     /// The Y or vertical, or latitudinal ordinate ///
+        /// <inheritdoc/>
         public double Y { get; set; }
 
-        //
-        // 摘要:
-        //     /// The Z or up or altitude ordinate ///
+        /// <inheritdoc/>
         public double Z { get; set; } = double.NaN;
 
-        //
-        // 摘要:
-        //     /// An optional place holder for a measure value if needed ///
+        /// <inheritdoc/>
         public double M { get; set; } = double.NaN;
 
-        //
-        // 摘要:
-        //     /// This indicates that the coordinate can have max 4 Ordinates (X,Y,Z,M). ///
+        /// <inheritdoc/>
         public int MaxPossibleOrdinates => 4;
 
+        /// <inheritdoc/>
         public double this[int index]
         {
             get
@@ -99,29 +74,7 @@ namespace EM.GIS.Geometries
                 }
             }
         }
-        //
-        // 摘要:
-        //     /// Gets/Sets Coordinates (x,y,z) values. ///
-        public Coordinate CoordinateValue
-        {
-            get
-            {
-                return this;
-            }
-            set
-            {
-                X = value.X;
-                Y = value.Y;
-                Z = value.Z;
-                M = value.M;
-            }
-        }
-
-        //
-        // 摘要:
-        //     /// This is not a true length, but simply tests the Z and M value. If the M value
-        //     is not NaN this is 4. Else if Z value /// is NaN then the value is 2. Otherwise
-        //     this is 3. ///
+        /// <inheritdoc/>
         public int Dimension
         {
             get
@@ -170,20 +123,7 @@ namespace EM.GIS.Geometries
             }
         }
 
-
-
-        //
-        // 摘要:
-        //     /// Returns whether the planar projections of the two Coordinates are equal.
-        //     ///
-        //
-        // 参数:
-        //   other:
-        //     Coordinate with which to do the 2D comparison.
-        //
-        // 返回结果:
-        //     /// true if the x- and y-coordinates are equal; /// the Z coordinates do not
-        //     have to be equal. ///
+        /// <inheritdoc/>
         public bool Equals2D(ICoordinate other)
         {
             if (other == null)
@@ -197,24 +137,8 @@ namespace EM.GIS.Geometries
             return false;
         }
 
-        //
-        // 摘要:
-        //     /// Tests if another coordinate has the same value for X and Y, within a tolerance.
-        //     ///
-        //
-        // 参数:
-        //   c:
-        //     A GeoAPI.Geometries.Coordinate.
-        //
-        //   tolerance:
-        //     The tolerance value.
-        //
-        // 返回结果:
-        //     true if the X and Y ordinates are within the given tolerance.
-        //
-        // 言论：
-        //     The Z ordinate is ignored.
-        public bool Equals2D(Coordinate c, double tolerance)
+        /// <inheritdoc/>
+        public bool Equals2D(ICoordinate c, double tolerance)
         {
             if (c == null)
             {
@@ -230,39 +154,18 @@ namespace EM.GIS.Geometries
             }
             return true;
         }
-
-        //
-        // 摘要:
-        //     /// Checks whether the difference between x1 and x2 is smaller than tolerance.
-        //     ///
-        //
-        // 参数:
-        //   x1:
-        //     First value used for check.
-        //
-        //   x2:
-        //     Second value used for check.
-        //
-        //   tolerance:
-        //     The difference must me smaller this value, for the x-values to be considered
-        //     equal.
+        /// <summary>
+        /// 判断是否近似相等
+        /// </summary>
+        /// <param name="x1">x1</param>
+        /// <param name="x2">x2</param>
+        /// <param name="tolerance">近似值</param>
+        /// <returns>近似相等为true反之false</returns>
         private static bool EqualsWithTolerance(double x1, double x2, double tolerance)
         {
             return Math.Abs(x1 - x2) <= tolerance;
         }
-
-        //
-        // 摘要:
-        //     /// Returns true if other has the same values for the x and y ordinates. ///
-        //     Since Coordinates are 2.5D, this routine ignores the z value when making the
-        //     comparison. ///
-        //
-        // 参数:
-        //   other:
-        //     Coordinate with which to do the comparison.
-        //
-        // 返回结果:
-        //     true if other is a Coordinate with the same values for the x and y ordinates.
+        /// <inheritdoc/>
         public override bool Equals(object other)
         {
             if (other == null)
@@ -281,59 +184,19 @@ namespace EM.GIS.Geometries
             return ((IEquatable<Coordinate>)this).Equals((Coordinate)other);
         }
 
-        //
-        // 摘要:
-        //     /// Returns true if other has the same values for the x and y ordinates. ///
-        //     Since Coordinates are 2.5D, this routine ignores the z value when making the
-        //     comparison. ///
-        //
-        // 参数:
-        //   other:
-        //     Coordinate with which to do the comparison.
-        //
-        // 返回结果:
-        //     true if other is a Coordinate with the same values for the x and y ordinates.
+        /// <inheritdoc/>
         public bool Equals(ICoordinate other)
         {
             return Equals2D(other);
         }
 
-        //
-        // 摘要:
-        //     /// Compares this object with the specified object for order. /// Since Coordinates
-        //     are 2.5D, this routine ignores the z value when making the comparison. /// Returns
-        //     /// -1 : this.x lowerthan other.x || ((this.x == other.x) AND (this.y lowerthan
-        //     other.y)) /// 0 : this.x == other.x AND this.y = other.y /// 1 : this.x greaterthan
-        //     other.x || ((this.x == other.x) AND (this.y greaterthan other.y)) ///
-        //
-        // 参数:
-        //   o:
-        //     Coordinate with which this Coordinate is being compared.
-        //
-        // 返回结果:
-        //     /// A negative integer, zero, or a positive integer as this Coordinate /// is
-        //     less than, equal to, or greater than the specified Coordinate. ///
+        /// <inheritdoc/>
         public int CompareTo(object o)
         {
-            Coordinate other = (Coordinate)o;
+            var other = o as ICoordinate;
             return CompareTo(other);
         }
-
-        //
-        // 摘要:
-        //     /// Compares this object with the specified object for order. /// Since Coordinates
-        //     are 2.5D, this routine ignores the z value when making the comparison. /// Returns
-        //     /// -1 : this.x lowerthan other.x || ((this.x == other.x) AND (this.y lowerthan
-        //     other.y)) /// 0 : this.x == other.x AND this.y = other.y /// 1 : this.x greaterthan
-        //     other.x || ((this.x == other.x) AND (this.y greaterthan other.y)) ///
-        //
-        // 参数:
-        //   other:
-        //     Coordinate with which this Coordinate is being compared.
-        //
-        // 返回结果:
-        //     /// A negative integer, zero, or a positive integer as this Coordinate /// is
-        //     less than, equal to, or greater than the specified Coordinate. ///
+        /// <inheritdoc/>
         public int CompareTo(ICoordinate other)
         {
             if (other == null)
@@ -359,107 +222,50 @@ namespace EM.GIS.Geometries
             return 1;
         }
 
-        //
-        // 摘要:
-        //     /// Returns true if other /// has the same values for X, Y and Z. ///
-        //
-        // 参数:
-        //   other:
-        //     A GeoAPI.Geometries.Coordinate with which to do the 3D comparison.
-        //
-        // 返回结果:
-        //     /// true if other is a GeoAPI.Geometries.Coordinate /// with the same values
-        //     for X, Y and Z. ///
-        public bool Equals3D(Coordinate other)
+        /// <inheritdoc/>
+        public bool Equals3D(ICoordinate c, double tolerance)
         {
-            if (other == null)
+            if (c == null)
             {
                 return false;
             }
-            if (X == other.X && Y == other.Y)
+            if (!EqualsWithTolerance(X, c.X, tolerance))
             {
-                if (Z != other.Z)
-                {
-                    if (double.IsNaN(Z))
-                    {
-                        return double.IsNaN(other.Z);
-                    }
-                    return false;
-                }
-                return true;
+                return false;
             }
-            return false;
+            if (!EqualsWithTolerance(Y, c.Y, tolerance))
+            {
+                return false;
+            }
+            if (!EqualsWithTolerance(Z, c.Z, tolerance))
+            {
+                return false;
+            }
+            return true;
         }
 
-        //
-        // 摘要:
-        //     /// Tests if another coordinate has the same value for Z, within a tolerance.
-        //     ///
-        //
-        // 参数:
-        //   c:
-        //     A GeoAPI.Geometries.Coordinate.
-        //
-        //   tolerance:
-        //     The tolerance value.
-        //
-        // 返回结果:
-        //     true if the Z ordinates are within the given tolerance.
-        public bool EqualInZ(Coordinate c, double tolerance)
-        {
-            return EqualsWithTolerance(Z, c.Z, tolerance);
-        }
-
-        //
-        // 摘要:
-        //     /// Returns a string of the form (x,y,z) . ///
-        //
-        // 返回结果:
-        //     string of the form (x,y,z)
+        /// <inheritdoc/>
         public override string ToString()
         {
             return "(" + X.ToString("R", NumberFormatInfo.InvariantInfo) + ", " + Y.ToString("R", NumberFormatInfo.InvariantInfo) + ", " + Z.ToString("R", NumberFormatInfo.InvariantInfo) + ", " + M.ToString("R", NumberFormatInfo.InvariantInfo) + ")";
         }
 
-        //
-        // 摘要:
-        //     /// Create a new object as copy of this instance. ///
+        /// <inheritdoc/>
         public object Clone()
         {
             return MemberwiseClone();
         }
 
-        //
-        // 摘要:
-        //     /// Computes the 2-dimensional Euclidean distance to another location. ///
-        //
-        // 参数:
-        //   c:
-        //     A GeoAPI.Geometries.Coordinate with which to do the distance comparison.
-        //
-        // 返回结果:
-        //     the 2-dimensional Euclidean distance between the locations.
-        //
-        // 言论：
-        //     The Z-ordinate is ignored.
-        public double Distance(Coordinate c)
+        /// <inheritdoc/>
+        public double Distance(ICoordinate c)
         {
             double num = X - c.X;
             double num2 = Y - c.Y;
             return Math.Sqrt(num * num + num2 * num2);
         }
 
-        //
-        // 摘要:
-        //     /// Computes the 3-dimensional Euclidean distance to another location. ///
-        //
-        // 参数:
-        //   c:
-        //     A GeoAPI.Geometries.Coordinate with which to do the distance comparison.
-        //
-        // 返回结果:
-        //     the 3-dimensional Euclidean distance between the locations.
-        public double Distance3D(Coordinate c)
+        /// <inheritdoc/>
+        public double Distance3D(ICoordinate c)
         {
             double num = X - c.X;
             double num2 = Y - c.Y;
@@ -467,12 +273,7 @@ namespace EM.GIS.Geometries
             return Math.Sqrt(num * num + num2 * num2 + num3 * num3);
         }
 
-        //
-        // 摘要:
-        //     /// Gets a hashcode for this coordinate. ///
-        //
-        // 返回结果:
-        //     A hashcode for this coordinate.
+        /// <inheritdoc/>
         public override int GetHashCode()
         {
             int num = 17;
@@ -485,24 +286,14 @@ namespace EM.GIS.Geometries
             return num;
         }
 
-        //
-        // 摘要:
-        //     /// Computes a hash code for a double value, using the algorithm from /// Joshua
-        //     Bloch's book Effective Java". ///
-        //
-        // 参数:
-        //   value:
-        //     A hashcode for the double value
+        /// <inheritdoc/>
         public static int GetHashCode(double value)
         {
             long num = BitConverter.DoubleToInt64Bits(value);
             return (int)(num ^ (num >> 32));
         }
 
-        //
-        // 摘要:
-        //     /// If either X or Y is defined as NaN, then this coordinate is considered empty.
-        //     ///
+        /// <inheritdoc/>
         public bool IsEmpty()
         {
             if (!double.IsNaN(X))
@@ -511,6 +302,7 @@ namespace EM.GIS.Geometries
             }
             return true;
         }
+        /// <inheritdoc/>
         public double[] ToDoubleArray(int dimension = 2)
         {
             double[] array = null;
@@ -525,28 +317,12 @@ namespace EM.GIS.Geometries
             return array;
         }
 
-        //
-        // 摘要:
-        //     /// Compares this object with the specified object for order. /// Since Coordinates
-        //     are 2.5D, this routine ignores the z value when making the comparison. /// Returns
-        //     /// -1 : this.x lowerthan other.x || ((this.x == other.x) AND (this.y lowerthan
-        //     other.y)) /// 0 : this.x == other.x AND this.y = other.y /// 1 : this.x greaterthan
-        //     other.x || ((this.x == other.x) AND (this.y greaterthan other.y)) ///
-        //
-        // 参数:
-        //   o:
-        //     Coordinate with which this Coordinate is being compared.
-        //
-        // 返回结果:
-        //     /// A negative integer, zero, or a positive integer as this Coordinate /// is
-        //     less than, equal to, or greater than the specified Coordinate. ///
+        /// <inheritdoc/>
         int IComparable.CompareTo(object o)
         {
             Coordinate other = (Coordinate)o;
             return CompareTo(other);
         }
-
-
     }
 }
 

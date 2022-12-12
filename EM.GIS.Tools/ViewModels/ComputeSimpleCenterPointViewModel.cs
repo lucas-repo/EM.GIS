@@ -16,7 +16,7 @@ namespace EM.GIS.Tools
     /// <summary>
     /// 计算简单中心点视图模型
     /// </summary>
-    public class ComputeSimpleCenterPointViewModel : ViewModel<ComputeSimpleCenterPointControl>, IDisposable, IReportable
+    public class ComputeSimpleCenterPointViewModel : ReportableViewModel<ComputeSimpleCenterPointControl>, IDisposable
     {
         private string _srcPath;
         /// <summary>

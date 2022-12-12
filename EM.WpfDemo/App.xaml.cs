@@ -1,4 +1,8 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using EM.GIS.Controls;
+using EM.GIS.WPFControls;
+using EM.IOC;
+using EM.IOC.DependencyInjection;
+using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
@@ -17,6 +21,9 @@ namespace EM.WpfDemo
     /// </summary>
     public partial class App : Application
     {
+        /// <summary>
+        /// 配置项
+        /// </summary>
         public static IConfigurationRoot Configuration { get; }
         string[] _extensions = new[] { "dll", "exe" };
         static List<string> _privatePathes;
@@ -28,24 +35,57 @@ namespace EM.WpfDemo
                 .AddJsonFile("appsettings.json");
             Configuration = builder.Build();
             var privatePathesSection = Configuration.GetSection("PrivatePathes");
-            _privatePathes = new List<string>() { string.Empty };
+            var directory = AppDomain.CurrentDomain.BaseDirectory;
+            _privatePathes = new List<string>() { directory };
             foreach (var item in privatePathesSection.GetChildren())
             {
-                _privatePathes.Add(item.Value);
+                if (string.IsNullOrEmpty(item?.Value))
+                {
+                    continue;
+                }
+                _privatePathes.Add(Path.Combine(directory,item.Value));
             }
         }
+        /// <summary>
+        /// 实例化<seealso cref="App"/>
+        /// </summary>
         public App()
         {
-            AppDomain.CurrentDomain.AssemblyResolve += CurrentDomainAssemblyResolve;
+            AppDomain.CurrentDomain.AssemblyResolve += CurrentDomain_AssemblyResolve;
         }
-        private Assembly CurrentDomainAssemblyResolve(object sender, ResolveEventArgs args)
+        /// <inheritdoc/>
+        protected override void OnStartup(StartupEventArgs e)
         {
-            Assembly assembly = null;
+            ShutdownMode = ShutdownMode.OnExplicitShutdown;
+            IocOptions iocOptions = new IocOptions();//ioc参数
+            iocOptions.ServiceDirectories.AddRange(_privatePathes);
+            var iocManager = new MsIocManager(iocOptions);
+            var appManager = iocManager.GetService<IWpfAppManager>();
+            if (appManager is WpfAppManager wpfAppManager)
+            {
+                //此处可设置优先启动登录窗体
+                MainWindow window = new MainWindow(wpfAppManager, iocManager);//在主窗体中加载插件
+                if (!(window.ShowDialog() ?? false))
+                {
+                    Shutdown();
+                    return;
+                }
+            }
+            ShutdownMode = ShutdownMode.OnLastWindowClose;
+            base.OnStartup(e);
+        }
+        private Assembly? CurrentDomain_AssemblyResolve(object? sender, ResolveEventArgs args)
+        {
+            Assembly? assembly = null;
             // check the installation directory
             if (_privatePathes != null)
             {
                 var assemblyName = new AssemblyName(args.Name);
-                string name = assemblyName.Name;
+                var name = assemblyName.Name;
+                if (string.IsNullOrEmpty(name))
+                {
+                    return assembly;
+                }
                 foreach (string directory in _privatePathes)
                 {
                     string path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, directory);

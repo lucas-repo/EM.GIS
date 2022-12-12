@@ -1,13 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.Composition;
+﻿using System.Collections.Generic;
 
 namespace EM.GIS.Data
 {
     /// <summary>
     /// 数据驱动接口
     /// </summary>
-    [InheritedExport]
     public interface IDriver
     {
         /// <summary>

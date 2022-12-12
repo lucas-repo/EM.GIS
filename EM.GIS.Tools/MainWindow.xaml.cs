@@ -23,9 +23,15 @@ namespace EM.GIS.Tools
         public MainWindow()
         {
             InitializeComponent();
-            if (computeCenterPointControl.DataContext is IReportable reportable)
+            foreach (var item in tabControl.Items)
             {
-                reportable.ProgressAction=ReportProgress;
+                if (item is TabItem tebItem)
+                {
+                    if (tebItem.Content is FrameworkElement element && element.DataContext is IReportable reportable)
+                    {
+                        reportable.ProgressAction = ReportProgress;
+                    }
+                }
             }
         }
 

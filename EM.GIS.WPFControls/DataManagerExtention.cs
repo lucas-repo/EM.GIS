@@ -1,8 +1,11 @@
 ﻿using EM.GIS.Data;
+using EM.GIS.Symbology;
 using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
+using System.Windows;
 
 namespace EM.GIS.WPFControls
 {
@@ -97,42 +100,101 @@ namespace EM.GIS.WPFControls
         }
 
         /// <summary>
-        /// This launches an open file dialog and attempts to load the specified file.
+        /// 打开数据集
         /// </summary>
-        /// <param name="self">this</param>
-        /// <returns>An IDataSet with the data from the file specified in an open file dialog</returns>
-        public static IDataSet OpenFile(this IDriverFactory self)
+        /// <param name="driverFactory">驱动工厂</param>
+        /// <returns>数据集</returns>
+        public static IDataSet? OpenFile(this IDriverFactory driverFactory)
         {
-            var ofd = new OpenFileDialog { Filter = self.GetFilter() };
-            var ret = ofd.ShowDialog();
-            if (!ret.HasValue || !ret.Value)
-            { return null; }
-            return self.Open(ofd.FileName);
+            IDataSet? ret = null;
+            if (driverFactory == null)
+            {
+                return null;
+            }
+            var ofd = new OpenFileDialog 
+            {
+                Filter = driverFactory.GetFilter()
+            };
+            if (ofd.ShowDialog() == true)
+            {
+                ret = driverFactory.Open(ofd.FileName);
+            }
+            return ret;
         }
 
         /// <summary>
-        /// This launches an open file dialog that allows loading of several files at once
-        /// and returns the datasets in a list.
+        /// 打开多个数据集
         /// </summary>
-        /// <param name="self">this</param>
-        /// <returns>An enumerable of all the files that were opened.</returns>
-        public static IEnumerable<IDataSet> OpenFiles(this IDriverFactory self)
+        /// <param name="driverFactory">驱动工厂</param>
+        /// <param name="owner">父窗体</param>
+        /// <returns>可枚举的多个数据集</returns>
+        public static IEnumerable<IDataSet> OpenFiles(this IDriverFactory driverFactory,Window? owner=null)
         {
-            var ofd = new OpenFileDialog { Multiselect = true, Filter = self.GetFilter() };
-            var ret = ofd.ShowDialog();
-            if (!ret.HasValue || !ret.Value) yield break;
-
-            var filterparts = ofd.Filter.Split('|');
-            var pos = (ofd.FilterIndex - 1) * 2;
-            int index = filterparts[pos].IndexOf(" - ", StringComparison.Ordinal);
-            foreach (var name in ofd.FileNames)
+            if (driverFactory == null)
             {
-                var ds = self.Open(name);
-                if (ds != null) yield return ds;
+                yield break;
             }
-
+            var ofd = new OpenFileDialog
+            { 
+                Multiselect = true,
+                Filter = driverFactory.GetFilter() 
+            };
+            bool? ret;
+            if (owner == null)
+            {
+                ret = ofd.ShowDialog();
+            }
+            else
+            {
+                ret= ofd.ShowDialog(owner);
+            }
+            if (ret == true)
+            {
+                foreach (var name in ofd.FileNames)
+                {
+                    var ds = driverFactory.Open(name);
+                    if (ds != null) yield return ds;
+                }
+            }
         }
-
+        /// <summary>
+        /// 添加多个图层
+        /// </summary>
+        /// <param name="frame">地图框架</param>
+        /// <param name="driverFactory">驱动工厂</param>
+        /// <param name="owner">父窗体</param>
+        /// <returns>已添加的图层枚举</returns>
+        public static IEnumerable<ILayer> AddLayers(this IFrame frame, IDriverFactory driverFactory, Window? owner = null)
+        {
+            if (frame != null && driverFactory != null)
+            {
+                var dataSets = driverFactory.OpenFiles(owner);
+                if (dataSets.Any())
+                {
+                    var layers = frame.GetAllLayers().Where(x => x.IsSelected && x is IGroup);
+                    IGroup? destGroup = null;
+                    if (layers.Count() == 1 && layers.First() is IGroup group)
+                    {
+                        destGroup = group;
+                    }
+                    else
+                    {
+                        destGroup = frame;
+                    }
+                    foreach (var dataSet in dataSets) 
+                    {
+                        if (dataSet != null)
+                        {
+                            var layer = destGroup.AddLayer(dataSet);
+                            if (layer != null)
+                            {
+                                yield return layer;
+                            }
+                        }
+                    }
+                }
+            }
+        }
         /// <summary>
         /// This opens a file, but populates the dialog filter with only raster formats.
         /// </summary>

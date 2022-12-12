@@ -8,23 +8,23 @@ namespace EM.GIS.Data
     public static class ExtentExtensions
     {
         /// <summary>
-        /// 转几何体
+        /// 将范围转几何体
         /// </summary>
-        /// <param name="extent"></param>
-        /// <returns></returns>
-        public static IGeometry ToPolygon(this IExtent extent)
+        /// <param name="geometryFactory">几何工厂</param>
+        /// <param name="extent">范围</param>
+        /// <returns>几何体</returns>
+        public static IGeometry ToPolygon(this IGeometryFactory geometryFactory, IExtent extent)
         {
             IGeometry polygon = null;
-            if (extent != null)
+            if (geometryFactory!=null&& extent != null)
             {
-                var geometryFactory = DataFactory.Default.GeometryFactory;
                 ICoordinate[] coordinates = { new Coordinate(extent.MinX, extent.MinY),
                     new Coordinate(extent.MinX, extent.MaxY),
                     new Coordinate(extent.MaxX, extent.MaxY),
                     new Coordinate(extent.MaxX, extent.MinY),
                     new Coordinate(extent.MinX, extent.MinY)
                 };
-                polygon = DataFactory.Default.GeometryFactory.GetPolygon(coordinates);
+                polygon = geometryFactory.GetPolygon(coordinates);
             }
             return polygon;
         }

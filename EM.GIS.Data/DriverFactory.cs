@@ -1,7 +1,7 @@
-﻿using System;
+﻿using EM.IOC;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.ComponentModel.Composition;
 using System.Diagnostics;
 using System.Linq;
 
@@ -10,11 +10,11 @@ namespace EM.GIS.Data
     /// <summary>
     /// 驱动工厂
     /// </summary>
+    [Injectable(ServiceLifetime = ServiceLifetime.Singleton, ServiceType = typeof(IDriverFactory))]
     public class DriverFactory : IDriverFactory
     {
         [Browsable(false)]
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        [ImportMany(AllowRecomposition = true)]
         public virtual IEnumerable<IDriver> Drivers { get; set; }
 
         public IEnumerable<IVectorDriver> VectorDrivers => Drivers.Where(x => x is IVectorDriver).Select(x => x as IVectorDriver);
@@ -39,9 +39,9 @@ namespace EM.GIS.Data
                 }
             }
         }
-        public DriverFactory()
+        public DriverFactory(IEnumerable<IDriver> drivers)
         {
-            Drivers = new List<IDriver>();
+            Drivers = drivers;
         }
         public IRasterSet OpenRaster(string fileName)
         {

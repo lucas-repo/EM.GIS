@@ -1,41 +1,33 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using EM.IOC;
 using System.ComponentModel;
-using System.ComponentModel.Composition;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Reflection;
-using System.Text;
 
 namespace EM.GIS.Data
 {
     /// <summary>
     /// 数据工厂
     /// </summary>
+    [Injectable(ServiceLifetime = ServiceLifetime.Singleton, ServiceType = typeof(IDataFactory))]
     public class DataFactory : IDataFactory
     {
-        private static IDataFactory _default;
-        /// <summary>
-        /// 默认数据工厂
-        /// </summary>
-        public static IDataFactory Default
-        {
-            get
-            {
-                if (_default == null)
-                {
-                    _default = new DataFactory();
-                    //string directory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-                    //_default.GeometryFactory = AssemblyExtensions.CreateInstance<IGeometryFactory>(directory);
-                    //if (_default.GeometryFactory == null)
-                    //{
-                    //    throw new DllNotFoundException($"未找到实现{nameof(IGeometryFactory)}的dll");
-                    //}
-                }
-                return _default;
-            }
-        }
+        //private static readonly object _lockObj = new object();
+        //private static IDataFactory _default;
+        ///// <summary>
+        ///// 默认数据工厂
+        ///// </summary>
+        //public static IDataFactory Default
+        //{
+        //    get
+        //    {
+        //        lock (_lockObj)
+        //        {
+        //            if (_default == null)
+        //            {
+        //                _default = new DataFactory();
+        //            }
+        //            return _default;
+        //        }
+        //    }
+        //}
         private ProgressDelegate _progress;
 
         [Category("Handlers")]
@@ -57,15 +49,14 @@ namespace EM.GIS.Data
 
         [Browsable(false)]
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        [Import]
         public virtual IGeometryFactory GeometryFactory { get; set; }
 
-        public DataFactory()
-        {
-            DriverFactory = new DriverFactory()
-            {
-                Progress = Progress
-            };
-        }
+        //public DataFactory()
+        //{
+        //    DriverFactory = new DriverFactory()
+        //    {
+        //        Progress = Progress
+        //    };
+        //}
     }
 }

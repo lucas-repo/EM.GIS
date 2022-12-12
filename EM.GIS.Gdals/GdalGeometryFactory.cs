@@ -1,14 +1,17 @@
 ﻿using EM.GIS.Data;
 using EM.GIS.Geometries;
-using System;
+using EM.IOC;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace EM.GIS.Gdals
 {
+    /// <summary>
+    /// gdal几何工厂
+    /// </summary>
+    [Injectable(ServiceLifetime = ServiceLifetime.Singleton, ServiceType = typeof(IGeometryFactory))]
     public class GdalGeometryFactory : IGeometryFactory
     {
+        /// <inheritdoc/>
         public IGeometry GetGeometry(string wkt)
         {
             OSGeo.OGR.Geometry geometry = OSGeo.OGR.Geometry.CreateFromWkt(wkt);
@@ -16,10 +19,11 @@ namespace EM.GIS.Gdals
             return destGeometry;
         }
 
+        /// <inheritdoc/>
         public IGeometry GetLinearRing(IEnumerable<ICoordinate> coordinates)
         {
             Geometry geometry = null;
-            OSGeo.OGR.Geometry ogrGeometry = coordinates?.ToOgrLinearRing();
+            OSGeo.OGR.Geometry ogrGeometry = coordinates?.ToOgrLinearRing(); 
             if (ogrGeometry != null)
             {
                 geometry = new Geometry(ogrGeometry);
@@ -27,6 +31,7 @@ namespace EM.GIS.Gdals
             return geometry;
         }
 
+        /// <inheritdoc/>
         public IGeometry GetLineString(IEnumerable<ICoordinate> coordinates)
         {
             Geometry geometry = null;
@@ -38,6 +43,7 @@ namespace EM.GIS.Gdals
             return geometry;
         }
 
+        /// <inheritdoc/>
         public IGeometry GetPoint(ICoordinate coordinate)
         {
             Geometry geometry = null;
@@ -49,6 +55,7 @@ namespace EM.GIS.Gdals
             return geometry;
         }
 
+        /// <inheritdoc/>
         public IGeometry GetPolygon(IEnumerable<ICoordinate> coordinates)
         {
             Geometry geometry = null;
@@ -60,6 +67,7 @@ namespace EM.GIS.Gdals
             return geometry;
         }
 
+        /// <inheritdoc/>
         public IGeometry GetPolygon(IEnumerable<IEnumerable<ICoordinate>> ringList)
         {
             Geometry geometry = null;

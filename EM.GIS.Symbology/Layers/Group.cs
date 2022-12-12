@@ -163,12 +163,6 @@ namespace EM.GIS.Symbology
             return ret;
         }
 
-        public ILayer AddLayer(string filename, int? index = null)
-        {
-            IDataSet dataSet = DataFactory.Default.DriverFactory.Open(filename);
-            return AddLayer(dataSet, index);
-        }
-
         public ILayer AddLayer(IDataSet dataSet, int? index = null)
         {
             ILayer layer = null;

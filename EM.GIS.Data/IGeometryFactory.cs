@@ -1,13 +1,11 @@
 ﻿using EM.GIS.Geometries;
 using System.Collections.Generic;
-using System.ComponentModel.Composition;
 
 namespace EM.GIS.Data
 {
     /// <summary>
     /// 几何工厂
     /// </summary>
-    [InheritedExport]
     public interface IGeometryFactory
     {
         /// <summary>

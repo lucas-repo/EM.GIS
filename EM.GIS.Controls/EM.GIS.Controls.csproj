@@ -11,10 +11,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="System.ComponentModel.Composition" Version="7.0.0" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\EM.GIS.Data\EM.GIS.Data.csproj">
       <Private>False</Private>
       <CopyLocalSatelliteAssemblies>False</CopyLocalSatelliteAssemblies>
@@ -50,6 +46,10 @@
 
   <ItemGroup>
     <Folder Include="Resources\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="EM.IOC" Version="1.0.0" />
   </ItemGroup>
 
 </Project>

@@ -1,4 +1,5 @@
 ﻿using EM.GIS.Data;
+using EM.IOC;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -6,6 +7,10 @@ using System.Text;
 
 namespace EM.GIS.Gdals
 {
+    /// <summary>
+    /// gdal栅格驱动
+    /// </summary>
+    [Injectable(ServiceLifetime = ServiceLifetime.Singleton, ServiceType = typeof(IDriver))]
     public class GdalRasterDriver : Driver, IRasterDriver
     {
         static GdalRasterDriver()

@@ -134,9 +134,9 @@ namespace EM.GIS.Data
         /// <param name="self"></param>
         /// <param name="point"></param>
         /// <returns></returns>
-        public static Coordinate PointFToCoordinate(this IProj self, PointF point)
+        public static ICoordinate PointFToCoordinate(this IProj self, PointF point)
         {
-            Coordinate coordinate = null;
+            ICoordinate coordinate = null;
             if (self != null)
             {
                 var ret = PointFToXY(self.Extent, self.Bound, point);

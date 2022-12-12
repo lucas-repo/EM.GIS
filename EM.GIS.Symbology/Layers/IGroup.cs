@@ -76,12 +76,6 @@ namespace EM.GIS.Symbology
         /// <summary>
         /// 添加图层
         /// </summary>
-        /// <param name="filename"></param>
-        /// <param name="index"></param>
-        ILayer AddLayer(string filename, int? index = null);
-        /// <summary>
-        /// 添加图层
-        /// </summary>
         /// <param name="dataSet"></param>
         /// <param name="index"></param>
         /// <returns></returns>

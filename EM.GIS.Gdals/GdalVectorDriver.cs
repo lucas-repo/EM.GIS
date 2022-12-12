@@ -1,4 +1,5 @@
 ﻿using EM.GIS.Data;
+using EM.IOC;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -10,6 +11,7 @@ namespace EM.GIS.Gdals
     /// <summary>
     /// 矢量数据驱动类
     /// </summary>
+    [Injectable(ServiceLifetime = ServiceLifetime.Singleton, ServiceType = typeof(IDriver))]
     public class GdalVectorDriver : Driver, IVectorDriver
     {
         static GdalVectorDriver()

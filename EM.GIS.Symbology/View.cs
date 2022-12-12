@@ -313,13 +313,13 @@ namespace EM.GIS.Symbology
             Point tl = new Point(rect.X, rect.Y);
             Point br = new Point(rect.Right, rect.Bottom);
 
-            Coordinate topLeft = BufferToProj(tl);
-            Coordinate bottomRight = BufferToProj(br);
+            var topLeft = BufferToProj(tl);
+            var bottomRight = BufferToProj(br);
             return new Extent(topLeft.X, bottomRight.Y, bottomRight.X, topLeft.Y);
         }
-        public Coordinate BufferToProj(Point position)
+        public ICoordinate BufferToProj(Point position)
         {
-            Coordinate coordinate = null;
+            ICoordinate coordinate = null;
             if (Extent != null)
             {
                 double x = (position.X * Extent.Width / Width) + Extent.MinX;

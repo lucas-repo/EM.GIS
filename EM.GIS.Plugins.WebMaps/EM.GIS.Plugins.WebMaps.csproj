@@ -7,7 +7,7 @@
 		<BaseOutputPath>..\bin</BaseOutputPath>
 		<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
 		<AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
-		<OutputPath>$(BaseOutputPath)\$(Configuration)\Plugins\</OutputPath>
+		<!--<OutputPath>$(BaseOutputPath)\$(Configuration)\Plugins\</OutputPath>-->
 		<GenerateDocumentationFile>True</GenerateDocumentationFile>
 	</PropertyGroup>
 

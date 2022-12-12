@@ -1,7 +1,8 @@
 ﻿using AvalonDock;
 using EM.GIS.Controls;
-using Fluent;
 using System.Windows;
+using System.Windows.Controls.Primitives;
+using System.Windows.Controls.Ribbon;
 
 namespace EM.GIS.WPFControls
 {
@@ -13,18 +14,18 @@ namespace EM.GIS.WPFControls
         /// <summary>
         /// 功能区控件
         /// </summary>
-        Ribbon Ribbon { get; set; }
+        Ribbon? Ribbon { get; set; }
         /// <summary>
         /// 状态栏
         /// </summary>
-        StatusBar StatusBar { get; set; }
+        StatusBar? StatusBar { get; set; }
         /// <summary>
         /// 停靠管理器
         /// </summary>
-        DockingManager DockingManager { get; set; }
+        DockingManager? DockingManager { get; set; }
         /// <summary>
         /// 窗体
         /// </summary>
-        Window Window { get; set; }
+        Window? Window { get;  }
     }
 }

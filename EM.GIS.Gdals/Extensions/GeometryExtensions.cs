@@ -6,6 +6,9 @@ using System.Linq;
 
 namespace EM.GIS.Gdals
 {
+    /// <summary>
+    /// 集合体扩展
+    /// </summary>
     public static class GeometryExtensions
     {
         #region 几何体

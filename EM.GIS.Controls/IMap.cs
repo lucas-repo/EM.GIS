@@ -48,16 +48,6 @@ namespace EM.GIS.Controls
         /// </summary>
         void ZoomToMaxExtent();
         /// <summary>
-        /// 添加多个图层
-        /// </summary>
-        /// <returns></returns>
-        IList<ILayer> AddLayers();
-        /// <summary>
-        /// 添加单个图层
-        /// </summary>
-        /// <returns></returns>
-        ILayer AddLayer();
-        /// <summary>
         /// 添加分组
         /// </summary>
         /// <param name="groupName">分组名</param>

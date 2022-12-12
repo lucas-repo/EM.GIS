@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.Composition;
-using System.Text;
-
-namespace EM.GIS.Data
+﻿namespace EM.GIS.Data
 {
     /// <summary>
     /// 数据工厂接口

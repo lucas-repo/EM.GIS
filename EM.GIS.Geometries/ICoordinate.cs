@@ -38,39 +38,40 @@ namespace EM.GIS.Geometries
         /// </summary>
         double M { get; set; }
         /// <summary>
-        /// 是否为空
+        /// 是否为空（x或y为double.NAN）
         /// </summary>
         bool IsEmpty();
         /// <summary>
-        /// 判断相等
+        /// 判断与指定坐标是否近似相等
         /// </summary>
-        /// <param name="c"></param>
-        /// <param name="tolerance"></param>
-        /// <returns></returns>
-        bool Equals2D(Coordinate c, double tolerance = 0);
+        /// <param name="c">坐标</param>
+        /// <param name="tolerance">近似值</param>
+        /// <returns>相等为true反之false</returns>
+        bool Equals2D(ICoordinate c, double tolerance = 0);
         /// <summary>
-        /// 判断相等
+        /// 判断与指定坐标是否近似相等
         /// </summary>
-        /// <param name="other"></param>
-        /// <returns></returns>
-        bool Equals3D(Coordinate other);
+        /// <param name="c">坐标</param>
+        /// <param name="tolerance">近似值</param>
+        /// <returns>相等为true反之false</returns>
+        bool Equals3D(ICoordinate c, double tolerance = 0);
         /// <summary>
         /// 计算距离
         /// </summary>
-        /// <param name="c"></param>
-        /// <returns></returns>
-        double Distance(Coordinate c);
+        /// <param name="c">坐标</param>
+        /// <returns>距离</returns>
+        double Distance(ICoordinate c);
         /// <summary>
-        /// summary
+        /// 计算距离
         /// </summary>
-        /// <param name="c"></param>
-        /// <returns></returns>
-        double Distance3D(Coordinate c);
+        /// <param name="c">坐标</param>
+        /// <returns>距离</returns>
+        double Distance3D(ICoordinate c);
         /// <summary>
-        /// 转数组
+        /// 转为数组
         /// </summary>
-        /// <param name="dimension"></param>
-        /// <returns></returns>
+        /// <param name="dimension">维度</param>
+        /// <returns>数组</returns>
         double[] ToDoubleArray(int dimension = 2);
     }
 }

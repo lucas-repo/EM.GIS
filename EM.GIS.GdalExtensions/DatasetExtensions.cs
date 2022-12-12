@@ -45,7 +45,7 @@ namespace EM.GIS.GdalExtensions
         /// <param name="resampling"></param>
         /// <param name="overviewlist"></param>
         /// <returns></returns>
-        public static int CreateOverview(this Dataset dataset, string resampling = "NEAREST", int[] overviewlist = null)
+        public static int BuildOverviews(this Dataset dataset, Resampling resampling = Resampling.NEAREST, int[] overviewlist = null)
         {
             int value = -1;
             if (dataset == null || dataset.RasterCount <= 0)
@@ -70,7 +70,7 @@ namespace EM.GIS.GdalExtensions
                 overviewlist = intList.ToArray();
             }
 
-            value = dataset.BuildOverviews(resampling, overviewlist);
+            value = dataset.BuildOverviews(resampling.ToString(), overviewlist);
             return value;
         }
     }

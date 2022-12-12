@@ -23,13 +23,13 @@ namespace EM.GIS.Symbology
         /// </summary>
         IFrame Frame { get; set; }
 
-        /// <summary>
-        /// 添加图层
-        /// </summary>
-        /// <param name="path"></param>
-        /// <param name="isVisible"></param>
-        /// <returns></returns>
-        ILayer AddLayer(string path,bool isVisible=true);
+        ///// <summary>
+        ///// 添加图层
+        ///// </summary>
+        ///// <param name="path"></param>
+        ///// <param name="isVisible"></param>
+        ///// <returns></returns>
+        //ILayer AddLayer(string path,bool isVisible=true);
         /// <summary>
         /// 添加图层
         /// </summary>

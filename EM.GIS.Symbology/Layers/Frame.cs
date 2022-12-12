@@ -1,6 +1,7 @@
 ﻿using EM.Bases;
 using EM.GIS.Data;
 using EM.GIS.Geometries;
+using EM.IOC;
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
@@ -11,12 +12,14 @@ using System.Drawing.Drawing2D;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows.Input;
 
 namespace EM.GIS.Symbology
 {
     /// <summary>
     /// 包含图层操作的框架
     /// </summary>
+    [Injectable(ServiceLifetime = ServiceLifetime.Singleton, ServiceType = typeof(IFrame))]
     public class Frame : Group, IFrame
     {
         /// <inheritdoc/>
@@ -79,7 +82,7 @@ namespace EM.GIS.Symbology
             var labelLayers = featureLayers.Where(x => x.LabelLayer?.GetVisible(extent, rectangle) == true).Select(x => x.LabelLayer);
             foreach (var layer in labelLayers)
             {
-                if (cancelFunc?.Invoke()== true)
+                if (cancelFunc?.Invoke() == true)
                 {
                     break;
                 }
@@ -102,11 +105,43 @@ namespace EM.GIS.Symbology
             return maxExtent;
         }
 
+        public void New()
+        {
+            ClearLayers();
+            IsDirty=false;
+        }
+
+        public void Open(string fileName)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Save()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void SaveAs(string fileName)
+        {
+            throw new NotImplementedException();
+        }
+
         //public bool ExtentsInitialized { get; set; }
 
         //public SmoothingMode SmoothingMode { get; set; } = SmoothingMode.AntiAlias;
         /// <inheritdoc/>
         public ILayerCollection DrawingLayers { get; }
+        private bool _isDirty;
+        /// <inheritdoc/>
+        public bool IsDirty
+        {
+            get { return _isDirty; }
+            protected set 
+            { 
+                _isDirty = value;
+            }
+        }
 
+        public string FileName => throw new NotImplementedException();
     }
 }

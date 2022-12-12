@@ -10,7 +10,7 @@
         Title="GIS工具" Height="450" Width="800" WindowStartupLocation="CenterScreen">
     <Grid>
         <materialDesign:Card>
-            <TabControl BorderThickness="0" materialDesign:ColorZoneAssist.Mode="PrimaryLight">
+            <TabControl x:Name="tabControl" BorderThickness="0" materialDesign:ColorZoneAssist.Mode="PrimaryLight">
                 <TabItem Header="国内地图纠偏">
                     <local:CoordTransformControl/>
                 </TabItem>
@@ -32,8 +32,8 @@
             </TabControl>
         </materialDesign:Card>
         <Grid VerticalAlignment="Bottom" Height="20">
-                <ProgressBar x:Name="progressBar" Background="Transparent" BorderThickness="0"/>
-                <TextBlock x:Name="progressTextBlock" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="20,0,0,0"/>
-            </Grid>
+            <ProgressBar x:Name="progressBar" Background="Transparent" BorderThickness="0"/>
+            <TextBlock x:Name="progressTextBlock" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+        </Grid>
         </Grid>
 </Window>

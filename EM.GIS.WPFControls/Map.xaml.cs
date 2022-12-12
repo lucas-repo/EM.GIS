@@ -2,6 +2,7 @@
 using EM.GIS.Data;
 using EM.GIS.Geometries;
 using EM.GIS.Symbology;
+using EM.IOC;
 using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
@@ -20,6 +21,7 @@ namespace EM.GIS.WPFControls
     /// <summary>
     /// Map.xaml 的交互逻辑
     /// </summary>
+    [Injectable(ServiceLifetime = ServiceLifetime.Singleton, ServiceType = typeof(IMap))]
     public partial class Map : UserControl, IMap
     {
         private IFrame _frame;
@@ -132,28 +134,6 @@ namespace EM.GIS.WPFControls
             }
         }
 
-        public IList<ILayer> AddLayers()
-        {
-            var layers = new List<ILayer>();
-            OpenFileDialog dg = new OpenFileDialog()
-            {
-                Filter = "*.img,*.shp|*.img;*.shp",
-                Multiselect = true
-            };
-            if (dg.ShowDialog(Window.GetWindow(this)).HasValue)
-            {
-                foreach (var fileName in dg.FileNames)
-                {
-                    var layer = Layers.AddLayer(fileName);
-                    if (layer != null)
-                    {
-                        layers.Add(layer);
-                    }
-                }
-            }
-            return layers;
-        }
-
         /// <inheritdoc/>
         public void Invalidate(RectangleF rectangle)
         {
@@ -256,20 +236,6 @@ namespace EM.GIS.WPFControls
             }
         }
 
-        public ILayer AddLayer()
-        {
-            try
-            {
-                var layer = Layers.AddLayer(DataFactory.Default.DriverFactory.OpenFile());
-                return layer;
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message);
-            }
-
-            return null;
-        }
         public void ActivateMapToolWithZoom(ITool tool)
         {
             if (tool == null)

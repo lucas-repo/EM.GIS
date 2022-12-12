@@ -1,0 +1,50 @@
+﻿<RibbonWindow x:Class="EM.GIS.WPFControls.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:EM.GIS.WPFControls"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="450" Width="800">
+    <DockPanel>
+        <Ribbon x:Name="ribbon" DockPanel.Dock="Top">
+            <RibbonApplicationMenu>
+                <RibbonApplicationMenuItem Header="新建" ToolTip="新建" ImageSource="pack://application:,,,/EM.GIS.Resources;Component/Images/New32.png" Command="{Binding NewCmd,ConverterParameter={Binding ElementName=map,Path=Frame}}"/>
+                <RibbonApplicationMenuItem Header="打开" ToolTip="打开" ImageSource="pack://application:,,,/EM.GIS.Resources;Component/Images/Open32.png" Command="{Binding OpenCmd,ConverterParameter={Binding ElementName=map,Path=Frame}}"/>
+            </RibbonApplicationMenu>
+            <RibbonQuickAccessToolBar>
+                <RibbonButton Content="新建" ToolTip="新建" SmallImageSource="pack://application:,,,/EM.GIS.Resources;Component/Images/New16.png" LargeImageSource="pack://application:,,,/EM.GIS.Resources;Component/Images/New32.png" Command="{Binding NewCmd,ConverterParameter={Binding ElementName=map,Path=Frame}}"/>
+                <RibbonButton Content="打开" ToolTip="打开" SmallImageSource="pack://application:,,,/EM.GIS.Resources;Component/Images/Open16.png" LargeImageSource="pack://application:,,,/EM.GIS.Resources;Component/Images/Open32.png" Command="{Binding OpenCmd,ConverterParameter={Binding ElementName=map,Path=Frame}}"/>
+                <RibbonButton Content="保存" ToolTip="保存" SmallImageSource="pack://application:,,,/EM.GIS.Resources;Component/Images/Save16.png" LargeImageSource="pack://application:,,,/EM.GIS.Resources;Component/Images/Save32.png" Command="{Binding SaveCmd,ConverterParameter={Binding ElementName=map,Path=Frame}}"/>
+                <RibbonButton Content="撤销" ToolTip="撤销" SmallImageSource="pack://application:,,,/EM.GIS.Resources;Component/Images/Undo16.png" LargeImageSource="pack://application:,,,/EM.GIS.Resources;Component/Images/Undo32.png" Command="{Binding UndoCmd,ConverterParameter={Binding ElementName=map,Path=Frame}}"/>
+                <RibbonButton Content="重做" ToolTip="重做" SmallImageSource="pack://application:,,,/EM.GIS.Resources;Component/Images/Redo16.png" LargeImageSource="pack://application:,,,/EM.GIS.Resources;Component/Images/Redo32.png" Command="{Binding RedoCmd,ConverterParameter={Binding ElementName=map,Path=Frame}}"/>
+            </RibbonQuickAccessToolBar>
+            <RibbonGroup Header="地图">
+                <RibbonButton Content="平移" ToolTip="平移" SmallImageSource="pack://application:,,,/EM.GIS.Resources;Component/Images/Pan16.png" LargeImageSource="pack://application:,,,/EM.GIS.Resources;Component/Images/Pan32.png" Command="{Binding PanCmd,ConverterParameter={Binding ElementName=map}}"/>
+                <RibbonButton Content="居中" ToolTip="居中" SmallImageSource="pack://application:,,,/EM.GIS.Resources;Component/Images/Global16.png" LargeImageSource="pack://application:,,,/EM.GIS.Resources;Component/Images/Global32.png" Command="{Binding ZoomToMaxExtentCmd,ConverterParameter={Binding ElementName=map,Path=Frame}}"/>
+                <RibbonButton Content="识别" ToolTip="识别" SmallImageSource="pack://application:,,,/EM.GIS.Resources;Component/Images/Identify16.png" LargeImageSource="pack://application:,,,/EM.GIS.Resources;Component/Images/Identify32.png" Command="{Binding IdentifyCmd,ConverterParameter={Binding ElementName=map}}"/>
+            </RibbonGroup>
+        </Ribbon>
+        <StatusBar x:Name="statusBar" DockPanel.Dock="Bottom">
+            <StatusBarItem x:Name="statusBarItem" Content="显示进度：" />
+            <ProgressBar x:Name="progressBar" Width="100" Height="15" BorderThickness="0" Foreground="LightSkyBlue" Value="50" Background="LightGray"/>
+            <TextBlock Text="{Binding CoordStr}" />
+        </StatusBar>
+        <DockingManager x:Name="dockingManager">
+            <LayoutRoot>
+                <LayoutPanel>
+                    <LayoutAnchorablePane ResizableAbsoluteDockWidth="200">
+                        <LayoutAnchorable Title="图例">
+                            <local:Legend x:Name="legend"/>
+                        </LayoutAnchorable>
+                    </LayoutAnchorablePane>
+                    <LayoutDocumentPane>
+                        <LayoutDocument Title="地图">
+                            <local:Map x:Name="map"/>
+                        </LayoutDocument>
+                    </LayoutDocumentPane>
+                </LayoutPanel>
+            </LayoutRoot>
+            </DockingManager>
+    </DockPanel>
+</RibbonWindow>

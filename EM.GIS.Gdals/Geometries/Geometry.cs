@@ -47,7 +47,7 @@ namespace EM.GIS.Gdals
                     {
                         double[] argout = new double[dimension];
                         OgrGeometry.GetPoint(i, argout);
-                        Coordinate coordinate = new Coordinate(argout);
+                        var coordinate = new Coordinate(argout);
                         Coordinates.Add(coordinate);
                     }
                 }
