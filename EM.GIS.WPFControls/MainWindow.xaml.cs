@@ -15,12 +15,18 @@ namespace EM.GIS.WPFControls
     public partial class MainWindow : RibbonWindow
     {
         private MainWindowViewModel ViewModel { get; }
-        public MainWindow(IWpfAppManager appManager, IIocManager iocManager)
+        public MainWindow(IIocManager iocManager)
         {
             InitializeComponent();
+
+            if (iocManager == null)
+            {
+                throw new ArgumentNullException(nameof(iocManager));
+            }
+            var appManager = iocManager.GetService<IWpfAppManager>();
             if (appManager == null)
             {
-                throw new ArgumentNullException(nameof(appManager));
+                throw new Exception($"未注册{nameof(IWpfAppManager)}");
             }
             Loaded += MainWindow_Loaded;
             appManager.Map = map;

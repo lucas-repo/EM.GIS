@@ -1,18 +1,15 @@
-﻿using EM.GIS.Controls;
+﻿using Autofac;
+using EM.GIS.Controls;
 using EM.GIS.WPFControls;
 using EM.IOC;
+using EM.IOC.Autofac;
 using EM.IOC.DependencyInjection;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Hosting;
 using System;
 using System.Collections.Generic;
-using System.Configuration;
-using System.Data;
 using System.IO;
-using System.Linq;
 using System.Reflection;
 using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 
 namespace EM.WpfDemo
@@ -61,18 +58,12 @@ namespace EM.WpfDemo
             IocOptions iocOptions = new IocOptions();//ioc参数
             iocOptions.ServiceDirectories.AddRange(_privatePathes);
             var iocManager = new MsIocManager(iocOptions);
-            var appManager = iocManager.GetService<IAppManager>();
-            var appManagers = iocManager.GetServices<IAppManager>();
-            var se = iocManager.GetServices<IServiceProvider>();
-            if (appManager is WpfAppManager wpfAppManager)
+            //此处可设置优先启动登录窗体
+            MainWindow window = new MainWindow(iocManager);//在主窗体中加载插件
+            if (!(window.ShowDialog() ?? false))
             {
-                //此处可设置优先启动登录窗体
-                MainWindow window = new MainWindow(wpfAppManager, iocManager);//在主窗体中加载插件
-                if (!(window.ShowDialog() ?? false))
-                {
-                    Shutdown();
-                    return;
-                }
+                Shutdown();
+                return;
             }
             ShutdownMode = ShutdownMode.OnLastWindowClose;
             base.OnStartup(e);

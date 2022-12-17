@@ -14,7 +14,7 @@ namespace EM.GIS.WPFControls
     /// <summary>
     /// wpf应用管理类
     /// </summary>
-    [Injectable(ServiceLifetime = ServiceLifetime.Singleton, ServiceType = typeof(IAppManager))]
+    [Injectable(ServiceLifetime = ServiceLifetime.Singleton, ServiceType = typeof(IWpfAppManager))]
     public class WpfAppManager : AppManager, IWpfAppManager
     {
         //private Ribbon? _ribbon;
