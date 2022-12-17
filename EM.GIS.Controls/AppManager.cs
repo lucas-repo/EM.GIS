@@ -1,6 +1,7 @@
 ﻿using EM.Bases;
 using EM.GIS.Data;
 using EM.GIS.Gdals;
+using EM.IOC;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -16,6 +17,7 @@ namespace EM.GIS.Controls
     /// <summary>
     /// app管理类
     /// </summary>
+    [Injectable(ServiceLifetime = ServiceLifetime.Singleton, ServiceType = typeof(IAppManager))]
     public class AppManager : NotifyClass, IAppManager
     {
         private IMap _map;

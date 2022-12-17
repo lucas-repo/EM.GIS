@@ -11,6 +11,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\..\EM.IOC\EM.IOC\EM.IOC.csproj" />
     <ProjectReference Include="..\EM.GIS.Data\EM.GIS.Data.csproj">
       <Private>False</Private>
       <CopyLocalSatelliteAssemblies>False</CopyLocalSatelliteAssemblies>
@@ -46,10 +47,6 @@
 
   <ItemGroup>
     <Folder Include="Resources\" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="EM.IOC" Version="1.0.0" />
   </ItemGroup>
 
 </Project>

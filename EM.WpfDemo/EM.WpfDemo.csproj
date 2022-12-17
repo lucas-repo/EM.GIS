@@ -17,12 +17,12 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="EM.IOC.DependencyInjection" Version="1.0.0" />
 		<PackageReference Include="Fluent.Ribbon" Version="10.0.0-alpha0197" />
 		<PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="7.0.0" />
 	</ItemGroup>
 
 	<ItemGroup>
+		<ProjectReference Include="..\..\..\EM.IOC\EM.IOC.DependencyInjection\EM.IOC.DependencyInjection.csproj" />
 		<ProjectReference Include="..\EM.GIS.WPFControls\EM.GIS.WPFControls.csproj">
 		  <Private>False</Private>
 		  <CopyLocalSatelliteAssemblies>False</CopyLocalSatelliteAssemblies>

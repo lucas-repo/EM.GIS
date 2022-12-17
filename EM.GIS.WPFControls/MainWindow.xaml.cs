@@ -26,9 +26,9 @@ namespace EM.GIS.WPFControls
             appManager.Map = map;
             appManager.Legend = legend;
             appManager.Progress = ReportProgress;
-            appManager.Ribbon = ribbon;
-            appManager.StatusBar = statusBar;
-            appManager.DockingManager = dockingManager;
+            //appManager.Ribbon = ribbon;
+            //appManager.StatusBar = statusBar;
+            //appManager.DockingManager = dockingManager;
             DataContext = new MainWindowViewModel(this, appManager, iocManager);
         }
 

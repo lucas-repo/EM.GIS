@@ -11,11 +11,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="EM.IOC" Version="1.0.0" />
     <PackageReference Include="System.Drawing.Common" Version="7.0.0" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\..\EM.IOC\EM.IOC\EM.IOC.csproj" />
     <ProjectReference Include="..\EM.GIS.Geometries\EM.GIS.Geometries.csproj">
       <Private>false</Private>
       <CopyLocalSatelliteAssemblies>False</CopyLocalSatelliteAssemblies>

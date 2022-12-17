@@ -3,6 +3,7 @@ using EM.GIS.WPFControls;
 using EM.IOC;
 using EM.IOC.DependencyInjection;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
@@ -60,7 +61,9 @@ namespace EM.WpfDemo
             IocOptions iocOptions = new IocOptions();//ioc参数
             iocOptions.ServiceDirectories.AddRange(_privatePathes);
             var iocManager = new MsIocManager(iocOptions);
-            var appManager = iocManager.GetService<IWpfAppManager>();
+            var appManager = iocManager.GetService<IAppManager>();
+            var appManagers = iocManager.GetServices<IAppManager>();
+            var se = iocManager.GetServices<IServiceProvider>();
             if (appManager is WpfAppManager wpfAppManager)
             {
                 //此处可设置优先启动登录窗体
