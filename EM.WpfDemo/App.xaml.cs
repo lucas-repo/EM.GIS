@@ -1,8 +1,5 @@
-﻿using Autofac;
-using EM.GIS.Controls;
-using EM.GIS.WPFControls;
+﻿using EM.GIS.WPFControls;
 using EM.IOC;
-using EM.IOC.Autofac;
 using EM.IOC.DependencyInjection;
 using Microsoft.Extensions.Configuration;
 using System;

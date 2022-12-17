@@ -22,7 +22,6 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\..\..\EM.IOC\EM.IOC.Autofac\EM.IOC.Autofac.csproj" />
 		<ProjectReference Include="..\..\..\EM.IOC\EM.IOC.DependencyInjection\EM.IOC.DependencyInjection.csproj" />
 		<ProjectReference Include="..\EM.GIS.WPFControls\EM.GIS.WPFControls.csproj">
 		  <Private>False</Private>
