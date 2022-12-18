@@ -21,10 +21,10 @@ namespace EM.GIS.Gdals
                 case DataType.GDT_Byte:
                     rasterType = RasterType.Byte;
                     break;
-                case DataType.GDT_CInt16:
+                case DataType.GDT_Int16:
                     rasterType = RasterType.Int16;
                     break;
-                case DataType.GDT_CInt32:
+                case DataType.GDT_Int32:
                     rasterType = RasterType.Int32;
                     break;
                 case DataType.GDT_UInt16:
@@ -33,10 +33,10 @@ namespace EM.GIS.Gdals
                 case DataType.GDT_UInt32:
                     rasterType = RasterType.UInt32;
                     break;
-                case DataType.GDT_CFloat32:
+                case DataType.GDT_Float32:
                     rasterType = RasterType.Float;
                     break;
-                case DataType.GDT_CFloat64:
+                case DataType.GDT_Float64:
                     rasterType = RasterType.Double;
                     break;
                 default:

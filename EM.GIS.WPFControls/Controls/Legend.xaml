@@ -18,26 +18,26 @@
         <local:CategoryToImage x:Key="categoryToImage"/>
         <local:LegendItemTemplateSelector x:Key="legendItemTemplateSelector">
             <local:LegendItemTemplateSelector.GroupTemplate>
-                <HierarchicalDataTemplate ItemsSource="{Binding LegendItems}">
-                    <WrapPanel>
-                        <Image Source="/EM.GIS.Resources;Component/Images/Layers16.png" Margin="6,0,0,0"/>
-                        <TextBlock Text="{Binding Text}" FontWeight="Bold" Margin="6,0,0,0"/>
+                <HierarchicalDataTemplate ItemsSource="{Binding Children}">
+                    <WrapPanel Margin="2">
+                        <Image Source="/EM.GIS.Resources;Component/Images/Layers16.png" />
+                        <TextBlock Text="{Binding Text}" FontWeight="Bold" Margin="5,0,0,0"/>
                     </WrapPanel>
                 </HierarchicalDataTemplate>
             </local:LegendItemTemplateSelector.GroupTemplate>
             <local:LegendItemTemplateSelector.LayerTemplate>
-                <HierarchicalDataTemplate ItemsSource="{Binding LegendItems}">
-                    <WrapPanel>
-                        <CheckBox IsChecked="{Binding IsVisible,Mode=TwoWay}" Margin="8,0,0,0"/>
-                        <TextBlock Text="{Binding Text}" Margin="8,0,0,0"/>
+                <HierarchicalDataTemplate ItemsSource="{Binding Children}">
+                    <WrapPanel Margin="2">
+                        <CheckBox IsChecked="{Binding IsVisible,Mode=TwoWay}"/>
+                        <TextBlock Text="{Binding Text}" Margin="5,0,0,0"/>
                     </WrapPanel>
                 </HierarchicalDataTemplate>
             </local:LegendItemTemplateSelector.LayerTemplate>
             <local:LegendItemTemplateSelector.CategoryTemplate>
-                <HierarchicalDataTemplate ItemsSource="{Binding LegendItems}">
-                    <WrapPanel>
-                        <Image Source="{Binding Converter={StaticResource categoryToImage}}" Margin="4,0,0,0"/>
-                        <TextBlock Text="{Binding Text}" Margin="8,0,0,0"/>
+                <HierarchicalDataTemplate ItemsSource="{Binding Children}">
+                    <WrapPanel Margin="2">
+                        <Image Source="{Binding Converter={StaticResource categoryToImage}}" />
+                        <TextBlock Text="{Binding Text}" Margin="5,0,0,0"/>
                     </WrapPanel>
                 </HierarchicalDataTemplate>
             </local:LegendItemTemplateSelector.CategoryTemplate>

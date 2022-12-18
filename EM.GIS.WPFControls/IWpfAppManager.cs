@@ -11,21 +11,21 @@ namespace EM.GIS.WPFControls
     /// </summary>
     public interface IWpfAppManager:IAppManager
     {
-        ///// <summary>
-        ///// 功能区控件
-        ///// </summary>
-        //Ribbon? Ribbon { get; set; }
-        ///// <summary>
-        ///// 状态栏
-        ///// </summary>
-        //StatusBar? StatusBar { get; set; }
-        ///// <summary>
-        ///// 停靠管理器
-        ///// </summary>
-        //DockingManager? DockingManager { get; set; }
-        ///// <summary>
-        ///// 窗体
-        ///// </summary>
-        //Window? Window { get;  }
+        /// <summary>
+        /// 功能区控件
+        /// </summary>
+        Ribbon? Ribbon { get; set; }
+        /// <summary>
+        /// 状态栏
+        /// </summary>
+        StatusBar? StatusBar { get; set; }
+        /// <summary>
+        /// 停靠管理器
+        /// </summary>
+        DockingManager? DockingManager { get; set; }
+        /// <summary>
+        /// 窗体
+        /// </summary>
+        Window? Window { get; }
     }
 }

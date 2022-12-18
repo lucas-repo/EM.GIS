@@ -18,7 +18,7 @@ namespace EM.GIS.WPFControls
     [Injectable(ServiceLifetime = ServiceLifetime.Singleton, ServiceType = typeof(ICommand))]
     public class OpenMapCommand : Command
     {
-        public override void Execute(object? parameter)
+        protected override void OnExecute(object? parameter)
         {
             if (parameter is IFrame frame)
             {

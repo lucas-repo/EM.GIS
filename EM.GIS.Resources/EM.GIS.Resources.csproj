@@ -38,6 +38,7 @@
 	  <None Remove="Images\Open32.png" />
 	  <None Remove="Images\Pan16.png" />
 	  <None Remove="Images\Pan32.png" />
+	  <None Remove="Images\Paste.svg" />
 	  <None Remove="Images\Pre16.png" />
 	  <None Remove="Images\Pre32.png" />
 	  <None Remove="Images\Redo16.png" />
@@ -52,6 +53,10 @@
 	  <None Remove="Images\ZoomIn32.png" />
 	  <None Remove="Images\ZoomOut16.png" />
 	  <None Remove="Images\ZoomOut32.png" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Resource Include="Images\Paste.svg" />
 	</ItemGroup>
 
 	<ItemGroup>

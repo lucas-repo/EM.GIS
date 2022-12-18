@@ -1,4 +1,6 @@
-﻿using EM.GIS.Symbology;
+﻿using EM.Bases;
+using EM.GIS.Symbology;
+using System.Collections.ObjectModel;
 
 namespace EM.GIS.Controls
 {
@@ -10,7 +12,7 @@ namespace EM.GIS.Controls
         /// <summary>
         /// 元素集合
         /// </summary>
-        ILegendItemCollection LegendItems { get; }
+        ObservableCollection<ITreeItem> LegendItems { get; }
         /// <summary>
         /// 添加地图框架
         /// </summary>

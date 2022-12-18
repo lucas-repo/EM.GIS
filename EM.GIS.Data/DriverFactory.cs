@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 
 namespace EM.GIS.Data
@@ -111,10 +112,20 @@ namespace EM.GIS.Data
         public IDataSet Open(string path)
         {
             IDataSet dataSet = null;
+            if (string.IsNullOrEmpty(path))
+            {
+                return dataSet;
+            }
+            string extension = Path.GetExtension(path);
             if (Drivers != null)
             {
                 foreach (var driver in Drivers)
                 {
+                    var extensions= driver.GetReadableFileExtensions();
+                    if (!extensions.Contains(extension))
+                    {
+                        continue;
+                    }
                     try
                     {
                         dataSet = driver.Open(path, true);

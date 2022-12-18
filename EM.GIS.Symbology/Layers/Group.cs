@@ -180,21 +180,23 @@ namespace EM.GIS.Symbology
         public IFeatureLayer AddLayer(IFeatureSet featureSet, int? index = null)
         {
             IFeatureLayer featureLayer = null;
-            if (featureSet == null) return null;
-
-            if (featureSet.FeatureType == FeatureType.Point || featureSet.FeatureType == FeatureType.MultiPoint)
+            if (featureSet == null) return featureLayer;
+            switch (featureSet.FeatureType)
             {
-                featureLayer = new PointLayer(featureSet);
+                case FeatureType.Point:
+                case FeatureType.MultiPoint:
+                    featureLayer = new PointLayer(featureSet);
+                    break;
+                case FeatureType.Polyline:
+                    featureLayer = new LineLayer(featureSet);
+                    break;
+                case FeatureType.Polygon:
+                    featureLayer = new PolygonLayer(featureSet);
+                    break;
+                default:
+                    return featureLayer;
             }
-            else if (featureSet.FeatureType == FeatureType.Polyline)
-            {
-                featureLayer = new LineLayer(featureSet);
-            }
-            else if (featureSet.FeatureType == FeatureType.Polygon)
-            {
-                featureLayer = new PolygonLayer(featureSet);
-            }
-
+            featureLayer.Text = featureSet.Name;
             if (featureLayer != null)
             {
                 AddLayer(featureLayer, index);
@@ -207,7 +209,10 @@ namespace EM.GIS.Symbology
             IRasterLayer rasterLayer = null;
             if (rasterSet != null)
             {
-                rasterLayer = new RasterLayer(rasterSet);
+                rasterLayer = new RasterLayer(rasterSet)
+                {
+                    Text= rasterSet.Name
+                };
                 AddLayer(rasterLayer, index);
             }
             return rasterLayer;
@@ -230,7 +235,10 @@ namespace EM.GIS.Symbology
 
         public void ClearLayers()
         {
-            Children.Clear();
+            if (Children.Count > 0)
+            {
+                Children.Clear();
+            }
         }
 
         public IEnumerable<IFeatureLayer> GetFeatureLayers()

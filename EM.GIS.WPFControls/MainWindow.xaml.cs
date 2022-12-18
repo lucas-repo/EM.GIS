@@ -6,6 +6,7 @@ using System;
 using System.Windows.Controls.Primitives;
 using System.Windows.Controls.Ribbon;
 using EM.GIS.WPFControls.ViewModels;
+using EM.WpfBases;
 
 namespace EM.GIS.WPFControls
 {
@@ -14,32 +15,32 @@ namespace EM.GIS.WPFControls
     /// </summary>
     public partial class MainWindow : RibbonWindow
     {
-        private MainWindowViewModel ViewModel { get; }
+        private IIocManager IocManager { get; }
+        private MainWindowViewModel ViewModel { get; set; }
         public MainWindow(IIocManager iocManager)
         {
             InitializeComponent();
-
-            if (iocManager == null)
-            {
-                throw new ArgumentNullException(nameof(iocManager));
-            }
-            var appManager = iocManager.GetService<IWpfAppManager>();
-            if (appManager == null)
-            {
-                throw new Exception($"未注册{nameof(IWpfAppManager)}");
-            }
+            IocManager= iocManager ?? throw new ArgumentNullException(nameof(iocManager));
             Loaded += MainWindow_Loaded;
-            appManager.Map = map;
-            appManager.Legend = legend;
-            appManager.Progress = ReportProgress;
-            //appManager.Ribbon = ribbon;
-            //appManager.StatusBar = statusBar;
-            //appManager.DockingManager = dockingManager;
-            DataContext = new MainWindowViewModel(this, appManager, iocManager);
         }
 
         private void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
+            var appManager = IocManager.GetService<IWpfAppManager>();
+            if (appManager == null)
+            {
+                throw new Exception($"未注册{nameof(IWpfAppManager)}");
+            }
+            appManager.Map = map;
+            appManager.Map.Legend = legend;
+            appManager.Legend = legend;
+            appManager.Progress = ReportProgress;
+            appManager.Ribbon = ribbon;
+            appManager.StatusBar = statusBar;
+            appManager.DockingManager = dockingManager;
+            ViewModel = new MainWindowViewModel(this, appManager, IocManager);
+
+            DataContext = ViewModel;
             if (ViewModel.IocManager != null)
             {
                 ViewModel.IocManager.LoadPlugins();

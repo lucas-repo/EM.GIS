@@ -5,6 +5,7 @@ using EM.GIS.Symbology;
 using EM.IOC;
 using Microsoft.Win32;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
@@ -44,6 +45,7 @@ namespace EM.GIS.WPFControls
         /// <inheritdoc/>
         public bool IsBusy { get; set; }
         private ILegend _legend;
+        private bool disposedValue;
 
         /// <inheritdoc/>
         public ILegend Legend
@@ -85,7 +87,7 @@ namespace EM.GIS.WPFControls
             {
                 Text = "地图框"
             };
-            Frame.PropertyChanged += MapFrame_PropertyChanged;
+            Frame.MapView.PropertyChanged += MapView_PropertyChanged;
             Frame.Children.CollectionChanged += LegendItems_CollectionChanged;
             var pan = new MapToolPan(this);
             var zoom = new MapToolZoom(this);
@@ -98,8 +100,8 @@ namespace EM.GIS.WPFControls
             }
             ActivateMapToolWithZoom(pan);
         }
-
-        private void MapFrame_PropertyChanged(object? sender, PropertyChangedEventArgs e)
+        
+        private void MapView_PropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
             switch (e.PropertyName)
             {
@@ -173,7 +175,7 @@ namespace EM.GIS.WPFControls
             }
             base.OnRender(drawingContext);
         }
-        private void Layer_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        private void Layer_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
             switch (e.PropertyName)
             {
@@ -187,37 +189,30 @@ namespace EM.GIS.WPFControls
             switch (e.Action)
             {
                 case NotifyCollectionChangedAction.Add:
-                    foreach (ILegendItem item in e.NewItems)
-                    {
-                        AddLayerEvent(item);
-                    }
+                    AddLayerEvent(e.NewItems);
                     break;
                 case NotifyCollectionChangedAction.Remove:
-                    foreach (ILegendItem item in e.OldItems)
-                    {
-                        RemoveLayerEvent(item);
-                    }
+                    RemoveLayerEvent(e.OldItems);
                     break;
                 case NotifyCollectionChangedAction.Replace:
-                    foreach (ILegendItem item in e.OldItems)
-                    {
-                        RemoveLayerEvent(item);
-                    }
-                    foreach (ILegendItem item in e.NewItems)
-                    {
-                        AddLayerEvent(item);
-                    }
+                    RemoveLayerEvent(e.OldItems);
+                    AddLayerEvent(e.NewItems);
                     break;
                 case NotifyCollectionChangedAction.Reset:
-                    foreach (ILegendItem item in e.OldItems)
-                    {
-                        RemoveLayerEvent(item);
-                    }
+                    RemoveLayerEvent(e.OldItems);
                     break;
-
             }
         }
-
+        private void AddLayerEvent(IList? list) 
+        {
+            if (list != null)
+            {
+                foreach (ILegendItem item in list)
+                {
+                    AddLayerEvent(item);
+                }
+            }
+        }
         private void AddLayerEvent(ILegendItem layer)
         {
             if (layer != null)
@@ -226,7 +221,16 @@ namespace EM.GIS.WPFControls
                 layer.Children.CollectionChanged += LegendItems_CollectionChanged;
             }
         }
-
+        private void RemoveLayerEvent(IList? list)
+        {
+            if (list != null)
+            {
+                foreach (ILegendItem item in list)
+                {
+                    RemoveLayerEvent(item);
+                }
+            }
+        }
         private void RemoveLayerEvent(ILegendItem layer)
         {
             if (layer != null)
@@ -400,6 +404,41 @@ namespace EM.GIS.WPFControls
         public IGroup AddGroup(string groupName )
         {
             return Layers.AddGroup(groupName);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                if (disposing)
+                {
+                    // TODO: 释放托管状态(托管对象)
+                    if (Frame != null)
+                    {
+                        Frame.MapView.PropertyChanged -= MapView_PropertyChanged;
+                        Frame.Children.CollectionChanged -= LegendItems_CollectionChanged;
+                        Frame.Dispose();
+                    }
+                }
+
+                // TODO: 释放未托管的资源(未托管的对象)并重写终结器
+                // TODO: 将大型字段设置为 null
+                disposedValue = true;
+            }
+        }
+
+        // // TODO: 仅当“Dispose(bool disposing)”拥有用于释放未托管资源的代码时才替代终结器
+        // ~Map()
+        // {
+        //     // 不要更改此代码。请将清理代码放入“Dispose(bool disposing)”方法中
+        //     Dispose(disposing: false);
+        // }
+
+        public void Dispose()
+        {
+            // 不要更改此代码。请将清理代码放入“Dispose(bool disposing)”方法中
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
         }
 
         #endregion

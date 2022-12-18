@@ -90,11 +90,12 @@ namespace EM.GIS.Symbology
             {
                 extent = DataSet.Extent;
             }
-            Extent = extent;
+            Extent = extent; 
         }
 
         public Layer()
         {
+            IsVisible=true;
         }
         public Layer(IDataSet dataSet):this()
         {

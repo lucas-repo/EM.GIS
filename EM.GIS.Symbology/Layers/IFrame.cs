@@ -1,4 +1,5 @@
 ﻿using EM.GIS.Geometries;
+using System;
 
 namespace EM.GIS.Symbology
 {

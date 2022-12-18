@@ -21,9 +21,16 @@ namespace EM.GIS.WPFControls
             if (extensions.Count > 0)
             {
                 sb.Append("矢量数据|");
-                foreach (var item in extensions)
+                for (int i = 0; i < extensions.Count; i++)
                 {
-                    sb.Append($"*{item}");
+                    if (i == 0)
+                    {
+                        sb.Append($"*{extensions[i]}");
+                    }
+                    else
+                    {
+                        sb.Append($";*{extensions[i]}");
+                    }
                 }
             }
             return sb.ToString();
@@ -35,9 +42,16 @@ namespace EM.GIS.WPFControls
             if (extensions.Count > 0)
             {
                 sb.Append("栅格数据|");
-                foreach (var item in extensions)
+                for (int i = 0; i < extensions.Count; i++)
                 {
-                    sb.Append($"*{item}");
+                    if (i == 0)
+                    {
+                        sb.Append($"*{extensions[i]}");
+                    }
+                    else
+                    {
+                        sb.Append($";*{extensions[i]}");
+                    }
                 }
             }
             return sb.ToString();
@@ -127,35 +141,40 @@ namespace EM.GIS.WPFControls
         /// </summary>
         /// <param name="driverFactory">驱动工厂</param>
         /// <param name="owner">父窗体</param>
-        /// <returns>可枚举的多个数据集</returns>
-        public static IEnumerable<IDataSet> OpenFiles(this IDriverFactory driverFactory,Window? owner=null)
+        /// <returns>多个数据集</returns>
+        public static List<IDataSet> OpenFiles(this IDriverFactory driverFactory,Window? owner=null)
         {
+            List<IDataSet> ret = new List<IDataSet>();
             if (driverFactory == null)
             {
-                yield break;
+                return ret;
             }
             var ofd = new OpenFileDialog
             { 
                 Multiselect = true,
                 Filter = driverFactory.GetFilter() 
             };
-            bool? ret;
+            bool? dialogResult;
             if (owner == null)
             {
-                ret = ofd.ShowDialog();
+                dialogResult = ofd.ShowDialog();
             }
             else
             {
-                ret= ofd.ShowDialog(owner);
+                dialogResult = ofd.ShowDialog(owner);
             }
-            if (ret == true)
+            if (dialogResult == true)
             {
                 foreach (var name in ofd.FileNames)
                 {
                     var ds = driverFactory.Open(name);
-                    if (ds != null) yield return ds;
+                    if (ds != null)
+                    {
+                        ret.Add(ds);
+                    }
                 }
             }
+            return ret;
         }
         /// <summary>
         /// 添加多个图层
@@ -164,12 +183,13 @@ namespace EM.GIS.WPFControls
         /// <param name="driverFactory">驱动工厂</param>
         /// <param name="owner">父窗体</param>
         /// <returns>已添加的图层枚举</returns>
-        public static IEnumerable<ILayer> AddLayers(this IFrame frame, IDriverFactory driverFactory, Window? owner = null)
+        public static List<ILayer> AddLayers(this IFrame frame, IDriverFactory driverFactory, Window? owner = null)
         {
+            List<ILayer> ret = new List<ILayer>();
             if (frame != null && driverFactory != null)
             {
                 var dataSets = driverFactory.OpenFiles(owner);
-                if (dataSets.Any())
+                if (dataSets.Count>0)
                 {
                     var layers = frame.GetAllLayers().Where(x => x.IsSelected && x is IGroup);
                     IGroup? destGroup = null;
@@ -188,12 +208,13 @@ namespace EM.GIS.WPFControls
                             var layer = destGroup.AddLayer(dataSet);
                             if (layer != null)
                             {
-                                yield return layer;
+                                ret.Add(layer);
                             }
                         }
                     }
                 }
             }
+            return ret;
         }
         /// <summary>
         /// This opens a file, but populates the dialog filter with only raster formats.

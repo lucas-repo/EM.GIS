@@ -49,70 +49,76 @@ namespace EM.GIS.WPFControls.ViewModels
         /// <summary>
         /// 清空地图
         /// </summary>
-        public ICommand NewCmd { get; }
+        public Command NewCmd { get; }
         /// <summary>
         /// 打开新地图
         /// </summary>
-        public ICommand OpenCmd { get; }
+        public Command OpenCmd { get; }
         /// <summary>
         /// 保存地图
         /// </summary>
-        public ICommand SaveCmd { get; }
+        public Command SaveCmd { get; }
         /// <summary>
         /// 地图另存为
         /// </summary>
-        public ICommand SaveAsCmd { get; }
+        public Command SaveAsCmd { get; }
 
         /// <summary>
         /// 撤销
         /// </summary>
-        public ICommand UndoCmd { get; }
+        public Command UndoCmd { get; }
         /// <summary>
         /// 重做
         /// </summary>
-        public ICommand RedoCmd { get; }
+        public Command RedoCmd { get; }
 
         /// <summary>
         /// 添加图层
         /// </summary>
-        public ICommand AddLayersCmd { get; }
+        public Command AddLayersCmd { get; }
         /// <summary>
         /// 移除选择的图层
         /// </summary>
-        public ICommand RemoveSelectedLayersCmd { get; }
+        public Command RemoveSelectedLayersCmd { get; }
 
         /// <summary>
         /// 添加图层
         /// </summary>
-        public ICommand PanCmd { get; }
+        public Command PanCmd { get; }
         /// <summary>
         /// 缩放至全图
         /// </summary>
-        public ICommand ZoomToMaxExtentCmd { get; }
+        public Command ZoomToMaxExtentCmd { get; }
         /// <summary>
         /// 识别
         /// </summary>
-        public ICommand IdentifyCmd { get; }
+        public Command IdentifyCmd { get; }
 
         public MainWindowViewModel(MainWindow t, IWpfAppManager appManager, IIocManager iocManager) : base(t)
         {
             AppManager = appManager ?? throw new NullReferenceException(nameof(appManager));
             IocManager = iocManager ?? throw new NullReferenceException(nameof(iocManager));
-            NewCmd = iocManager.GetService<NewMapCommand>();
-            OpenCmd = iocManager.GetService<OpenMapCommand>();
-            SaveCmd = iocManager.GetService<SaveMapCommand>();
-            SaveAsCmd = iocManager.GetService<SaveMapAsCommand>();
-            AddLayersCmd = iocManager.GetService<AddLayersCommand>();
-            RemoveSelectedLayersCmd = iocManager.GetService<RemoveSelectedLayersCommand>();
-            PanCmd = iocManager.GetService<PanCommand>();
-            UndoCmd = iocManager.GetService<UndoCommand>();
-            RedoCmd = iocManager.GetService<RedoCommand>();
-            ZoomToMaxExtentCmd = iocManager.GetService<ZoomToMaxExtentCommand>();
-            IdentifyCmd = iocManager.GetService<IdentifyCommand>();
+            NewCmd = iocManager.GetService<ICommand,NewMapCommand>();
+            OpenCmd = iocManager.GetService<ICommand, OpenMapCommand>();
+            SaveCmd = iocManager.GetService<ICommand, SaveMapCommand>();
+            SaveAsCmd = iocManager.GetService<ICommand, SaveMapAsCommand>();
+            AddLayersCmd = iocManager.GetService<ICommand, AddLayersCommand>();
+            RemoveSelectedLayersCmd = iocManager.GetService<ICommand, RemoveSelectedLayersCommand>();
+            PanCmd = iocManager.GetService<ICommand, PanCommand>();
+            UndoCmd = iocManager.GetService<ICommand, UndoCommand>();
+            RedoCmd = iocManager.GetService<ICommand, RedoCommand>();
+            ZoomToMaxExtentCmd = iocManager.GetService<ICommand, ZoomToMaxExtentCommand>();
+            IdentifyCmd = iocManager.GetService<ICommand, IdentifyCommand>();
             if (appManager?.Map != null)
             {
                 appManager.Map.GeoMouseMove += Map_GeoMouseMove;
             }
+            Command[] commands0 = {NewCmd,OpenCmd,SaveCmd,SaveAsCmd,AddLayersCmd,RemoveSelectedLayersCmd,PanCmd,UndoCmd, RedoCmd, ZoomToMaxExtentCmd,IdentifyCmd};
+            //foreach (var item in commands0)
+            //{
+            //    //item.CanExecuteFunc = (obj) => Map?.Frame != null;
+            //    item.RaiseCanExecuteChanged();
+            //}
         }
 
         private void Map_GeoMouseMove(object? sender, IGeoMouseEventArgs e)

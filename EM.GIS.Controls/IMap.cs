@@ -12,7 +12,7 @@ namespace EM.GIS.Controls
     /// <summary>
     /// 地图接口
     /// </summary>
-    public interface IMap : IProj, INotifyPropertyChanged
+    public interface IMap : IProj, INotifyPropertyChanged, IDisposable
     {
         /// <summary>
         /// 地图框架

@@ -34,22 +34,27 @@ namespace EM.GIS.Symbology
         bool firstLayerAdded;
         private void Layers_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
-            if (!firstLayerAdded)
+            switch (e.Action)
             {
-                if (e.Action == NotifyCollectionChangedAction.Add && e.NewItems.Count > 0)
-                {
-                    firstLayerAdded = true;
-                }
-                if (firstLayerAdded)
-                {
-                    var extent = Extent.Copy();
-                    if (!extent.IsEmpty())
+                case NotifyCollectionChangedAction.Add:
+                    if (!firstLayerAdded)
                     {
-                        extent.ExpandBy(extent.Width / 10, extent.Height / 10);
+                        if (e.Action == NotifyCollectionChangedAction.Add && e.NewItems.Count > 0)
+                        {
+                            firstLayerAdded = true;
+                        }
+                        if (firstLayerAdded)
+                        {
+                            var extent = Extent.Copy();
+                            if (!extent.IsEmpty())
+                            {
+                                extent.ExpandBy(extent.Width / 10, extent.Height / 10);
+                            }
+                            MapView.Extent = extent;
+                            return;
+                        }
                     }
-                    MapView.Extent = extent;
-                    return;
-                }
+                    break;
             }
             MapView.ResetBuffer();
         }
@@ -143,5 +148,16 @@ namespace EM.GIS.Symbology
         }
 
         public string FileName => throw new NotImplementedException();
+        protected override void Dispose(bool disposing)
+        {
+            if (!IsDisposed)
+            {
+                if (disposing) 
+                {
+                    MapView?.Dispose();
+                }
+            }
+            base.Dispose(disposing);
+        }
     }
 }

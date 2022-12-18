@@ -1,7 +1,9 @@
-﻿using EM.GIS.Controls;
+﻿using EM.Bases;
+using EM.GIS.Controls;
 using EM.GIS.Symbology;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
@@ -36,10 +38,10 @@ namespace EM.GIS.WPFControls
         public Legend()
         {
             InitializeComponent();
-            LegendItems = new LegendItemCollection(null);
-            LegendItems.CollectionChanged += LegendItems_CollectionChanged; 
+            LegendItems = new ObservableCollection<ITreeItem>();
+            LegendItems.CollectionChanged += LegendItems_CollectionChanged;
             DataContext = this;
-            ItemsSource = LegendItems; 
+            ItemsSource = LegendItems;
         }
 
         private void TreeView_SelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
@@ -70,7 +72,7 @@ namespace EM.GIS.WPFControls
             {
                 var oldValue = t;
                 t = value;
-                if (autoDisposeOldValue &&oldValue is IDisposable disposable)
+                if (autoDisposeOldValue && oldValue is IDisposable disposable)
                 {
                     disposable.Dispose();
                 }
@@ -144,7 +146,7 @@ namespace EM.GIS.WPFControls
             }
         }
         /// <inheritdoc/>
-        public ILegendItemCollection LegendItems { get; }
+        public ObservableCollection<ITreeItem> LegendItems { get; }
 
         /// <inheritdoc/>
         public void AddMapFrame(IFrame mapFrame)

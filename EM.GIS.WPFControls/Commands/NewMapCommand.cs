@@ -16,7 +16,8 @@ namespace EM.GIS.WPFControls
     [Injectable(ServiceLifetime = ServiceLifetime.Singleton, ServiceType = typeof(ICommand))]
     public class NewMapCommand : Command
     {
-        public override void Execute(object? parameter)
+        /// <inheritdoc/>
+        protected override void OnExecute(object? parameter)
         {
             if (parameter is IFrame frame)
             {

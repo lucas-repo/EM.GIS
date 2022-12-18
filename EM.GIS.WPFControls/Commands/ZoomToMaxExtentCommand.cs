@@ -17,7 +17,7 @@ namespace EM.GIS.WPFControls
     [Injectable(ServiceLifetime = ServiceLifetime.Singleton, ServiceType = typeof(ICommand))]
     public class ZoomToMaxExtentCommand : Command
     {
-        public override void Execute(object? parameter)
+        protected override void OnExecute(object? parameter)
         {
             if (parameter is IFrame frame&& frame.MapView!=null)
             {

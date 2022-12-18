@@ -9,7 +9,7 @@ namespace EM.GIS.Symbology
     /// <summary>
     /// 视图接口
     /// </summary>
-    public interface IView: IProj,ICloneable, INotifyPropertyChanged, ICancelable
+    public interface IView: IProj,ICloneable, INotifyPropertyChanged, ICancelable,IDisposable
     {
         /// <summary>
         /// 地图框架

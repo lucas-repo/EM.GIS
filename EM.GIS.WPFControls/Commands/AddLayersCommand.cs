@@ -25,7 +25,7 @@ namespace EM.GIS.WPFControls
             DriverFactory = driverFactory;
         }
 
-        public override void Execute(object? parameter)
+        protected override void OnExecute(object? parameter)
         {
             if (parameter is IFrame frame && DriverFactory != null)
             {

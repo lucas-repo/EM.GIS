@@ -66,21 +66,27 @@ namespace EM.GIS.Symbology
         {
             Action setOldItemsAction = new Action(() =>
             {
-                foreach (var item in e.OldItems)
+                if (e.OldItems != null)
                 {
-                    if (item is ILayer t)
+                    foreach (var item in e.OldItems)
                     {
-                        t.Parent = default;
+                        if (item is ILayer t)
+                        {
+                            t.Parent = default;
+                        }
                     }
                 }
             });
             Action setNewItemsAction = new Action(() =>
             {
-                foreach (var item in e.NewItems)
+                if (e.NewItems != null)
                 {
-                    if (item is ILayer t)
+                    foreach (var item in e.NewItems)
                     {
-                        t.Parent = Parent;
+                        if (item is ILayer t)
+                        {
+                            t.Parent = Parent;
+                        }
                     }
                 }
             });

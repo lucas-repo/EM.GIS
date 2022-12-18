@@ -12,7 +12,7 @@ namespace EM.GIS.Symbology
     /// <summary>
     /// 图例元素接口
     /// </summary>
-    public interface ILegendItem :  ITreeItem, IProgressHandler
+    public interface ILegendItem :  ITreeItem, IProgressHandler, IDisposable
     {
         /// <summary>
         /// 右键菜单命令集合
