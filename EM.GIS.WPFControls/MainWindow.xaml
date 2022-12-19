@@ -40,6 +40,20 @@
                 <RibbonGroup Header="图层">
                     <RibbonButton Label="数据" ToolTip="添加数据" LargeImageSource="pack://application:,,,/EM.GIS.Resources;Component/Images/Add32.png" Command="{Binding AddLayersCmd}" CommandParameter="{Binding ElementName=map,Path=Frame}"/>
                     <RibbonButton Label="移除" ToolTip="移除数据" LargeImageSource="pack://application:,,,/EM.GIS.Resources;Component/Images/Remove32.png" Command="{Binding RemoveSelectedLayersCmd}" CommandParameter="{Binding ElementName=map,Path=Frame}"/>
+                    <RibbonMenuButton Label="底图" LargeImageSource="pack://application:,,,/EM.GIS.Resources;Component/Images/Global32.png">
+                        <RibbonGallery ItemsSource="{Binding BaseMaps}">
+                            <RibbonGalleryCategory>
+                                <RibbonGalleryItem Content="Green" Foreground="Green" />
+                                <RibbonGalleryItem Content="Blue" Foreground="Blue" />
+                                <RibbonGalleryItem Content="Orange" Foreground="Orange" />
+                            </RibbonGalleryCategory>
+                            <!--<RibbonGallery.ItemTemplate>
+                                <DataTemplate>
+                                    <RibbonGalleryItem Content="{Binding Name}" />
+                                </DataTemplate>
+                            </RibbonGallery.ItemTemplate>-->
+                        </RibbonGallery>
+                    </RibbonMenuButton>
                     <!--<RibbonButton Label="底图" ToolTip="添加底图" LargeImageSource="pack://application:,,,/EM.GIS.Resources;Component/Images/Add32.png" Command="{Binding ZoomToMaxExtentCmd}" CommandParameter="{Binding ElementName=map,Path=Frame}"/>
                     <RibbonButton Label="选择" ToolTip="选择" SmallImageSource="pack://application:,,,/EM.GIS.Resources;Component/Images/Identify16.png" LargeImageSource="pack://application:,,,/EM.GIS.Resources;Component/Images/Identify32.png" Command="{Binding IdentifyCmd}" CommandParameter="{Binding ElementName=map}"/>-->
                 </RibbonGroup>
