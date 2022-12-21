@@ -1,4 +1,5 @@
-﻿using EM.GIS.Data;
+﻿using EM.Bases;
+using EM.GIS.Data;
 using EM.GIS.Geometries;
 using System;
 using System.Drawing;
@@ -55,12 +56,12 @@ namespace EM.GIS.Symbology
             {
                 return;
             }
-            IExtent destExtent = extent;
+            IExtent destExtent = extent.Copy();
             if (!Equals(Projection, DataSet.Projection))
             {
-                
+                DataSet.Projection.ReProject(Projection, destExtent);
             }
-            using (var bmp = DataSet.GetImage(extent, rectangle, ReportProgress))
+            using (var bmp = DataSet.GetImage(destExtent, rectangle, ReportProgress))
             {
                 if (bmp != null)
                 {

@@ -29,6 +29,9 @@
                 <TabItem Header="修改Landsat8元数据">
                     <local:ModifyLandsatMtlControl/>
                 </TabItem>
+                <TabItem Header="整理坐标">
+                    <local:TrimCoordControl/>
+                </TabItem>
             </TabControl>
         </materialDesign:Card>
         <Grid VerticalAlignment="Bottom" Height="20">
