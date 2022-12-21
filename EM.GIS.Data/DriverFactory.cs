@@ -14,15 +14,19 @@ namespace EM.GIS.Data
     [Injectable(ServiceLifetime = ServiceLifetime.Singleton, ServiceType = typeof(IDriverFactory))]
     public class DriverFactory : IDriverFactory
     {
+        /// <inheritdoc/>
         [Browsable(false)]
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public virtual IEnumerable<IDriver> Drivers { get; set; }
 
+        /// <inheritdoc/>
         public IEnumerable<IVectorDriver> VectorDrivers => Drivers.Where(x => x is IVectorDriver).Select(x => x as IVectorDriver);
 
+        /// <inheritdoc/>
         public IEnumerable<IRasterDriver> RasterDrivers => Drivers.Where(x => x is IRasterDriver).Select(x => x as IRasterDriver);
         private ProgressDelegate _progress;
 
+        /// <inheritdoc/>
         [Category("Handlers")]
         [Description("Gets or sets the object that implements the IProgressHandler interface for recieving status messages.")]
         public ProgressDelegate Progress
@@ -40,7 +44,7 @@ namespace EM.GIS.Data
                 }
             }
         }
-        public DriverFactory(IEnumerable<IDriver> drivers)
+        public DriverFactory(IEnumerable<IFileDriver> drivers)
         {
             Drivers = drivers;
         }
@@ -116,31 +120,17 @@ namespace EM.GIS.Data
             {
                 return dataSet;
             }
-            string extension = Path.GetExtension(path);
             if (Drivers != null)
             {
                 foreach (var driver in Drivers)
                 {
-                    var extensions= driver.GetReadableFileExtensions();
-                    if (!extensions.Contains(extension))
-                    {
-                        continue;
-                    }
                     try
                     {
-                        dataSet = driver.Open(path, true);
+                        dataSet = driver.Open(path);
                     }
                     catch (Exception e)
                     {
                         Debug.WriteLine(e);
-                        try
-                        {
-                            dataSet = driver.Open(path, false);
-                        }
-                        catch (Exception ex)
-                        {
-                            Debug.WriteLine(ex);
-                        }
                     }
                     if (dataSet != null)
                     {

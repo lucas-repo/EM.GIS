@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace EM.GIS.Projection
+namespace EM.GIS.Projections
 {
     /// <summary>
     /// 转换接口

@@ -1,6 +1,6 @@
 ﻿using EM.Bases;
 
-namespace EM.GIS.Projection
+namespace EM.GIS.Projections
 {
     /// <summary>
     /// 基准面

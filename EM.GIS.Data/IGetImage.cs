@@ -30,6 +30,6 @@ namespace EM.GIS.Data
         /// <param name="rectangle">屏幕范围</param>
         /// <param name="progressAction">进度委托</param>
         /// <returns>图片</returns>
-        Image GetImage(IExtent extent, Rectangle rectangle, Action<int> progressAction = null);
+        Image GetImage(IExtent extent, Rectangle rectangle, Action<int> progressAction = null, Func<bool> cancelFunc = null);
     }
 }

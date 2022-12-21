@@ -32,7 +32,7 @@ namespace EM.GIS.Data
             return Bitmap;
         }
 
-        public override Image GetImage(IExtent envelope, Rectangle window, Action<int> progressAction = null)
+        public override Image GetImage(IExtent envelope, Rectangle window, Action<int> progressAction = null, Func<bool> cancelFunc = null)
         {
             if (window.Width == 0 || window.Height == 0) return null;
 

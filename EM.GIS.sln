@@ -13,7 +13,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EM.GIS.Gdals", "EM.GIS.Gdal
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EM.GIS.Geometries", "EM.GIS.Geometries\EM.GIS.Geometries.csproj", "{81464A23-B358-4F99-97ED-3A2F8F391412}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EM.GIS.Projection", "EM.GIS.Projection\EM.GIS.Projection.csproj", "{FAA1F842-FC3C-4759-A47A-F4C1FA25266F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EM.GIS.Projections", "EM.GIS.Projection\EM.GIS.Projections.csproj", "{FAA1F842-FC3C-4759-A47A-F4C1FA25266F}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EM.GIS.Serialization", "EM.GIS.Serialization\EM.GIS.Serialization.csproj", "{D3D2B8D4-3C13-4492-A13C-CA62B19638D4}"
 EndProject

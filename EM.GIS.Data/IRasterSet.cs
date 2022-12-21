@@ -34,10 +34,6 @@ namespace EM.GIS.Data
         /// </summary>
         double? NoDataValue { get; set; }
         /// <summary>
-        /// 栅格范围
-        /// </summary>
-        IRasterBounds RasterBounds { get; set; }
-        /// <summary>
         /// 获取统计
         /// </summary>
         /// <returns></returns>

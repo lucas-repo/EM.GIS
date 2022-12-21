@@ -1,4 +1,4 @@
-﻿namespace EM.GIS.Projection
+﻿namespace EM.GIS.Projections
 {
     /// <summary>
     /// Represents possible datum types.

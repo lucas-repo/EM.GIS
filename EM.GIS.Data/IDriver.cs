@@ -1,9 +1,7 @@
-﻿using System.Collections.Generic;
-
-namespace EM.GIS.Data
+﻿namespace EM.GIS.Data
 {
     /// <summary>
-    /// 数据驱动接口
+    /// 数据驱动
     /// </summary>
     public interface IDriver
     {
@@ -20,41 +18,10 @@ namespace EM.GIS.Data
         /// </summary>
         string Discription { get; set; }
         /// <summary>
-        /// 打开
+        /// 打开数据集
         /// </summary>
-        /// <param name="fileName"></param>
-        /// <param name="update"></param>
-        /// <returns></returns>
-        IDataSet Open(string fileName, bool update);
-        /// <summary>
-        /// 删除数据集
-        /// </summary>
-        /// <param name="fileName"></param>
-        /// <returns></returns>
-        bool Delete(string fileName);
-        /// <summary>
-        /// 重命名数据集
-        /// </summary>
-        /// <param name="srcFileName"></param>
-        /// <param name="destFileName"></param>
-        /// <returns></returns>
-        bool Rename(string srcFileName,string destFileName);
-        /// <summary>
-        /// 复制数据集
-        /// </summary>
-        /// <param name="srcFileName"></param>
-        /// <param name="destFileName"></param>
-        /// <returns></returns>
-        bool CopyFiles(string srcFileName, string destFileName);
-        /// <summary>
-        /// 获取可读文件扩展
-        /// </summary>
-        /// <returns></returns>
-        List<string> GetReadableFileExtensions();
-        /// <summary>
-        /// 获取可写文件扩展
-        /// </summary>
-        /// <returns></returns>
-        List<string> GetWritableFileExtensions();
+        /// <param name="path">路径</param>
+        /// <returns>数据集</returns>
+        IDataSet Open(string path);
     }
 }

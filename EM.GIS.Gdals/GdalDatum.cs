@@ -1,8 +1,11 @@
-﻿using EM.GIS.Projection;
+﻿using EM.GIS.Projections;
 using OSGeo.OSR;
 
 namespace EM.GIS.Gdals
 {
+    /// <summary>
+    /// gdal基准面
+    /// </summary>
     internal class GdalDatum : Datum
     {
         public SpatialReference SpatialReference { get; set; }

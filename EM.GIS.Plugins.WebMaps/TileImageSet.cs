@@ -48,7 +48,7 @@ namespace EM.GIS.Plugins.WebMaps
             return null;
         }
 
-        public Image GetImage(IExtent envelope, Rectangle window, Action<int> progressAction = null)
+        public Image GetImage(IExtent envelope, Rectangle window, Action<int> progressAction = null, Func<bool> cancelFunc = null)
         {
             Bitmap bitmap = null;
             if (Tiles.Count==0|| envelope==null|| window.Width == 0 || window.Height == 0)

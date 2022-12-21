@@ -1,9 +1,10 @@
 ﻿using EM.Bases;
+using EM.GIS.Geometries;
 using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace EM.GIS.Projection
+namespace EM.GIS.Projections
 {
     /// <summary>
     /// 投影信息
@@ -14,16 +15,19 @@ namespace EM.GIS.Projection
         /// 是否已释放
         /// </summary>
         public bool IsDisposed { get; private set; }
-        
+
         /// <summary>
-        ///   Gets or sets the athority, for example EPSG
+        ///  权威机构（如EPSG）
         /// </summary>
         public virtual string Authority { get; set; }
 
         /// <summary>
-        /// Gets or sets the athority code.
+        /// 投影编码
         /// </summary>
         public virtual string AuthorityCode { get; set; }
+        /// <summary>
+        /// 投影编码
+        /// </summary>
         public int? EPSG
         {
             get
@@ -336,5 +340,30 @@ namespace EM.GIS.Projection
             Dispose(disposing: true);
             GC.SuppressFinalize(this);
         }
+        /// <summary>
+        /// 重投影坐标
+        /// </summary>
+        /// <param name="destProjection">目标投影</param>
+        /// <param name="coordinate">坐标</param>
+        public abstract void ReProject(ProjectionInfo destProjection, ICoordinate coordinate);
+        /// <summary>
+        /// 重投影坐标
+        /// </summary>
+        /// <param name="destProjection">目标投影</param>
+        /// <param name="coordinates">坐标</param>
+        public abstract void ReProject(ProjectionInfo destProjection, IList<ICoordinate> coordinates);
+        /// <summary>
+        /// 重投影多个坐标
+        /// </summary>
+        /// <param name="destProjection">目标投影</param>
+        /// <param name="extent">范围</param>
+        /// <returns>范围</returns>
+        public abstract void ReProject(ProjectionInfo destProjection, IExtent extent);
+        /// <summary>
+        /// 重投影几何体
+        /// </summary>
+        /// <param name="destProjection">目标投影</param>
+        /// <param name="geometry">几何体</param>
+        public abstract void ReProject(ProjectionInfo destProjection, IGeometry geometry);
     }
 }

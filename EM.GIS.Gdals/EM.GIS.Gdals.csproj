@@ -12,6 +12,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="BruTile" Version="5.0.0" />
     <PackageReference Include="Gdal.Core" Version="2.3.0-beta-023" />
     <PackageReference Include="Gdal.Core.WindowsRuntime" Version="2.3.0-beta-023" />
   </ItemGroup>
@@ -26,7 +27,7 @@
       <Private>False</Private>
       <CopyLocalSatelliteAssemblies>False</CopyLocalSatelliteAssemblies>
     </ProjectReference>
-    <ProjectReference Include="..\EM.GIS.Projection\EM.GIS.Projection.csproj">
+    <ProjectReference Include="..\EM.GIS.Projection\EM.GIS.Projections.csproj">
       <Private>False</Private>
       <CopyLocalSatelliteAssemblies>False</CopyLocalSatelliteAssemblies>
     </ProjectReference>

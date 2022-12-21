@@ -8,7 +8,7 @@ namespace EM.GIS.Data
     /// <summary>
     ///栅格数据驱动接口
     /// </summary>
-    public interface IRasterDriver : IDriver
+    public interface IRasterDriver : IFileDriver
     {
         /// <summary>
         /// 打开栅格

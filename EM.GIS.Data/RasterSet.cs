@@ -7,55 +7,83 @@ using System.Drawing;
 
 namespace EM.GIS.Data
 {
+    /// <summary>
+    /// 栅格数据集
+    /// </summary>
     [Serializable]
     public abstract class RasterSet : DataSet, IRasterSet
     {
+        /// <inheritdoc/>
         public virtual int NumRows { get; }
+        /// <inheritdoc/>
         public virtual int NumColumns { get; }
+        /// <inheritdoc/>
         public IList<IRasterSet> Bands { get; }
+        /// <summary>
+        /// 字节大小
+        /// </summary>
         public abstract int ByteSize { get; }
+        /// <inheritdoc/>
         [Category("Data")]
         [Description("Gets or sets a  double showing the no-data value for this raster.")]
         public virtual double? NoDataValue { get; set; }
+        /// <inheritdoc/>
         public IRasterBounds Bounds { get; set; }
+        /// <inheritdoc/>
         public override IExtent Extent
         { 
             get => Bounds.Extent; 
             protected set => Bounds.Extent=value; 
         }
-
+        /// <summary>
+        /// 像素间隔
+        /// </summary>
         public int PixelSpace { get; set; }
+        /// <summary>
+        /// 每行间隔
+        /// </summary>
         public int LineSpace { get; set; }
-
+        /// <inheritdoc/>
         public RasterType RasterType { get; set; }
 
+        /// <inheritdoc/>
         public int BandCount => Bands.Count;
 
-        public IRasterBounds RasterBounds { get; set; }
         public RasterSet()
         {
             Bands = new List<IRasterSet>();
         }
+        /// <inheritdoc/>
         public virtual Image GetImage()
         {
             return null;
         }
 
+        /// <inheritdoc/>
         public Image GetImage(IExtent envelope, Size size)
         {
             return GetImage(envelope, new Rectangle(new Point(0, 0), size));
         }
 
-        public virtual Image GetImage(IExtent envelope, Rectangle window, Action<int> progressAction = null)
+        /// <inheritdoc/>
+        public virtual Image GetImage(IExtent envelope, Rectangle window, Action<int> progressAction = null, Func<bool> cancelFunc = null)
         {
             return null;
         }
+        /// <summary>
+        /// 获取分类颜色
+        /// </summary>
+        /// <returns></returns>
         [Browsable(false)]
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public virtual Color[] CategoryColors()
         {
             return null;
         }
+        /// <summary>
+        /// 获取分类集合
+        /// </summary>
+        /// <returns></returns>
         [Browsable(false)]
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public virtual string[] CategoryNames()
@@ -63,11 +91,11 @@ namespace EM.GIS.Data
             return null;
         }
 
+        /// <inheritdoc/>
         public virtual Statistics GetStatistics()
         {
             throw new NotImplementedException();
         }
-
 
         /// <summary>
         /// 获取字节大小

@@ -8,9 +8,11 @@
 	  <BaseOutputPath>..\bin</BaseOutputPath>
 	  <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
 	  <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+	  <GenerateDocumentationFile>True</GenerateDocumentationFile>
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="BruTile" Version="5.0.0" />
     <PackageReference Include="System.Drawing.Common" Version="7.0.0" />
   </ItemGroup>
 
@@ -20,10 +22,7 @@
       <Private>false</Private>
       <CopyLocalSatelliteAssemblies>False</CopyLocalSatelliteAssemblies>
     </ProjectReference>
-    <ProjectReference Include="..\EM.GIS.Projection\EM.GIS.Projection.csproj">
-      <Private>false</Private>
-      <CopyLocalSatelliteAssemblies>False</CopyLocalSatelliteAssemblies>
-    </ProjectReference>
+    <ProjectReference Include="..\EM.GIS.Projection\EM.GIS.Projections.csproj" />
     <ProjectReference Include="..\EM.GIS.Serialization\EM.GIS.Serialization.csproj">
       <Private>false</Private>
       <CopyLocalSatelliteAssemblies>False</CopyLocalSatelliteAssemblies>

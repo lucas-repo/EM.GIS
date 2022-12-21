@@ -3,9 +3,11 @@ using EM.GIS.Symbology;
 using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Windows;
+using System.Xml.Linq;
 
 namespace EM.GIS.WPFControls
 {
@@ -165,12 +167,25 @@ namespace EM.GIS.WPFControls
             }
             if (dialogResult == true)
             {
-                foreach (var name in ofd.FileNames)
+                foreach (var fileName in ofd.FileNames)
                 {
-                    var ds = driverFactory.Open(name);
-                    if (ds != null)
+                    string extension=Path.GetExtension(fileName);
+                    foreach (var item in driverFactory.Drivers)
                     {
-                        ret.Add(ds);
+                        if (item is FileDriver fileDriver)
+                        {
+                          var extensions=  fileDriver.GetReadableFileExtensions();
+                            if (!extensions.Contains(extension))
+                            {
+                                continue;
+                            }
+                            var ds = fileDriver.Open(fileName,true);
+                            if (ds != null)
+                            {
+                                ret.Add(ds);
+                                break;
+                            }
+                        }
                     }
                 }
             }

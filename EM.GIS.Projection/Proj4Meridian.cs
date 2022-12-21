@@ -1,4 +1,4 @@
-﻿namespace EM.GIS.Projection
+﻿namespace EM.GIS.Projections
 {
     public enum Proj4Meridian
     {

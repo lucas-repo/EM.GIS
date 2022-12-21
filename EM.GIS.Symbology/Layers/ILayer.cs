@@ -1,5 +1,6 @@
 ﻿using EM.GIS.Data;
 using EM.GIS.Geometries;
+using EM.GIS.Projections;
 using System;
 using System.Drawing;
 using System.Threading;
@@ -11,6 +12,10 @@ namespace EM.GIS.Symbology
     /// </summary>
     public interface ILayer : ILegendItem,IDynamicVisibility, IDrawable
     {
+        /// <summary>
+        /// 投影信息
+        /// </summary>
+        ProjectionInfo Projection { get; set; }
         /// <summary>
         /// 父图层组
         /// </summary>

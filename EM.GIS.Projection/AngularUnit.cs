@@ -1,4 +1,4 @@
-﻿namespace EM.GIS.Projection
+﻿namespace EM.GIS.Projections
 {
     /// <summary>
     /// 角度单位

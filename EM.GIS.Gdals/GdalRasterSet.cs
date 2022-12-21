@@ -11,9 +11,9 @@ using System.Runtime.InteropServices;
 namespace EM.GIS.Gdals
 {
     /// <summary>
-    /// A GDAL raster.
+    /// GDAL栅格
     /// </summary>
-    /// <typeparam name="T">Type of the contained items.</typeparam>
+    /// <typeparam name="T">类型</typeparam>
     [Serializable]
     public class GdalRasterSet<T> : RasterSet<T>
         where T : IEquatable<T>, IComparable<T>
@@ -55,6 +55,7 @@ namespace EM.GIS.Gdals
             ReadHeader();
         }
         bool _ignoreChangeDataset;
+        /// <inheritdoc/>
         public override string RelativeFilename
         {
             get => base.RelativeFilename;
@@ -82,7 +83,9 @@ namespace EM.GIS.Gdals
                 }
             }
         }
+        /// <inheritdoc/>
         public override int NumRows => _dataset.RasterYSize;
+        /// <inheritdoc/>
         public override int NumColumns => _dataset.RasterXSize;
         #region Fields
 
@@ -94,11 +97,10 @@ namespace EM.GIS.Gdals
 
         #region Constructors
         /// <summary>
-        /// Initializes a new instance of the <see cref="GdalRasterSet{T}"/> class.
-        /// This can be a raster with multiple bands.
+        /// 初始化
         /// </summary>
-        /// <param name="fileName">The file name.</param>
-        /// <param name="fromDataset">The dataset.</param>
+        /// <param name="fileName">文件名</param>
+        /// <param name="fromDataset">数据集</param>
         public GdalRasterSet(string fileName, Dataset fromDataset)
         {
             _ignoreChangeDataset = true;
@@ -110,12 +112,11 @@ namespace EM.GIS.Gdals
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="GdalRasterSet{T}"/> class.
-        /// Creates a new raster from the specified band.
+        /// 初始化
         /// </summary>
-        /// <param name="fileName">The string path of the file if any.</param>
-        /// <param name="fromDataset">The dataset.</param>
-        /// <param name="fromBand">The band.</param>
+        /// <param name="fileName">文件名</param>
+        /// <param name="fromDataset">数据集</param>
+        /// <param name="fromBand">波段</param>
         public GdalRasterSet(string fileName, Dataset fromDataset, Band fromBand)
         {
             _dataset = fromDataset;
@@ -132,13 +133,10 @@ namespace EM.GIS.Gdals
         #region Properties
 
         /// <summary>
-        /// Gets the GDAL data type.
+        /// 数据类型
         /// </summary>
         public DataType GdalDataType => _band.DataType;
-
-        /// <summary>
-        /// Gets or sets the NoDataValue.
-        /// </summary>
+        /// <inheritdoc/>
         public override double? NoDataValue
         {
             get
@@ -149,7 +147,7 @@ namespace EM.GIS.Gdals
             set
             {
                 base.NoDataValue = value;
-                if (_band != null&&value.HasValue)
+                if (_band != null && value.HasValue)
                 {
                     _band.SetNoDataValue(value.Value);
                 }
@@ -167,7 +165,8 @@ namespace EM.GIS.Gdals
 
         #region Methods
 
-        public override Image GetImage(IExtent envelope, Rectangle window, Action<int> progressAction = null)
+        /// <inheritdoc/>
+        public override Image GetImage(IExtent envelope, Rectangle window, Action<int> progressAction = null, Func<bool> cancelFunc = null)
         {
             if (window.Width == 0 || window.Height == 0)
             {
@@ -587,15 +586,7 @@ namespace EM.GIS.Gdals
             }
             return result;
         }
-        /// <summary>
-        /// Gets a block of data directly, converted into a bitmap.  This always writes
-        /// to the base layer, not the overviews.
-        /// </summary>
-        /// <param name="xOffset">The zero based integer column offset from the left</param>
-        /// <param name="yOffset">The zero based integer row offset from the top</param>
-        /// <param name="xSize">The integer number of pixel columns in the block. </param>
-        /// <param name="ySize">The integer number of pixel rows in the block.</param>
-        /// <returns>A Bitmap that is xSize, ySize.</returns>
+       
         private Bitmap GetBitmap(int xOffset, int yOffset, int xSize, int ySize)
         {
             Bitmap result = null;
@@ -646,10 +637,7 @@ namespace EM.GIS.Gdals
             // data set disposed on disposing this image
             return result;
         }
-        /// <summary>
-        /// Gets the category colors.
-        /// </summary>
-        /// <returns>The category colors.</returns>
+        /// <inheritdoc/>
         public override Color[] CategoryColors()
         {
             Color[] colors = null;
@@ -684,10 +672,7 @@ namespace EM.GIS.Gdals
             return colors;
         }
 
-        /// <summary>
-        /// Gets the category names.
-        /// </summary>
-        /// <returns>The category names.</returns>
+        /// <inheritdoc/>
         public override string[] CategoryNames()
         {
             if (_band != null)
@@ -703,9 +688,7 @@ namespace EM.GIS.Gdals
             return null;
         }
 
-        /// <summary>
-        /// Gets the mean, standard deviation, minimum and maximum
-        /// </summary>
+        /// <inheritdoc/>
         public override Statistics GetStatistics()
         {
             Statistics statistics = new Statistics();
@@ -747,6 +730,7 @@ namespace EM.GIS.Gdals
             return statistics;
         }
 
+        /// <inheritdoc/>
         protected override void Dispose(bool disposing)
         {
             if (!IsDisposed)

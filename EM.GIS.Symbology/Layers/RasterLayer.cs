@@ -6,8 +6,12 @@ using System.Threading;
 
 namespace EM.GIS.Symbology
 {
+    /// <summary>
+    /// 栅格图层
+    /// </summary>
     public class RasterLayer : Layer, IRasterLayer
     {
+        /// <inheritdoc/>
         public new IRasterCategory DefaultCategory
         {
             get => base.DefaultCategory as IRasterCategory;
@@ -34,19 +38,27 @@ namespace EM.GIS.Symbology
             //}
         }
 
+        /// <inheritdoc/>
         public new IRasterSet DataSet { get => base.DataSet as IRasterSet; set => base.DataSet = value; }
 
+        /// <inheritdoc/>
         public new IRasterCategoryCollection Children 
         { 
             get => base.Children as IRasterCategoryCollection; 
             protected set => base.Children = value; 
         }
 
+        /// <inheritdoc/>
         protected override void OnDraw(Graphics graphics, Rectangle rectangle, IExtent extent, bool selected = false, Func<bool> cancelFunc = null, Action invalidateMapFrameAction = null)
         {
             if (selected || cancelFunc?.Invoke() == true)
             {
                 return;
+            }
+            IExtent destExtent = extent;
+            if (!Equals(Projection, DataSet.Projection))
+            {
+                
             }
             using (var bmp = DataSet.GetImage(extent, rectangle, ReportProgress))
             {

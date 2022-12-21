@@ -1,4 +1,6 @@
-﻿using EM.GIS.Projection;
+﻿using EM.GIS.Geometries;
+using EM.GIS.Projections;
+using OSGeo.GDAL;
 using OSGeo.OGR;
 using OSGeo.OSR;
 using System;
@@ -38,7 +40,7 @@ namespace EM.GIS.Gdals
         public bool SpatialReferenceDisposable { get; set; } = true;
         public GdalProjectionInfo(SpatialReference spatialReference)
         {
-            SpatialReference = spatialReference;
+            SpatialReference = spatialReference; 
         }
         public GdalProjectionInfo(string wkt)
         {
@@ -327,6 +329,50 @@ namespace EM.GIS.Gdals
         {
             int hashCode = "GdalProjectionInfo".GetHashCode() ^ SpatialReference.GetHashCode();
             return hashCode;
+        }
+
+        public override void ReProject(ProjectionInfo destProjection, ICoordinate coordinate)
+        {
+            if (destProjection is GdalProjectionInfo gdalProjectionInfo && coordinate != null)
+            {
+                using (CoordinateTransformation ct = new CoordinateTransformation(SpatialReference, gdalProjectionInfo.SpatialReference))
+                {
+                    ct.Transform(coordinate);
+                }
+            }
+        }
+
+        public override void ReProject(ProjectionInfo destProjection, IGeometry geometry)
+        {
+            if (destProjection is GdalProjectionInfo gdalProjectionInfo && geometry != null)
+            {
+                using (CoordinateTransformation ct = new CoordinateTransformation(SpatialReference, gdalProjectionInfo.SpatialReference))
+                {
+                    ct.Transform(geometry);
+                }
+            }
+        }
+
+        public override void ReProject(ProjectionInfo destProjection, IList<ICoordinate> coordinates)
+        {
+            if (destProjection is GdalProjectionInfo gdalProjectionInfo && coordinates != null)
+            {
+                using (CoordinateTransformation ct = new CoordinateTransformation(SpatialReference, gdalProjectionInfo.SpatialReference))
+                {
+                    ct.Transform(coordinates, coordinates.Count);
+                }
+            }
+        }
+
+        public override void ReProject(ProjectionInfo destProjection, IExtent extent)
+        {
+            if (destProjection is GdalProjectionInfo gdalProjectionInfo && extent != null)
+            {
+                using (CoordinateTransformation ct = new CoordinateTransformation(SpatialReference, gdalProjectionInfo.SpatialReference))
+                {
+                    ct.Transform( extent);
+                }
+            }
         }
     }
 }

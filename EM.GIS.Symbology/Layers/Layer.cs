@@ -1,5 +1,6 @@
 ﻿using EM.GIS.Data;
 using EM.GIS.Geometries;
+using EM.GIS.Projections;
 using System;
 using System.Drawing;
 
@@ -100,6 +101,7 @@ namespace EM.GIS.Symbology
         public Layer(IDataSet dataSet):this()
         {
             DataSet = dataSet;
+            Projection = dataSet.Projection;
         }
         public void Draw(Graphics graphics, Rectangle rectangle, IExtent extent, bool selected = false, Func<bool> cancelFunc = null, Action invalidateMapFrameAction = null)
         {
@@ -133,7 +135,10 @@ namespace EM.GIS.Symbology
         /// 是否已释放
         /// </summary>
         public bool IsDisposed { get; private set; }
+        /// <inheritdoc/>
         public IFrame Frame { get; set; }
+        /// <inheritdoc/>
+        public ProjectionInfo Projection { get; set; }
 
         protected virtual void Dispose(bool disposing)
         {

@@ -9,61 +9,106 @@ namespace EM.GIS.Gdals
 {
     public static class OsrExtensions
     {
-        public static ICoordinate TransformPoint(this CoordinateTransformation coordinateTransformation, ICoordinate coord)
+        /// <summary>
+        /// 坐标转换
+        /// </summary>
+        /// <param name="coordinateTransformation">坐标转换器</param>
+        /// <param name="coord">坐标</param>
+        public static void Transform(this CoordinateTransformation coordinateTransformation, ICoordinate coord)
         {
-            ICoordinate destCoord = null;
             if (coordinateTransformation != null && coord != null)
             {
                 var array = coord.ToDoubleArray(coord.Dimension);
                 coordinateTransformation.TransformPoint(array);
-                destCoord = array.ToCoordinate();
+                for (int i = 0; i < coord.Dimension; i++)
+                {
+                    coord[i] = array[i];
+                }
             }
-            return destCoord;
         }
-        public static List<ICoordinate> TransformPoints(this CoordinateTransformation coordinateTransformation, IEnumerable<Coordinate> coords)
+        /// <summary>
+        /// 坐标转换
+        /// </summary>
+        /// <param name="coordinateTransformation">坐标转换器</param>
+        /// <param name="geometry">几何体</param>
+        public static void Transform(this CoordinateTransformation coordinateTransformation, IGeometry geometry)
         {
-            List<ICoordinate> destCoords = new List<ICoordinate>();
-            if (coordinateTransformation != null && coords != null  )
+            if (coordinateTransformation != null && geometry != null)
+            {
+                if (geometry.Geometries.Count > 1)
+                {
+                    foreach (var item in geometry.Geometries)
+                    {
+                        Transform(coordinateTransformation, item);
+                    }
+                }
+                else
+                {
+                    switch (geometry.GeometryType)
+                    {
+                        case GeometryType.Polygon:
+                        case GeometryType.PolygonM:
+                        case GeometryType.PolygonZM:
+                            Transform(coordinateTransformation, geometry.Coordinates, geometry.Coordinates.Count - 1);
+                            break;
+                        default:
+                            Transform(coordinateTransformation, geometry.Coordinates, geometry.Coordinates.Count);
+                            break;
+                    }
+                }
+            }
+        }
+        /// <summary>
+        /// 坐标转换
+        /// </summary>
+        /// <param name="coordinateTransformation">坐标转换器</param>
+        /// <param name="coords">坐标</param>
+        /// <param name="count">转换个数</param>
+        public static void Transform(this CoordinateTransformation coordinateTransformation, IList<ICoordinate> coords, int count)
+        {
+            if (coordinateTransformation != null && coords != null)
             {
                 var firstCoord = coords.FirstOrDefault();
-                if (firstCoord!=null)
+                if (firstCoord != null)
                 {
-                    var count = coords.Count();
                     var dimension = firstCoord.Dimension;
                     if (dimension >= 2)
                     {
                         double[] xs = new double[count];
                         double[] ys = new double[count];
                         double[] zs = new double[count];
-                        int i = 0;
-                        foreach (var coord in coords)
+                        for (int i = 0; i < count; i++)
                         {
-                            xs[i] = coord[0];
-                            ys[i] = coord[1];
+                            var coord = coords[i];
+                            xs[i] = coord.X;
+                            ys[i] = coord.Y;
                             if (dimension > 2)
                             {
-                                zs[i] = coord[2];
+                                zs[i] = coord.Z;
                             }
-                            i++;
                         }
-                        coordinateTransformation.TransformPoints(count,xs,ys,zs);
-                        for (int j = 0; j < xs.Length; j++)
+                        coordinateTransformation.TransformPoints(count, xs, ys, zs);
+                        for (int i = 0; i < count; i++)
                         {
-                            var coord = new Coordinate(xs[j], ys[j]);
+                            var coord = coords[i];
+                            coord.X = xs[i];
+                            coord.Y = ys[i];
                             if (dimension > 2)
                             {
-                                coord.Z = zs[j];
+                                coord.Z = zs[i];
                             }
-                            destCoords.Add(coord);
                         }
                     }
                 }
             }
-            return destCoords;
         }
-        public static Extent TransformExtent(this CoordinateTransformation coordinateTransformation, Extent extent)
+        /// <summary>
+        /// 范围坐标转换
+        /// </summary>
+        /// <param name="coordinateTransformation">坐标转换器</param>
+        /// <param name="extent">范围</param>
+        public static void Transform(this CoordinateTransformation coordinateTransformation, IExtent extent)
         {
-            Extent destExtent = null;
             if (coordinateTransformation != null && extent != null)
             {
                 double[] xs = { extent.MinX, extent.MaxX };
@@ -91,9 +136,11 @@ namespace EM.GIS.Gdals
                     minY = ys[0];
                     maxY = ys[1];
                 }
-                destExtent = new Extent(minX, minY, maxX, maxY);
+                extent.MinX=minX;
+                extent.MinY = minY;
+                extent.MaxX = maxX;
+                extent.MaxY  = maxY;
             }
-            return destExtent;
         }
     }
 }

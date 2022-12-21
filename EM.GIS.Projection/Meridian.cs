@@ -2,7 +2,7 @@
 using System;
 using System.Globalization;
 
-namespace EM.GIS.Projection
+namespace EM.GIS.Projections
 {
     /// <summary>
     /// 子午线

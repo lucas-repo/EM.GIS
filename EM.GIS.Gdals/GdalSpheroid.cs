@@ -1,8 +1,11 @@
-﻿using EM.GIS.Projection;
+﻿using EM.GIS.Projections;
 using OSGeo.OSR;
 
 namespace EM.GIS.Gdals
 {
+    /// <summary>
+    /// gdal椭球体
+    /// </summary>
     internal class GdalSpheroid : Spheroid
     {
         public SpatialReference SpatialReference { get; set; }

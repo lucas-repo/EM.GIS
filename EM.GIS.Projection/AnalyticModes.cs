@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace EM.GIS.Projection
+namespace EM.GIS.Projections
 {
     [Flags]
     public enum AnalyticModes
