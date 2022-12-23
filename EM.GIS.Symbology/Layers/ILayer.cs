@@ -13,10 +13,6 @@ namespace EM.GIS.Symbology
     public interface ILayer : ILegendItem,IDynamicVisibility, IDrawableLayer
     {
         /// <summary>
-        /// 投影信息
-        /// </summary>
-        ProjectionInfo Projection { get; set; }
-        /// <summary>
         /// 父图层组
         /// </summary>
         new IGroup Parent { get; set; }

@@ -129,7 +129,7 @@ namespace EM.GIS.Symbology
         }
 
         /// <inheritdoc/>
-        public ProgressDelegate Progress { get; set; }
+        public Action<string, int> Progress { get; set; }
         public View(IFrame frame,int width, int height)
         {
             Frame = frame??throw new ArgumentNullException(nameof(frame));
@@ -144,7 +144,6 @@ namespace EM.GIS.Symbology
             };
             _bw.DoWork += BwDoWork;
             _bw.RunWorkerCompleted += BwRunWorkerCompleted;
-            _bw.ProgressChanged += BwProgressChanged;
             PropertyChanged += View_PropertyChanged;
         }
         private void View_PropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -156,10 +155,6 @@ namespace EM.GIS.Symbology
                     break;
             }
         }
-        private void BwProgressChanged(object sender, ProgressChangedEventArgs e)
-        {
-            Progress?.Invoke(e.ProgressPercentage, "绘制中 ...");
-        }
         private void BwRunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
             if (sender is BackgroundWorker bw)
@@ -170,7 +165,6 @@ namespace EM.GIS.Symbology
                     bw.RunWorkerAsync();
                     return;
                 }
-                Progress?.Invoke(0, string.Empty);
             }
         }
         private void BwDoWork(object sender, DoWorkEventArgs e)
@@ -214,7 +208,7 @@ namespace EM.GIS.Symbology
                                 break;
                             }
                             bool selected = i == 1;
-                            Frame.Draw(g, Bound, Extent, selected, CancellationPending, resetBufferAction);
+                            Frame.Draw(g,Frame.Projection, Bound, Extent, selected,Progress, CancellationPending, resetBufferAction);
                         }
                     }
                     #endregion

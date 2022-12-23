@@ -1,5 +1,6 @@
 ﻿using EM.GIS.Data;
 using EM.IOC;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 
@@ -13,7 +14,7 @@ namespace EM.GIS.Controls
         /// <summary>
         /// 进度处理
         /// </summary>
-        ProgressDelegate Progress { get; set; }
+        Action<string, int> Progress { get; set; }
         /// <summary>
         /// 地图
         /// </summary>

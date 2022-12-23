@@ -49,19 +49,18 @@
                                     </DataTemplate>
                                 </RibbonGalleryCategory.ItemTemplate>
                             </RibbonGalleryCategory>
-                           
+
                         </RibbonGallery>
                     </RibbonMenuButton>
                     <!--<RibbonButton Label="底图" ToolTip="添加底图" LargeImageSource="pack://application:,,,/EM.GIS.Resources;Component/Images/Add32.png" Command="{Binding ZoomToMaxExtentCmd}" CommandParameter="{Binding ElementName=map,Path=Frame}"/>
                     <RibbonButton Label="选择" ToolTip="选择" SmallImageSource="pack://application:,,,/EM.GIS.Resources;Component/Images/Identify16.png" LargeImageSource="pack://application:,,,/EM.GIS.Resources;Component/Images/Identify32.png" Command="{Binding IdentifyCmd}" CommandParameter="{Binding ElementName=map}"/>-->
                 </RibbonGroup>
             </RibbonTab>
-
         </Ribbon>
-        <StatusBar x:Name="statusBar" DockPanel.Dock="Bottom">
-            <StatusBarItem x:Name="statusBarItem" Content="显示进度：" />
-            <ProgressBar x:Name="progressBar" Width="100" Height="15" BorderThickness="0" Foreground="LightSkyBlue" Value="50" Background="LightGray"/>
-            <TextBlock Text="{Binding CoordStr}" />
+        <StatusBar x:Name="statusBar" DockPanel.Dock="Bottom" HorizontalContentAlignment="Stretch" >
+            <ProgressBar x:Name="progressBar" Value="{Binding ProgressValue,FallbackValue=50}" Width="100" Height="15" BorderThickness="0" Foreground="LightSkyBlue" Background="LightGray" Margin="5,0,0,0"/>
+            <StatusBarItem x:Name="statusBarItem" Content="{Binding ProgressStr,FallbackValue=进度：}" />
+            <StatusBarItem Content="{Binding CoordStr,FallbackValue='X:0,Y:0'}" HorizontalAlignment="Right" Margin="0,0,5,0"/>
         </StatusBar>
         <DockingManager x:Name="dockingManager">
             <LayoutRoot>

@@ -1,6 +1,8 @@
-﻿using EM.Bases;
+﻿using BruTile.Wms;
+using EM.Bases;
 using EM.GIS.Data;
 using EM.GIS.Geometries;
+using EM.GIS.Projections;
 using EM.IOC;
 using System;
 using System.Collections.Generic;
@@ -23,11 +25,12 @@ namespace EM.GIS.Symbology
     public class Frame : Group, IFrame
     {
         /// <inheritdoc/>
+        public ProjectionInfo Projection { get; set; }
+        /// <inheritdoc/>
         public IView MapView { get; }
         public Frame(int width, int height)
         {
             MapView = new View(this, width, height);
-            DrawingLayers = new LayerCollection(this, this);
             Children.CollectionChanged += Layers_CollectionChanged;
         }
 
@@ -41,7 +44,14 @@ namespace EM.GIS.Symbology
                     {
                         if (e.Action == NotifyCollectionChangedAction.Add && e.NewItems.Count > 0)
                         {
-                            firstLayerAdded = true;
+                            foreach (var item in e.NewItems)
+                            {
+                                if (item is ILayer)
+                                {
+                                    firstLayerAdded = true;
+                                    break;
+                                }
+                            }
                         }
                         if (firstLayerAdded)
                         {
@@ -51,6 +61,12 @@ namespace EM.GIS.Symbology
                                 extent.ExpandBy(extent.Width / 10, extent.Height / 10);
                             }
                             MapView.Extent = extent;
+                            #region 设置投影
+                            if (e.NewItems.Count > 0 && e.NewItems[0] is ILayer layer)
+                            {
+                                Projection = layer.DataSet?.Projection;
+                            }
+                            #endregion
                             return;
                         }
                     }
@@ -60,39 +76,48 @@ namespace EM.GIS.Symbology
         }
 
         /// <inheritdoc/>
-        public override void Draw(Graphics graphics, Rectangle rectangle, IExtent extent, bool selected = false, Func<bool> cancelFunc = null, Action invalidateMapFrameAction = null)
+        public override void Draw(Graphics graphics, ProjectionInfo projection, Rectangle rectangle, IExtent extent, bool selected = false, Action<string, int> progressAction = null, Func<bool> cancelFunc = null, Action invalidateMapFrameAction = null)
         {
-            base.Draw(graphics, rectangle, extent, selected, cancelFunc, invalidateMapFrameAction);
-            var visibleDrawingFeatureLayers = new List<IFeatureLayer>();
-            if (DrawingLayers != null)
+            if (graphics == null || rectangle.IsEmpty || extent == null || extent.IsEmpty() || cancelFunc?.Invoke() == true || Children.Count == 0)
             {
-                foreach (ILayer item in DrawingLayers)
-                {
-                    if (cancelFunc?.Invoke() == true)
-                    {
-                        break;
-                    }
-                    if (item.GetVisible(extent, rectangle))
-                    {
-                        item.Draw(graphics, rectangle, extent, selected, cancelFunc);
-                        if (item is IFeatureLayer featureLayer)
-                        {
-                            visibleDrawingFeatureLayers.Add(featureLayer);
-                        }
-                    }
-                }
+                return;
             }
+            progressAction?.Invoke(string.Empty, 0);
 
-            var featureLayers = GetFeatureLayers().Where(x => x.GetVisible(extent, rectangle)).Union(visibleDrawingFeatureLayers);
-            var labelLayers = featureLayers.Where(x => x.LabelLayer?.GetVisible(extent, rectangle) == true).Select(x => x.LabelLayer);
-            foreach (var layer in labelLayers)
+            #region 绘制图层
+            Action<string, int> drawLayerProgressAction = (txt, progress) =>
+            {
+                if (progressAction != null)
+                {
+                    var destProgress = (int)(progress / 100.0 * 90);
+                    progressAction.Invoke(txt, destProgress);
+                }
+            };
+            base.Draw(graphics, projection, rectangle, extent, selected, progressAction, cancelFunc, invalidateMapFrameAction);//绘制图层
+            #endregion
+
+            #region 绘制标注
+            Action<string, int> drawLabelProgressAction = (txt, progress) =>
+            {
+                if (progressAction != null)
+                {
+                    var destProgress = 90 + (int)(progress / 10.0);
+                    progressAction.Invoke(txt, destProgress);
+                }
+            };
+            var visibleLayers = GetAllLayers().Where(x => x.GetVisible(extent, rectangle));
+            var labelLayers = visibleLayers.Where(x => x is IFeatureLayer featureLayer && featureLayer.LabelLayer?.GetVisible(extent, rectangle) == true).Select(x => (x as IFeatureLayer).LabelLayer).ToList();
+            for (int i = labelLayers.Count - 1; i >= 0; i--)
             {
                 if (cancelFunc?.Invoke() == true)
                 {
                     break;
                 }
-                layer.Draw(graphics, rectangle, extent, selected, cancelFunc);
+                labelLayers[i].Draw(graphics, projection, rectangle, extent, selected, drawLabelProgressAction, cancelFunc, invalidateMapFrameAction);
             }
+            #endregion
+
+            progressAction?.Invoke(string.Empty, 0);
         }
 
         /// <inheritdoc/>
@@ -113,7 +138,7 @@ namespace EM.GIS.Symbology
         public void New()
         {
             ClearLayers();
-            IsDirty=false;
+            IsDirty = false;
         }
 
         public void Open(string fileName)
@@ -134,15 +159,13 @@ namespace EM.GIS.Symbology
         //public bool ExtentsInitialized { get; set; }
 
         //public SmoothingMode SmoothingMode { get; set; } = SmoothingMode.AntiAlias;
-        /// <inheritdoc/>
-        public ILayerCollection DrawingLayers { get; }
         private bool _isDirty;
         /// <inheritdoc/>
         public bool IsDirty
         {
             get { return _isDirty; }
-            protected set 
-            { 
+            protected set
+            {
                 _isDirty = value;
             }
         }
@@ -152,7 +175,7 @@ namespace EM.GIS.Symbology
         {
             if (!IsDisposed)
             {
-                if (disposing) 
+                if (disposing)
                 {
                     MapView?.Dispose();
                 }

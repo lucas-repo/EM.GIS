@@ -47,7 +47,7 @@ namespace EM.GIS.Symbology
         }
        
         public Dictionary<long, IFeatureCategory> FidCategoryDic { get; } = new Dictionary<long, IFeatureCategory>();
-        protected override void OnDraw(Graphics graphics, Rectangle rectangle, IExtent extent, bool selected = false, Func<bool> cancelFunc = null, Action invalidateMapFrameAction = null)
+        protected override void OnDraw(Graphics graphics, Rectangle rectangle, IExtent extent, bool selected = false, Action<string, int> progressAction = null, Func<bool> cancelFunc = null, Action invalidateMapFrameAction = null)
         {
             if (selected && Selection.Count == 0 || cancelFunc?.Invoke() == true)
             {
@@ -55,7 +55,7 @@ namespace EM.GIS.Symbology
             }
             DataSet.SetSpatialExtentFilter(extent);
             long featureCount = DataSet.FeatureCount;
-            Progress?.Invoke(5, ProgressMessage);
+            progressAction?.Invoke(ProgressMessage,5 );
             var features = new List<IFeature>();
             long drawnFeatureCount = 0;
             int threshold = 262144;
@@ -68,9 +68,9 @@ namespace EM.GIS.Symbology
                     if (cancelFunc?.Invoke() != true)
                     {
                         percent = (int)(drawnFeatureCount * 90 / featureCount);
-                        Progress?.Invoke(percent, ProgressMessage);
+                        progressAction?.Invoke(ProgressMessage,percent);
                         MapArgs drawArgs = new MapArgs(rectangle, extent, graphics);
-                        DrawFeatures(drawArgs, features, selected, Progress, cancelFunc);
+                        DrawFeatures(drawArgs, features, selected, progressAction, cancelFunc);
                         drawnFeatureCount += features.Count;
                         invalidateMapFrameAction?.Invoke();
                     }
@@ -170,7 +170,7 @@ namespace EM.GIS.Symbology
         /// <param name="symbolizer"></param>
         /// <param name="geometry"></param>
         protected abstract void DrawGeometry(MapArgs drawArgs, IFeatureSymbolizer symbolizer, IGeometry geometry);
-        private void DrawFeatures(MapArgs drawArgs, List<IFeature> features, bool selected, ProgressDelegate progress, Func<bool> cancelFunc = null)
+        private void DrawFeatures(MapArgs drawArgs, List<IFeature> features, bool selected, Action<string, int> progressAction = null, Func<bool> cancelFunc = null)
         {
             if (drawArgs == null || features == null || cancelFunc?.Invoke() == true)
             {

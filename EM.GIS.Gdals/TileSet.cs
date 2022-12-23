@@ -152,7 +152,7 @@ namespace EM.GIS.Gdals
                                     //}
                                 }
                                 count++;
-                                progressAction?.Invoke(30 + count * 70 / tileInfos.Count);
+                                progressAction?.Invoke((int)(30 + count * 60.0 / tileInfos.Count));
                             }
                         });
                     }

@@ -1,6 +1,8 @@
-﻿using EM.Bases;
+﻿using BruTile.Wms;
+using EM.Bases;
 using EM.GIS.Data;
 using EM.GIS.Geometries;
+using EM.GIS.Projections;
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
@@ -63,25 +65,45 @@ namespace EM.GIS.Symbology
         {
             Children = new LayerCollection(this);
         }
-        public virtual void Draw(Graphics graphics, Rectangle rectangle, IExtent extent, bool selected = false, Func<bool> cancelFunc = null, Action invalidateMapFrameAction = null)
+        /// <inheritdoc/>
+        public virtual void Draw(Graphics graphics, ProjectionInfo projection, Rectangle rectangle, IExtent extent, bool selected = false, Action<string, int> progressAction = null, Func<bool> cancelFunc = null, Action invalidateMapFrameAction = null)
         {
-            if (graphics == null || rectangle.Width * rectangle.Height == 0 || extent == null || extent.Width * extent.Height == 0 || cancelFunc?.Invoke() == true)
+            if (graphics == null || rectangle.IsEmpty || extent == null || extent.IsEmpty() || cancelFunc?.Invoke() == true || Children.Count == 0)
             {
                 return;
             }
-
-            Progress?.Invoke(0, string.Empty);
-            for (int i = Children.Count() - 1; i >= 0; i--)
+            string progressStr = this.GetProgressString();
+            progressAction?.Invoke(progressStr, 0);
+            double increment = 100.0 / Children.Count();
+            int totalProgress = 0;
+            Action<string, int> newProgressAction = (txt, progress) =>
             {
-                if (Children.ElementAt(i) is ILayer layer && layer.GetVisible(extent, rectangle))
+                if (progressAction != null)
                 {
-                    layer.Draw(graphics, rectangle, extent, selected, cancelFunc, invalidateMapFrameAction);
-                    invalidateMapFrameAction?.Invoke();
+                    var destProgress = (int)((double)progress / Children.Count + totalProgress);
+                    progressAction.Invoke(txt, destProgress);
                 }
+            };
+            for (int i = Children.Count-1; i >=0; i--)
+            {
+                var item = Children[i];
+                if (item is ILegendItem legendItem && legendItem.IsVisible)
+                {
+                    if (item is ILayer layer)
+                    {
+                        layer.Draw(graphics, projection, rectangle, extent, selected, newProgressAction, cancelFunc, invalidateMapFrameAction);
+                    }
+                    else if (item is IGroup group)
+                    {
+                        group.Draw(graphics, projection, rectangle, extent, selected, newProgressAction, cancelFunc, invalidateMapFrameAction);
+                    }
+                }
+                totalProgress += (int)increment;
+                invalidateMapFrameAction?.Invoke();
             }
-            Progress?.Invoke(100, string.Empty);
+            progressAction?.Invoke(progressStr, 100);
         }
-
+        /// <inheritdoc/>
         public ILayer GetLayer(int index)
         {
             ILayer layer = null;
@@ -92,6 +114,7 @@ namespace EM.GIS.Symbology
             return layer;
         }
 
+        /// <inheritdoc/>
         public IEnumerable<ILayer> GetLayers()
         {
             foreach (ILayer item in Children)
@@ -100,6 +123,7 @@ namespace EM.GIS.Symbology
             }
         }
 
+        /// <inheritdoc/>
         public IEnumerable<IFeatureLayer> GetAllFeatureLayers()
         {
             return GetLayers<IFeatureLayer>(GetLayers(), true);
@@ -131,11 +155,13 @@ namespace EM.GIS.Symbology
                 }
             }
         }
+        /// <inheritdoc/>
         public IEnumerable<IRasterLayer> GetAllRasterLayers()
         {
             return GetLayers<IRasterLayer>(GetLayers(), true);
         }
 
+        /// <inheritdoc/>
         public bool AddLayer(ILayer layer, int? index = null)
         {
             bool ret = false;
@@ -155,14 +181,11 @@ namespace EM.GIS.Symbology
             {
                 Children.Add(layer);
             }
-            if (layer.Progress == null && Progress != null)
-            {
-                layer.Progress = Progress;
-            }
             ret = true;
             return ret;
         }
 
+        /// <inheritdoc/>
         public ILayer AddLayer(IDataSet dataSet, int? index = null)
         {
             ILayer layer = null;
@@ -177,6 +200,7 @@ namespace EM.GIS.Symbology
             return layer;
         }
 
+        /// <inheritdoc/>
         public IFeatureLayer AddLayer(IFeatureSet featureSet, int? index = null)
         {
             IFeatureLayer featureLayer = null;
@@ -204,6 +228,7 @@ namespace EM.GIS.Symbology
             return featureLayer;
         }
 
+        /// <inheritdoc/>
         public IRasterLayer AddLayer(IRasterSet rasterSet, int? index = null)
         {
             IRasterLayer rasterLayer = null;
@@ -211,28 +236,32 @@ namespace EM.GIS.Symbology
             {
                 rasterLayer = new RasterLayer(rasterSet)
                 {
-                    Text= rasterSet.Name
+                    Text = rasterSet.Name
                 };
                 AddLayer(rasterLayer, index);
             }
             return rasterLayer;
         }
 
+        /// <inheritdoc/>
         public IEnumerable<ILayer> GetAllLayers()
         {
             return GetLayers<ILayer>(GetLayers(), true);
         }
 
+        /// <inheritdoc/>
         public bool RemoveLayer(ILayer layer)
         {
             return Children.Remove(layer);
         }
 
+        /// <inheritdoc/>
         public void RemoveLayerAt(int index)
         {
             Children.RemoveAt(index);
         }
 
+        /// <inheritdoc/>
         public void ClearLayers()
         {
             if (Children.Count > 0)
@@ -241,15 +270,16 @@ namespace EM.GIS.Symbology
             }
         }
 
+        /// <inheritdoc/>
         public IEnumerable<IFeatureLayer> GetFeatureLayers()
         {
             return GetLayers<IFeatureLayer>(GetLayers(), false);
         }
 
+        /// <inheritdoc/>
         public IEnumerable<IRasterLayer> GetRasterLayers()
         {
             return GetLayers<IRasterLayer>(GetLayers(), false);
         }
-
     }
 }

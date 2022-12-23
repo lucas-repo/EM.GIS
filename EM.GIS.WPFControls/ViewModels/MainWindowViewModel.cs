@@ -12,6 +12,8 @@ using System.Collections.ObjectModel;
 using System.Configuration;
 using System.Linq;
 using System.Windows;
+using System.Windows.Controls.Primitives;
+using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Threading;
 
@@ -110,10 +112,29 @@ namespace EM.GIS.WPFControls.ViewModels
             get { return _tileMap; }
             set { SetProperty(ref _tileMap, value); }
         }
+        private string _progressStr;
+        /// <summary>
+        /// 进度显示文字
+        /// </summary>
+        public string ProgressStr
+        {
+            get { return _progressStr; }
+            set { SetProperty(ref _progressStr, value); }
+        }
+        private int _progressValue;
+        /// <summary>
+        /// 进度值
+        /// </summary>
+        public int ProgressValue
+        {
+            get { return _progressValue; }
+            set { SetProperty(ref _progressValue, value); }
+        }
 
         public MainWindowViewModel(MainWindow t, IWpfAppManager appManager, IIocManager iocManager) : base(t)
         {
             AppManager = appManager ?? throw new NullReferenceException(nameof(appManager));
+            AppManager.Progress = ReportProgress;
             IocManager = iocManager ?? throw new NullReferenceException(nameof(iocManager));
             NewCmd = iocManager.GetService<ICommand,NewMapCommand>();
             OpenCmd = iocManager.GetService<ICommand, OpenMapCommand>();
@@ -129,12 +150,25 @@ namespace EM.GIS.WPFControls.ViewModels
             if (appManager?.Map != null)
             {
                 appManager.Map.GeoMouseMove += Map_GeoMouseMove;
+                appManager.Map.Frame.MapView.Progress = ReportProgress;
             }
 
             LoadTileMaps();
             PropertyChanged += MainWindowViewModel_PropertyChanged;
         }
-
+        /// <summary>
+        /// 更新进度
+        /// </summary>
+        /// <param name="text">文本</param>
+        /// <param name="percent">百分比</param>
+        private void ReportProgress(string text,int percent)
+        {
+            Dispatcher.CurrentDispatcher.Invoke(() =>
+            {
+                ProgressStr= text;
+                ProgressValue = percent;
+            });
+        }
         private void MainWindowViewModel_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
             switch (e.PropertyName)
@@ -212,9 +246,9 @@ namespace EM.GIS.WPFControls.ViewModels
         }
         private void Map_GeoMouseMove(object? sender, IGeoMouseEventArgs e)
         {
-            Dispatcher.CurrentDispatcher.BeginInvoke(() =>
+            Dispatcher.CurrentDispatcher.Invoke(() =>
             {
-                CoordStr = $"X:{Math.Round(e.GeographicLocation.X, 3)},Y:{Math.Round(e.GeographicLocation.Y, 3)}";
+                CoordStr = $"X:{e.GeographicLocation.X.ToString("F3")},Y:{e.GeographicLocation.Y.ToString("F3")}";
             });
         }
     }

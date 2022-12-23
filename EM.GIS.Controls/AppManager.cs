@@ -32,8 +32,8 @@ namespace EM.GIS.Controls
             get { return _legend; }
             set { SetProperty(ref _legend, value); }
         }
-        private ProgressDelegate _progress;
-        public ProgressDelegate Progress
+        private Action<string, int> _progress;
+        public Action<string, int> Progress
         {
             get { return _progress; }
             set { SetProperty(ref _progress, value); }
@@ -41,7 +41,7 @@ namespace EM.GIS.Controls
 
         public ICommandFactory CommandFactory { get; }
 
-        public AppManager(IMap map, ILegend legend, ProgressDelegate progress) : this()
+        public AppManager(IMap map, ILegend legend, Action<string, int> progress) : this()
         {
             Map = map;
             Legend = legend;

@@ -68,13 +68,7 @@ namespace EM.GIS.WPFControls
 
         /// <inheritdoc/>
         public List<ITool> MapTools { get; }
-        /// <inheritdoc/>
-        public ProgressDelegate Progress
-        {
-            get => Frame.Progress;
-            set => Frame.Progress = value;
-        }
-
+       
         /// <inheritdoc/>
         public event EventHandler<IGeoMouseEventArgs> GeoMouseMove;
         /// <inheritdoc/>

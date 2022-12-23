@@ -26,7 +26,6 @@ namespace EM.GIS.Symbology
         public RasterLayer(IDataSet rasterSet) : this()
         {
             DataSet = rasterSet ?? throw new ArgumentNullException(nameof(rasterSet));
-            Projection = rasterSet.Projection.Copy();
             Text = rasterSet.Name;
             //if (DataSet?.Bands.Count > 0)
             //{
@@ -49,7 +48,7 @@ namespace EM.GIS.Symbology
         }
 
         /// <inheritdoc/>
-        protected override void OnDraw(Graphics graphics, Rectangle rectangle, IExtent extent, bool selected = false, Func<bool> cancelFunc = null, Action invalidateMapFrameAction = null)
+        protected override void OnDraw(Graphics graphics, Rectangle rectangle, IExtent extent, bool selected = false, Action<string, int> progressAction = null, Func<bool> cancelFunc = null, Action invalidateMapFrameAction = null)
         {
             if (selected || cancelFunc?.Invoke() == true)
             {
@@ -57,20 +56,9 @@ namespace EM.GIS.Symbology
             }
             if (DataSet is IDrawable drawable)
             {
-                IExtent destExtent = extent.Copy();
-                if (!Equals(Projection, DataSet.Projection))
-                {
-                    DataSet.Projection.ReProject(Projection, destExtent);
-                }
-                drawable.Draw(graphics, rectangle, destExtent, ReportProgress, cancelFunc);
+                Action<int> newProgressAction = (progress) => progressAction?.Invoke(ProgressMessage, progress);
+                drawable.Draw(graphics, rectangle, extent, newProgressAction, cancelFunc);
             }
-        }
-        private void ReportProgress(int progress)
-        {
-            int minProgress = 0;
-            int maxProgress = 80;
-            double progressD = progress / 100.0 * (maxProgress - minProgress);
-            Progress?.Invoke((int)progressD, ProgressMessage);
         }
     }
 }

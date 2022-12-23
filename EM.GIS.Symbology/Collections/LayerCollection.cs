@@ -35,25 +35,7 @@ namespace EM.GIS.Symbology
             set { SetProperty(ref _frame, value); }
         }
 
-        private ProgressDelegate _progress;
-        public ProgressDelegate Progress
-        {
-            get { return _progress; }
-            set
-            {
-                if (SetProperty(ref _progress, value, nameof(Progress)))
-                {
-                    foreach (var item in this)
-                    {
-                        if (item is ILayer layer)
-                        {
-                            layer.Progress = _progress;
-                        }
-                    }
-                }
-            }
-        }
-        public LayerCollection(IFrame frame, IGroup parent):this(parent)
+        public LayerCollection(IFrame frame, IGroup parent) : this(parent)
         {
             _frame = frame;
         }
@@ -187,7 +169,7 @@ namespace EM.GIS.Symbology
 
             return layer;
         }
-
+        
         public IRasterLayer AddLayer(IRasterSet raster, bool isVisible = true)
         {
             IRasterLayer rasterLayer = null;
@@ -202,17 +184,12 @@ namespace EM.GIS.Symbology
             }
             return rasterLayer;
         }
-
-        //public ILayer AddLayer(string path, bool isVisible = true)
-        //{
-        //    IDataSet dataSet = DataFactory.Default.DriverFactory.Open(path);
-        //    return AddLayer(dataSet, isVisible);
-        //}
+        /// <inheritdoc/>
         public override void Add(IBaseItem item)
         {
             if (item is ILayer)
             {
-                base.Add(item);
+                base.Insert(0, item);
             }
         }
     }

@@ -9,12 +9,12 @@ namespace EM.GIS.Symbology
     /// <summary>
     /// 视图接口
     /// </summary>
-    public interface IView: IProj,ICloneable, INotifyPropertyChanged, ICancelable,IDisposable
+    public interface IView : IProj, ICloneable, INotifyPropertyChanged, ICancelable, IDisposable
     {
         /// <summary>
         /// 地图框架
         /// </summary>
-        IFrame Frame { get;  }
+        IFrame Frame { get; }
         /// <summary>
         /// 背景颜色
         /// </summary>
@@ -42,7 +42,7 @@ namespace EM.GIS.Symbology
         /// <summary>
         /// 进度委托
         /// </summary>
-       ProgressDelegate Progress { get; set; }
+        Action<string, int> Progress { get; set; }
         /// <summary>
         /// 重绘缓存
         /// </summary>

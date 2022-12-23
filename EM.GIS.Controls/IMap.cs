@@ -31,10 +31,6 @@ namespace EM.GIS.Controls
         /// </summary>
         ILegend Legend { get; set; }
         /// <summary>
-        /// 进度管理
-        /// </summary>
-        ProgressDelegate Progress { get; set; }
-        /// <summary>
         /// 重绘指定区域
         /// </summary>
         /// <param name="rectangle">矩形范围</param>

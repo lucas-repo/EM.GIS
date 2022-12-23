@@ -34,7 +34,6 @@ namespace EM.GIS.WPFControls
             appManager.Map = map;
             appManager.Map.Legend = legend;
             appManager.Legend = legend;
-            appManager.Progress = ReportProgress;
             appManager.Ribbon = ribbon;
             appManager.StatusBar = statusBar;
             appManager.DockingManager = dockingManager;
@@ -46,18 +45,6 @@ namespace EM.GIS.WPFControls
                 ViewModel.IocManager.LoadPlugins();
             }
         }
-        /// <summary>
-        /// 更新进度
-        /// </summary>
-        /// <param name="percent">百分比</param>
-        /// <param name="text">文本</param>
-        private void ReportProgress(int percent, string text)
-        {
-            Dispatcher.BeginInvoke(() =>
-            {
-                statusBarItem.Content = text;
-                progressBar.Value=percent;
-            });
-        }
+     
     }
 }

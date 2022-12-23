@@ -1,4 +1,5 @@
 ﻿using EM.GIS.Geometries;
+using EM.GIS.Projections;
 using System;
 
 namespace EM.GIS.Symbology
@@ -8,6 +9,10 @@ namespace EM.GIS.Symbology
     /// </summary>
     public interface IFrame : IGroup
     {
+        /// <summary>
+        /// 投影信息
+        /// </summary>
+        ProjectionInfo Projection { get; set; }
         /// <summary>
         /// 文件名
         /// </summary>
@@ -20,10 +25,6 @@ namespace EM.GIS.Symbology
         /// 地图视图
         /// </summary>
         IView MapView { get; }
-        /// <summary>
-        /// 临时绘制图层
-        /// </summary>
-        ILayerCollection DrawingLayers { get; }
         /// <summary>
         /// 计算最大范围
         /// </summary>

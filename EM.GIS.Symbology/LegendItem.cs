@@ -20,24 +20,6 @@ namespace EM.GIS.Symbology
         /// </summary>
         protected bool IsDisposed { get;private set; }
 
-        public ProgressDelegate Progress
-        {
-            get { return _progress; }
-            set
-            {
-                if (SetProperty(ref _progress, value, nameof(ProgressHandler)))
-                {
-                    foreach (var item in Children)
-                    {
-                        if (item is IProgressHandler handler)
-                        {
-                            handler.Progress=_progress;
-                        }
-                    }
-                }
-            }
-        }
-
         public LegendItem()
         {
         }
