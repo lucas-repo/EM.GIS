@@ -1,0 +1,61 @@
+﻿<UserControl x:Class="EM.GIS.Downloads.DownloadMapControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:EM.GIS.Downloads"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800">
+    <Grid Margin="20">
+        <StackPanel>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <DockPanel>
+                    <Label Content="地图：" DockPanel.Dock="Left"/>
+                    <ComboBox ItemsSource="{Binding WebMaps}" SelectedItem="{Binding WebMap}"/>
+                </DockPanel>
+                <DockPanel Grid.Column="1">
+                    <Label Content="版本：" DockPanel.Dock="Left"/>
+                    <ComboBox ItemsSource="{Binding Versions}" SelectedItem="{Binding Version}"/>
+                </DockPanel>
+                <DockPanel Grid.Column="2">
+                    <Label Content="国家："/>
+                    <ComboBox ItemsSource="{Binding Countries}" SelectedItem="{Binding Country}" DisplayMemberPath="Text"/>
+                </DockPanel>
+            </Grid>
+            <Grid Margin="0,20,0,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <DockPanel >
+                    <Label Content="省份：" />
+                    <ComboBox ItemsSource="{Binding Provinces}" SelectedItem="{Binding Province}" DisplayMemberPath="Text"/>
+                </DockPanel>
+                <DockPanel Grid.Column="1">
+                    <Label Content="城市："  DockPanel.Dock="Left"/>
+                    <ComboBox ItemsSource="{Binding Cities}" SelectedItem="{Binding City}" DisplayMemberPath="Text"/>
+                </DockPanel>
+                <DockPanel Grid.Column="2">
+                    <Label Content="区县："  DockPanel.Dock="Left"/>
+                    <ComboBox ItemsSource="{Binding Districts}" SelectedItem="{Binding District}" DisplayMemberPath="Text"/>
+                </DockPanel>
+            </Grid>
+            <WrapPanel Margin="0,20,0,0">
+                <CheckBox Content="包含子区域" IsChecked="{Binding IncludeChildren}"/>
+                <CheckBox Content="是否校正" IsChecked="{Binding IsCorrected}" Margin="20,0,0,0"/>
+            </WrapPanel>
+            <DockPanel Margin="0,20,0,0">
+                <Label Content="路径：" DockPanel.Dock="Left"/>
+                <Button Content="浏览" DockPanel.Dock="Right" Command="{Binding BrowseCmd}" Margin="5,0,0,0"/>
+                <TextBox Text="{Binding ShpPath}" />
+            </DockPanel>
+        </StackPanel>
+        <Button Content="下载" Command="{Binding DownloadCmd}" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="20"/>
+    </Grid>
+</UserControl>

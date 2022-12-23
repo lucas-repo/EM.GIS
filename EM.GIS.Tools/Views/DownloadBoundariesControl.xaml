@@ -6,7 +6,7 @@
              xmlns:local="clr-namespace:EM.GIS.Tools"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
-    <Grid  Margin="20">
+    <Grid Margin="20">
         <StackPanel>
             <WrapPanel>
                 <Label Content="版本："/>

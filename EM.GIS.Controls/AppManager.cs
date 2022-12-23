@@ -17,7 +17,6 @@ namespace EM.GIS.Controls
     /// <summary>
     /// app管理类
     /// </summary>
-    [Injectable(ServiceLifetime = ServiceLifetime.Singleton, ServiceType = typeof(IAppManager))]
     public class AppManager : NotifyClass, IAppManager
     {
         private IMap _map;

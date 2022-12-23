@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net7.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <UseWPF>true</UseWPF>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MaterialDesignThemes" Version="4.6.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\EM.IOC\EM.IOC\EM.IOC.csproj" />
+    <ProjectReference Include="..\EM.GIS.Controls\EM.GIS.Controls.csproj" />
+    <ProjectReference Include="..\EM.GIS.WPFControls\EM.GIS.WPFControls.csproj" />
+  </ItemGroup>
+
+</Project>

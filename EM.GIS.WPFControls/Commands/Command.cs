@@ -11,7 +11,7 @@ namespace EM.GIS.WPFControls
     /// <summary>
     /// 命令基类
     /// </summary>
-    public abstract class Command : ICommand
+    public class Command : ICommand
     {
         /// <inheritdoc/>
         public event EventHandler? CanExecuteChanged;
@@ -26,7 +26,11 @@ namespace EM.GIS.WPFControls
         public Command()
         { }
 
-        protected Command(Action<object?> excute, Func<object?, bool> canExecute)
+        public Command(Action<object?> excute)
+        {
+            ExcuteAction = excute;
+        }
+        public Command(Action<object?> excute, Func<object?, bool> canExecute)
         {
             ExcuteAction = excute;
             CanExecuteFunc = canExecute;
