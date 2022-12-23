@@ -184,9 +184,9 @@ namespace EM.GIS.Gdals
                         Debug.WriteLine($"{nameof(Draw)}取消_{tile.Key.Level}_{tile.Key.Col}_{tile.Key.Row}");
                         return;
                     }
-                    if (tile.Value.Extent.Intersects(destExtent))
+                    if (tile.Value.Extent.Intersects(extent))
                     {
-                        tile.Value.Draw(graphics, destRectangle, destExtent, progressAction, cancelFunc);
+                        tile.Value.Draw(graphics, rectangle, extent, progressAction, cancelFunc);
                     }
                     //var srcExtent = GetIntersectExtent(tile.Value.Extent, extent);
                     //if (srcExtent == null)

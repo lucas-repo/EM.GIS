@@ -27,6 +27,7 @@ namespace EM.GIS.Symbology
         {
             DataSet = rasterSet ?? throw new ArgumentNullException(nameof(rasterSet));
             Projection = rasterSet.Projection.Copy();
+            Text = rasterSet.Name;
             //if (DataSet?.Bands.Count > 0)
             //{
             //    foreach (var item in DataSet.Bands)
