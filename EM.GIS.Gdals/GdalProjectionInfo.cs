@@ -40,11 +40,16 @@ namespace EM.GIS.Gdals
         public bool SpatialReferenceDisposable { get; set; } = true;
         public GdalProjectionInfo(SpatialReference spatialReference)
         {
-            SpatialReference = spatialReference; 
+            SpatialReference = spatialReference;
         }
         public GdalProjectionInfo(string wkt)
         {
             SpatialReference = new SpatialReference(wkt);
+        }
+        public GdalProjectionInfo(int epsg)
+        {
+            SpatialReference = new SpatialReference(string.Empty);
+            SpatialReference.ImportFromEPSG(epsg);
         }
         protected override void Dispose(bool disposing)
         {
@@ -315,15 +320,6 @@ namespace EM.GIS.Gdals
                 base.Unit = value;
             }
         }
-        public override bool Equals(object obj)
-        {
-            bool ret = false;
-            if (obj is GdalProjectionInfo gdalProjectionInfo)
-            {
-                ret = SpatialReference.Equals(gdalProjectionInfo.SpatialReference);
-            }
-            return ret;
-        }
 
         public override int GetHashCode()
         {
@@ -370,7 +366,18 @@ namespace EM.GIS.Gdals
             {
                 using (CoordinateTransformation ct = new CoordinateTransformation(SpatialReference, gdalProjectionInfo.SpatialReference))
                 {
-                    ct.Transform( extent);
+                    ct.Transform(extent);
+                }
+            }
+        }
+        protected override void OnCopy(object copy)
+        {
+            if (copy is GdalProjectionInfo gdalProjection)
+            {
+                gdalProjection.SpatialReference = new SpatialReference(string.Empty);
+                if (EPSG.HasValue)
+                {
+                    gdalProjection.SpatialReference.ImportFromEPSG(EPSG.Value);
                 }
             }
         }

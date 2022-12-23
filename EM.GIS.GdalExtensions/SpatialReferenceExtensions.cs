@@ -5,6 +5,9 @@ using System.Text;
 
 namespace EM.GIS.GdalExtensions
 {
+    /// <summary>
+    /// 空间参考扩展类
+    /// </summary>
     public static class SpatialReferenceExtensions
     {
         /// <summary>

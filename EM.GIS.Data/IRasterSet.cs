@@ -6,7 +6,7 @@ namespace EM.GIS.Data
     /// <summary>
     /// 栅格数据集
     /// </summary>
-    public interface IRasterSet:IDataSet, IGetImage
+    public interface IRasterSet:IDataSet, IDrawable
     {
         /// <summary>
         /// 栅格类型

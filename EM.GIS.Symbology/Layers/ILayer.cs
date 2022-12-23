@@ -10,7 +10,7 @@ namespace EM.GIS.Symbology
     /// <summary>
     /// 图层接口
     /// </summary>
-    public interface ILayer : ILegendItem,IDynamicVisibility, IDrawable
+    public interface ILayer : ILegendItem,IDynamicVisibility, IDrawableLayer
     {
         /// <summary>
         /// 投影信息

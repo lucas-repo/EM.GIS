@@ -160,5 +160,11 @@ namespace EM.GIS.Geometries
         /// </summary>
         /// <param name="ext"></param>
         void ExpandToInclude(IExtent ext);
+        /// <summary>
+        /// 相交
+        /// </summary>
+        /// <param name="other">范围</param>
+        /// <returns>相交范围</returns>
+        IExtent Intersection(IExtent other);
     }
 }

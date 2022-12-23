@@ -2,10 +2,14 @@
 using EM.GIS.Geometries;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 
 namespace EM.GIS.Data
 {
+    /// <summary>
+    /// 投影扩展类
+    /// </summary>
     public static class IProjExtensions
     {
         #region Properties
@@ -24,143 +28,169 @@ namespace EM.GIS.Data
         #endregion
 
         #region Methods
+
         /// <summary>
-        /// 像素坐标转世界坐标
+        /// 将像素坐标转为世界坐标
         /// </summary>
-        /// <param name="minWorldX"></param>
-        /// <param name="maxWorldY"></param>
-        /// <param name="worldWidth"></param>
-        /// <param name="worldHeight"></param>
-        /// <param name="pixelX"></param>
-        /// <param name="pixelY"></param>
-        /// <param name="pixelWidth"></param>
-        /// <param name="pixelHeight"></param>
-        /// <param name="x"></param>
-        /// <param name="y"></param>
-        /// <returns></returns>
-        public static (double X, double Y) PointFToXY(double minWorldX, double maxWorldY, double worldWidth, double worldHeight, float pixelX, float pixelY, float pixelWidth, float pixelHeight, float x, float y)
+        /// <param name="point">像素坐标</param>
+        /// <param name="rectangle">像素范围</param>
+        /// <param name="extent">世界范围</param>
+        /// <returns>世界坐标</returns>
+        public static ICoordinate PixelToProj(this Point point, Rectangle rectangle, IExtent extent)
         {
-            double destX = x;
-            double destY = y;
-            if (pixelWidth != 0 && pixelHeight != 0)
+            if (rectangle.Width == 0 || rectangle.Height == 0 || extent == null || extent.IsEmpty())
             {
-                destX = (destX - pixelX) * worldWidth / pixelWidth + minWorldX;
-                destY = maxWorldY - (destY - pixelY) * worldHeight / pixelHeight;
+                return null;
             }
-            return (destX, destY);
+            return PixelToProj(point.X, point.Y, rectangle, extent);
         }
         /// <summary>
-        /// 像素坐标转世界坐标
+        /// 将像素坐标转为世界坐标
         /// </summary>
-        /// <param name="extent"></param>
-        /// <param name="rectangle"></param>
-        /// <param name="x"></param>
-        /// <param name="y"></param>
-        /// <returns></returns>
-        public static (double X, double Y) PointFToXY(IExtent extent, Rectangle rectangle, float x, float y)
+        /// <param name="x">像素X坐标</param>
+        /// <param name="y">像素Y坐标</param>
+        /// <param name="rectangle">像素范围</param>
+        /// <param name="extent">世界范围</param>
+        /// <returns>世界坐标</returns>
+        public static ICoordinate PixelToProj(double x, double y, Rectangle rectangle, IExtent extent)
         {
-            (double X, double Y) ret;
-            if (extent == null)
+            if (rectangle.Width == 0 || rectangle.Height == 0 || extent == null || extent.IsEmpty())
             {
-                ret = (x, y);
+                return null;
             }
-            else
-            {
-                ret = PointFToXY(extent.MinX, extent.MaxY, extent.Width, extent.Height, rectangle.X, rectangle.Y, rectangle.Width, rectangle.Height, x, y);
-            }
-            return ret;
+            var destX = (x - rectangle.X) * extent.Width / rectangle.Width + extent.MinX;
+            var destY = extent.MaxY - (y - rectangle.Y) * extent.Height / rectangle.Height;
+            return new Coordinate(destX, destY);
         }
+
         /// <summary>
-        /// 像素坐标转世界坐标
+        /// 将像素坐标转为世界坐标
         /// </summary>
-        /// <param name="extent"></param>
-        /// <param name="rectangle"></param>
-        /// <param name="point"></param>
-        /// <returns></returns>
-        public static (double X, double Y) PointFToXY(IExtent extent, Rectangle rectangle, PointF point)
+        /// <param name="point">像素坐标</param>
+        /// <param name="rectangle">像素范围</param>
+        /// <param name="extent">世界范围</param>
+        /// <returns>世界坐标</returns>
+        public static ICoordinate PixelToProj(this PointF point, Rectangle rectangle, IExtent extent)
         {
-            (double X, double Y) ret;
-            if (extent == null)
+            if (rectangle.Width == 0 || rectangle.Height == 0 || extent == null || extent.IsEmpty())
             {
-                ret = (point.X, point.Y);
+                return null;
             }
-            else
-            {
-                ret = PointFToXY(extent, rectangle, point.X, point.Y);
-            }
-            return ret;
+            return PixelToProj(point.X, point.Y, rectangle, extent);
         }
+
         /// <summary>
-        /// 像素坐标转世界坐标
+        /// 将像素坐标转为世界坐标
         /// </summary>
-        /// <param name="self"></param>
-        /// <param name="point"></param>
-        /// <returns></returns>
-        public static (double X, double Y) PointFToXY(this IProj self, float x, float y)
+        /// <param name="self">投影类</param>
+        /// <param name="position">像素坐标</param>
+        /// <returns>世界坐标</returns>
+        public static ICoordinate PixelToProj(this IProj self, Point position)
         {
-            (double X, double Y) ret;
             if (self == null)
             {
-                ret = (x, y);
+                return null;
             }
-            else
-            {
-                ret = PointFToXY(self.Extent, self.Bound, x, y);
-            }
-            return ret;
+            return position.PixelToProj(self.Bound, self.Extent);
         }
+
         /// <summary>
-        /// 像素坐标转世界坐标
+        /// 将像素坐标转为世界坐标
         /// </summary>
-        /// <param name="self"></param>
-        /// <param name="point"></param>
-        /// <returns></returns>
-        public static (double X, double Y) PointFToXY(this IProj self, PointF point)
+        /// <param name="self">投影类</param>
+        /// <param name="x">像素坐标x</param>
+        /// <param name="y">像素坐标y</param>
+        /// <returns>世界坐标</returns>
+        public static ICoordinate PixelToProj(this IProj self, double x, double y)
         {
-            (double X, double Y) ret;
             if (self == null)
             {
-                ret = (point.X, point.Y);
+                return null;
             }
-            else
-            {
-                ret = PointFToXY(self.Extent, self.Bound, point);
-            }
-            return ret;
+            return PixelToProj(x, y, self.Bound, self.Extent);
         }
         /// <summary>
-        /// 像素坐标转世界坐标
+        /// 将像素坐标转为世界坐标
         /// </summary>
-        /// <param name="self"></param>
-        /// <param name="point"></param>
-        /// <returns></returns>
-        public static ICoordinate PointFToCoordinate(this IProj self, PointF point)
+        /// <param name="self">投影类</param>
+        /// <param name="position">像素坐标</param>
+        /// <returns>世界坐标</returns>
+        public static ICoordinate PixelToProj(this IProj self, PointF position)
         {
-            ICoordinate coordinate = null;
-            if (self != null)
+            if (self == null)
             {
-                var ret = PointFToXY(self.Extent, self.Bound, point);
-                coordinate = new Coordinate(ret.X, ret.Y);
+                return null;
             }
-            return coordinate;
+            return position.PixelToProj(self.Bound, self.Extent);
+        }
+
+        /// <summary>
+        /// 将像素范围转为世界范围
+        /// </summary>
+        /// <param name="destRect">目标像素范围</param>
+        /// <param name="srcRectangle">原像素范围</param>
+        /// <param name="srcExtent">原世界范围</param>
+        /// <returns>世界范围</returns>
+        public static Extent PixelToProj(this Rectangle destRect, Rectangle srcRectangle, IExtent srcExtent)
+        {
+            if (srcRectangle.Width == 0 || srcRectangle.Height == 0 || srcExtent == null || srcExtent.IsEmpty())
+            {
+                return null;
+            }
+            var tl = new Point(destRect.X, destRect.Y);
+            var br = new Point(destRect.Right, destRect.Bottom);
+            var topLeft = PixelToProj(tl, srcRectangle, srcExtent);
+            var bottomRight = PixelToProj(br, srcRectangle, srcExtent);
+            return new Extent(topLeft.X, bottomRight.Y, bottomRight.X, topLeft.Y);
+        }
+
+        /// <summary>
+        /// 将像素范围转为世界范围
+        /// </summary>
+        /// <param name="destRect">目标像素范围</param>
+        /// <param name="srcRectangle">原像素范围</param>
+        /// <param name="srcExtent">原世界范围</param>
+        /// <returns>世界范围</returns>
+        public static IExtent PixelToProj(this RectangleF destRect, Rectangle srcRectangle, IExtent srcExtent)
+        {
+            if (srcRectangle.Width == 0 || srcRectangle.Height == 0 || srcExtent == null || srcExtent.IsEmpty())
+            {
+                return null;
+            }
+            var tl = new PointF(destRect.X, destRect.Y);
+            var br = new PointF(destRect.Right, destRect.Bottom);
+            var topLeft = PixelToProj(tl, srcRectangle, srcExtent);
+            var bottomRight = PixelToProj(br, srcRectangle, srcExtent);
+            return new Extent(topLeft.X, bottomRight.Y, bottomRight.X, topLeft.Y);
+        }
+
+        /// <summary>
+        /// 将像素范围转为世界范围
+        /// </summary>
+        /// <param name="self">投影类</param>
+        /// <param name="rect">原像素范围</param>
+        /// <returns>世界范围</returns>
+        public static IExtent PixelToProj(this IProj self, Rectangle rect)
+        {
+            if (self == null)
+            {
+                return null;
+            }
+            return rect.PixelToProj(self.Bound, self.Extent);
         }
         /// <summary>
-        /// 像素范围转为世界范围
+        /// 将像素范围转为世界范围
         /// </summary>
-        /// <param name="self"></param>
-        /// <param name="rect"></param>
-        /// <returns></returns>
-        public static IExtent RectangleFToExtent(this IProj self, RectangleF rect)
+        /// <param name="self">投影类</param>
+        /// <param name="rect">原像素范围</param>
+        /// <returns>世界范围</returns>
+        public static IExtent PixelToProj(this IProj self, RectangleF rect)
         {
-            var topLeft = self.PointFToXY(rect.X, rect.Y);
-            var bottomRight = self.PointFToXY(rect.Right, rect.Bottom);
-            return new Extent()
+            if (self == null)
             {
-                MinX = topLeft.X,
-                MinY = bottomRight.Y,
-                MaxX = bottomRight.X,
-                MaxY = topLeft.Y
-            };
+                return null;
+            }
+            return rect.PixelToProj(self.Bound, self.Extent);
         }
 
         /// <summary>
@@ -174,131 +204,197 @@ namespace EM.GIS.Data
             List<IExtent> result = new List<IExtent>();
             foreach (Rectangle r in clipRects)
             {
-                result.Add(RectangleFToExtent(self, r));
+                result.Add(PixelToProj(self, r));
             }
+
             return result;
         }
 
+        /// <summary>
+        /// 将世界坐标转为像素坐标
+        /// </summary>
+        /// <param name="self">投影类</param>
+        /// <param name="location">世界坐标</param>
+        /// <returns>像素坐标</returns>
+        public static Point ProjToPixel(this IProj self, ICoordinate location)
+        {
+            Point point = Point.Empty;
+            if (self != null && location != null)
+            {
+                point = location.ProjToPixel(self.Bound, self.Extent);
+            }
+            return point;
+        }
+        /// <summary>
+        /// 将世界坐标转为像素坐标
+        /// </summary>
+        /// <param name="self">投影类</param>
+        /// <param name="location">世界坐标</param>
+        /// <returns>像素坐标</returns>
+        public static PointF ProjToPixelF(this IProj self, ICoordinate location)
+        {
+            PointF point = PointF.Empty;
+            if (self != null && location != null)
+            {
+                point = location.ProjToPixelF(self.Bound, self.Extent);
+            }
+            return point;
+        }
+        /// <summary>
+        /// 将世界坐标转为像素坐标
+        /// </summary>
+        /// <param name="self">投影类</param>
+        /// <param name="location">世界坐标</param>
+        /// <returns>像素坐标</returns>
+        public static (double X, double Y) ProjToPixelD(this IProj self, ICoordinate location)
+        {
+            (double X, double Y) ret = default;
+            if (self != null && location != null)
+            {
+                ret = location.ProjToPixelD(self.Bound, self.Extent);
+            }
+            return ret;
+        }
 
         /// <summary>
-        /// 世界坐标转像素坐标
+        /// 将世界坐标转为像素坐标
         /// </summary>
-        /// <param name="self"></param>
-        /// <param name="coordinate"></param>
-        /// <returns></returns>
-        public static PointF CoordinateToPointF(this IProj self, ICoordinate coordinate)
-        {
-            PointF point = PointF.Empty;
-            if (self != null && coordinate != null)
-            {
-                point = self.CoordinateToPointF(coordinate.X, coordinate.Y);
-            }
-            return point;
-        }
-        /// <summary>
-        /// 世界坐标转像素坐标
-        /// </summary>
-        /// <param name="self"></param>
-        /// <param name="x"></param>
-        /// <param name="y"></param>
-        /// <returns></returns>
-        public static PointF CoordinateToPointF(this IProj self, double x, double y)
-        {
-            PointF point = PointF.Empty;
-            if (self != null)
-            {
-                point = CoordinateToPointF(self.Extent, self.Bound, x, y);
-            }
-            return point;
-        }
-        /// <summary>
-        /// 世界坐标转像素坐标
-        /// </summary>
-        /// <param name="extent"></param>
-        /// <param name="rectangle"></param>
-        /// <param name="coordinate"></param>
-        /// <returns></returns>
-        public static PointF CoordinateToPointF(IExtent extent, RectangleF rectangle, ICoordinate coordinate)
-        {
-            PointF point = PointF.Empty;
-            if (extent != null && coordinate != null)
-            {
-                point = CoordinateToPointF(extent, rectangle, coordinate.X, coordinate.Y);
-            }
-            return point;
-        }
-        /// <summary>
-        /// 世界坐标转像素坐标
-        /// </summary>
-        /// <param name="extent"></param>
-        /// <param name="rectangle"></param>
-        /// <param name="x"></param>
-        /// <param name="y"></param>
-        /// <returns></returns>
-        public static PointF CoordinateToPointF(IExtent extent, RectangleF rectangle, double x, double y)
-        {
-            PointF point = PointF.Empty;
-            if (extent != null)
-            {
-                point = CoordinateToPointF(extent.MinX, extent.MaxY, extent.Width, extent.Height, rectangle.X, rectangle.Y, rectangle.Width, rectangle.Height, x, y);
-            }
-            return point;
-        }
-        /// <summary>
-        /// 世界坐标转像素坐标
-        /// </summary>
-        /// <param name="minWorldX">世界范围最小X</param>
-        /// <param name="maxWorldY">世界范围最大Y</param>
-        /// <param name="worldWidth">世界范围宽度</param>
-        /// <param name="worldHeight">世界范围高度</param>
-        /// <param name="pixelX">像素范围X</param>
-        /// <param name="pixelY">像素范围Y</param>
-        /// <param name="pixelWidth">像素范围宽度</param>
-        /// <param name="pixelHeight">像素范围高度</param>
-        /// <param name="x">世界坐标X</param>
-        /// <param name="y">世界坐标Y</param>
+        /// <param name="location">世界坐标</param>
+        /// <param name="rectangle">像素矩阵</param>
+        /// <param name="extent">范围</param>
         /// <returns>像素坐标</returns>
-        public static PointF CoordinateToPointF(double minWorldX, double maxWorldY, double worldWidth, double worldHeight, float pixelX, float pixelY, float pixelWidth, float pixelHeight, double x, double y)
+        public static Point ProjToPixel(this ICoordinate location, Rectangle rectangle, IExtent extent)
         {
-            if (worldWidth == 0 || worldHeight == 0) return Point.Empty;
+            if (location == null || location.IsEmpty() || rectangle.IsEmpty || extent == null || extent.IsEmpty() || extent.Width == 0 || extent.Height == 0)
+            {
+                return Point.Empty;
+            }
             try
             {
-                float dextX = Convert.ToSingle(pixelX + (x - minWorldX) * (pixelWidth / worldWidth));
-                float dextY = Convert.ToSingle(pixelY + (maxWorldY - y) * (pixelHeight / worldHeight));
-                return new PointF(dextX, dextY);
+                double dx = rectangle.Width / extent.Width;
+                double dy = rectangle.Height / extent.Height;
+                var x = (int)(rectangle.X + (location.X - extent.MinX) * dx);
+                var y = (int)(rectangle.Y + (extent.MaxY - location.Y) * dy);
+                return new Point(x, y);
             }
-            catch (OverflowException)
+            catch
             {
-                return PointF.Empty;
+                return Point.Empty;
             }
         }
+
+        /// <summary>
+        /// 将世界坐标转为像素坐标
+        /// </summary>
+        /// <param name="location">世界坐标</param>
+        /// <param name="rectangle">像素矩阵</param>
+        /// <param name="extent">范围</param>
+        /// <returns>像素坐标</returns>
+        public static PointF ProjToPixelF(this ICoordinate location, RectangleF rectangle, IExtent extent)
+        {
+            var pointD = ProjToPixelD(location, rectangle, extent);
+            var ret = new PointF((float)pointD.X, (float)pointD.Y);
+            return ret;
+        }
+        /// <summary>
+        /// 将世界坐标转为像素坐标
+        /// </summary>
+        /// <param name="location">世界坐标</param>
+        /// <param name="rectangle">像素矩阵</param>
+        /// <param name="extent">范围</param>
+        /// <returns>像素坐标</returns>
+        public static (double X, double Y) ProjToPixelD(this ICoordinate location, RectangleF rectangle, IExtent extent)
+        {
+            (double X, double Y) ret = default;
+            if (location == null || location.IsEmpty() || rectangle.IsEmpty || extent == null || extent.IsEmpty() || extent.Width == 0 || extent.Height == 0)
+            {
+                throw new ArgumentNullException($"参数错误_{location}_{rectangle}_{extent}");
+            }
+            try
+            {
+                double dx = rectangle.Width / extent.Width;
+                double dy = rectangle.Height / extent.Height;
+                var x = rectangle.X + (location.X - extent.MinX) * dx;
+                var y = rectangle.Y + (extent.MaxY - location.Y) * dy;
+                ret = (x, y);
+            }
+            catch (Exception e)
+            {
+                Debug.WriteLine($"{nameof(ProjToPixelD)}失败_{location}_{rectangle}_{extent},{e}");
+            }
+            return ret;
+        }
+
         /// <summary>
         /// 将世界范围转为像素范围
         /// </summary>
-        /// <param name="self"></param>
-        /// <param name="extent"></param>
-        /// <returns></returns>
-        public static RectangleF ExtentToRectangleF(this IProj self, IExtent extent)
+        /// <param name="destExtent">指定世界范围</param>
+        /// <param name="srcRectangle">原有像素范围</param>
+        /// <param name="srcExtent">原有世界范围</param>
+        /// <returns>像素范围</returns>
+        public static Rectangle ProjToPixel(this IExtent destExtent, Rectangle srcRectangle, IExtent srcExtent)
         {
-            PointF topLeft = CoordinateToPointF(self, extent.MinX, extent.MaxY);
-            PointF bottomRight = CoordinateToPointF(self, extent.MaxX, extent.MinY);
+            if (destExtent == null || destExtent.IsEmpty() || srcRectangle.IsEmpty || srcExtent == null || srcExtent.IsEmpty() || srcExtent.Width == 0 || srcExtent.Height == 0)
+            {
+                return Rectangle.Empty;
+            }
+            Coordinate tl = new Coordinate(destExtent.MinX, destExtent.MaxY);
+            Coordinate br = new Coordinate(destExtent.MaxX, destExtent.MinY);
+            var topLeft = ProjToPixel(tl, srcRectangle, srcExtent);
+            var bottomRight = ProjToPixel(br, srcRectangle, srcExtent);
+            return new Rectangle(topLeft.X, topLeft.Y, bottomRight.X - topLeft.X, bottomRight.Y - topLeft.Y);
+        }
+
+        /// <summary>
+        /// 将世界范围转为像素范围
+        /// </summary>
+        /// <param name="destExtent">指定世界范围</param>
+        /// <param name="srcRectangle">原有像素范围</param>
+        /// <param name="srcExtent">原有世界范围</param>
+        /// <returns>像素范围</returns>
+        public static RectangleF ProjToPixelF(this IExtent destExtent, RectangleF srcRectangle, IExtent srcExtent)
+        {
+            if (destExtent == null || destExtent.IsEmpty() || srcRectangle.IsEmpty || srcExtent == null || srcExtent.IsEmpty() || srcExtent.Width == 0 || srcExtent.Height == 0)
+            {
+                return RectangleF.Empty;
+            }
+            Coordinate tl = new Coordinate(destExtent.MinX, destExtent.MaxY);
+            Coordinate br = new Coordinate(destExtent.MaxX, destExtent.MinY);
+            var topLeft = ProjToPixelF(tl, srcRectangle, srcExtent);
+            var bottomRight = ProjToPixelF(br, srcRectangle, srcExtent);
             return new RectangleF(topLeft.X, topLeft.Y, bottomRight.X - topLeft.X, bottomRight.Y - topLeft.Y);
         }
+
         /// <summary>
         /// 将世界范围转为像素范围
         /// </summary>
-        /// <param name="self"></param>
-        /// <param name="extent"></param>
-        /// <returns></returns>
-        public static Rectangle ExtentToRectangle(this IProj self, IExtent extent)
+        /// <param name="self">投影类</param>
+        /// <param name="env">指定世界范围</param>
+        /// <returns>像素范围</returns>
+        public static Rectangle ProjToPixel(this IProj self, IExtent env)
         {
-            PointF topLeft = CoordinateToPointF(self, extent.MinX, extent.MaxY);
-            PointF bottomRight = CoordinateToPointF(self, extent.MaxX, extent.MinY);
-            int left = (int)topLeft.X;
-            int top = (int)topLeft.Y;
-            int right = (int)bottomRight.X;
-            int bottom = (int)bottomRight.Y;
-            return new Rectangle(left, top, right - left, bottom - top);
+            var rectangle = Rectangle.Empty;
+            if (self != null && env != null)
+            {
+                rectangle = env.ProjToPixel(self.Bound, self.Extent);
+            }
+            return rectangle;
+        }
+
+        /// <summary>
+        /// 将世界范围转为像素范围
+        /// </summary>
+        /// <param name="self">投影类</param>
+        /// <param name="env">指定世界范围</param>
+        /// <returns>像素范围</returns>
+        public static RectangleF ProjToPixelF(this IProj self, IExtent env)
+        {
+            var rectangle = RectangleF.Empty;
+            if (self != null && env != null)
+            {
+                rectangle = env.ProjToPixelF(self.Bound, self.Extent);
+            }
+            return rectangle;
         }
 
         /// <summary>
@@ -313,7 +409,7 @@ namespace EM.GIS.Data
             foreach (var region in regions)
             {
                 if (region == null) continue;
-                result.Add(ExtentToRectangle(self, region));
+                result.Add(ProjToPixel(self, region));
             }
 
             return result;

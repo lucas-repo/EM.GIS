@@ -16,7 +16,7 @@ namespace EM.GIS.Data
 
         #region Properties
 
-        public virtual IExtent Extent { get; protected set; }
+        public virtual IExtent Extent { get;  set; }
 
         private string _filename;
         public string Filename
@@ -44,7 +44,7 @@ namespace EM.GIS.Data
 
         public virtual string RelativeFilename { get; protected set; }
 
-        public ProjectionInfo Projection { get; protected set; }
+        public ProjectionInfo Projection { get; set; }
 
         #region IDisposable Support
 

@@ -10,7 +10,7 @@ namespace EM.GIS.Gdals
     /// <summary>
     /// gdal栅格驱动
     /// </summary>
-    [Injectable(ServiceLifetime = ServiceLifetime.Singleton, ServiceType = typeof(IFileDriver))]
+    [Injectable(ServiceLifetime = ServiceLifetime.Singleton, ServiceType = typeof(IDriver))]
     public class GdalRasterDriver : FileDriver, IRasterDriver
     {
         static GdalRasterDriver()

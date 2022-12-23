@@ -7,7 +7,7 @@ namespace EM.GIS.Data
     /// <summary>
     /// 获取图片接口
     /// </summary>
-    public interface IGetImage
+    public interface IGetImage1
     {
         /// <summary>
         /// 获取图片

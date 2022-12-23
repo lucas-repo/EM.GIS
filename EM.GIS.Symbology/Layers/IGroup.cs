@@ -11,7 +11,7 @@ namespace EM.GIS.Symbology
     /// <summary>
     /// 分组
     /// </summary>
-    public interface IGroup : ILegendItem, IDynamicVisibility, IDrawable
+    public interface IGroup : ILegendItem, IDynamicVisibility, IDrawableLayer
     {
         /// <summary>
         /// 父图层组

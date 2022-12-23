@@ -23,9 +23,10 @@ namespace EM.GIS.Symbology
         {
             Children = new RasterCategoryCollection(this);
         }
-        public RasterLayer(IRasterSet rasterSet) : this()
+        public RasterLayer(IDataSet rasterSet) : this()
         {
-            DataSet = rasterSet;
+            DataSet = rasterSet ?? throw new ArgumentNullException(nameof(rasterSet));
+            Projection = rasterSet.Projection.Copy();
             //if (DataSet?.Bands.Count > 0)
             //{
             //    foreach (var item in DataSet.Bands)
@@ -40,13 +41,10 @@ namespace EM.GIS.Symbology
         }
 
         /// <inheritdoc/>
-        public new IRasterSet DataSet { get => base.DataSet as IRasterSet; set => base.DataSet = value; }
-
-        /// <inheritdoc/>
-        public new IRasterCategoryCollection Children 
-        { 
-            get => base.Children as IRasterCategoryCollection; 
-            protected set => base.Children = value; 
+        public new IRasterCategoryCollection Children
+        {
+            get => base.Children as IRasterCategoryCollection;
+            protected set => base.Children = value;
         }
 
         /// <inheritdoc/>
@@ -56,17 +54,14 @@ namespace EM.GIS.Symbology
             {
                 return;
             }
-            IExtent destExtent = extent.Copy();
-            if (!Equals(Projection, DataSet.Projection))
+            if (DataSet is IDrawable drawable)
             {
-                DataSet.Projection.ReProject(Projection, destExtent);
-            }
-            using (var bmp = DataSet.GetImage(destExtent, rectangle, ReportProgress))
-            {
-                if (bmp != null)
+                IExtent destExtent = extent.Copy();
+                if (!Equals(Projection, DataSet.Projection))
                 {
-                    graphics.DrawImage(bmp, rectangle);
+                    DataSet.Projection.ReProject(Projection, destExtent);
                 }
+                drawable.Draw(graphics, rectangle, destExtent, ReportProgress, cancelFunc);
             }
         }
         private void ReportProgress(int progress)

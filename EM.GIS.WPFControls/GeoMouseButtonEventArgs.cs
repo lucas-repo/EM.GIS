@@ -22,7 +22,7 @@ namespace EM.GIS.WPFControls
 
             var position = e.GetPosition(map);
             Location = new Point((int)position.X, (int)position.Y);
-            GeographicLocation = map.PointFToCoordinate(Location);
+            GeographicLocation = map.PixelToProj(Location);
             Map = map;
         }
 

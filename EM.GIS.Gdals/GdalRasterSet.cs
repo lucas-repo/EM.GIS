@@ -166,23 +166,13 @@ namespace EM.GIS.Gdals
         #region Methods
 
         /// <inheritdoc/>
-        public override Image GetImage(IExtent envelope, Rectangle window, Action<int> progressAction = null, Func<bool> cancelFunc = null)
+        public override void Draw(Graphics g, RectangleF window, IExtent envelope, Action<int> progressAction = null, Func<bool> cancelFunc = null)
         {
-            if (window.Width == 0 || window.Height == 0)
+            if (g==null|| window.IsEmpty||envelope==null|| envelope.IsEmpty()|| cancelFunc?.Invoke()==true)
             {
-                return null;
+                return ;
             }
 
-            var result = new Bitmap(window.Width, window.Height);
-            using (var g = Graphics.FromImage(result))
-            {
-                DrawGraphics(g, envelope, window, progressAction);
-            }
-
-            return result;
-        }
-        private void DrawGraphics(Graphics g, IExtent envelope, Rectangle window, Action<int> progressAction = null)
-        {
             progressAction?.Invoke(5);
 
             // Gets the scaling factor for converting from geographic to pixel coordinates

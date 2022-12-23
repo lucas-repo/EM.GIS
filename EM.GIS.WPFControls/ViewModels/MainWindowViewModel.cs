@@ -1,11 +1,15 @@
-﻿using EM.Bases;
+﻿using BruTile.Tms;
+using EM.Bases;
 using EM.GIS.Controls;
 using EM.GIS.Data;
 using EM.GIS.Symbology;
 using EM.IOC;
 using EM.WpfBases;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Win32;
 using System;
+using System.Collections.ObjectModel;
+using System.Configuration;
 using System.Linq;
 using System.Windows;
 using System.Windows.Input;
@@ -93,6 +97,19 @@ namespace EM.GIS.WPFControls.ViewModels
         /// 识别
         /// </summary>
         public Command IdentifyCmd { get; }
+        /// <summary>
+        /// 在线地图  
+        /// </summary>
+        public ObservableCollection<TileMap> TileMaps { get; } = new ObservableCollection<TileMap>();
+        private TileMap _tileMap;
+        /// <summary>
+        /// 选择的瓦片地图
+        /// </summary>
+        public TileMap TileMap
+        {
+            get { return _tileMap; }
+            set { SetProperty(ref _tileMap, value); }
+        }
 
         public MainWindowViewModel(MainWindow t, IWpfAppManager appManager, IIocManager iocManager) : base(t)
         {
@@ -113,14 +130,86 @@ namespace EM.GIS.WPFControls.ViewModels
             {
                 appManager.Map.GeoMouseMove += Map_GeoMouseMove;
             }
-            Command[] commands0 = {NewCmd,OpenCmd,SaveCmd,SaveAsCmd,AddLayersCmd,RemoveSelectedLayersCmd,PanCmd,UndoCmd, RedoCmd, ZoomToMaxExtentCmd,IdentifyCmd};
-            //foreach (var item in commands0)
-            //{
-            //    //item.CanExecuteFunc = (obj) => Map?.Frame != null;
-            //    item.RaiseCanExecuteChanged();
-            //}
+
+            LoadTileMaps();
+            PropertyChanged += MainWindowViewModel_PropertyChanged;
         }
 
+        private void MainWindowViewModel_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            switch (e.PropertyName)
+            {
+                case nameof(TileMap):
+                    if (Map!=null&& !Map.Layers.Any(x => x.Text == TileMap.Name))
+                    {
+                        var driver = DriverFactory?.Drivers.FirstOrDefault(x => x is IWebMapDriver) as IWebMapDriver;
+                        if (driver != null)
+                        {
+                            var tileSet= driver.OpenXYZ(TileMap.Name, TileMap.Url, TileMap.Servers, TileMap.MinLevel, TileMap.MaxLevel);
+                            RasterLayer rasterLayer=new RasterLayer(tileSet);
+                            Map.Layers.Add(rasterLayer);
+                        }
+                    }
+                    break;
+            }
+        }
+
+        /// <summary>
+        /// 读取在线地图配置
+        /// </summary>
+        private void LoadTileMaps()
+        {
+            var builder = new ConfigurationBuilder()
+                .SetBasePath(AppDomain.CurrentDomain.BaseDirectory)
+                .AddJsonFile("TileMaps.json");
+            var configuration = builder.Build();
+            foreach (var tileMapItem in configuration.GetChildren())
+            {
+                if (tileMapItem == null)
+                {
+                    continue;
+                }
+                TileMap tileMap = new TileMap()
+                {
+                    Name= tileMapItem.Key
+                };
+                TileMaps.Add(tileMap);
+                foreach (var item in tileMapItem.GetChildren())
+                {
+                    if (string.IsNullOrEmpty(item.Value))
+                    {
+                        continue;
+                    }
+                    switch (item.Key)
+                    {
+                        case "Url":
+                            tileMap.Url = item.Value;
+                            break;
+                        case "Servers":
+                            tileMap.Servers = item.Value.Split(',');
+                            break;
+                        case "MinLevel":
+                            if (int.TryParse(item.Value, out int minLevel))
+                            {
+                                tileMap.MinLevel = minLevel;
+                            }
+                            break;
+                        case "MaxLevel":
+                            if (int.TryParse(item.Value, out int maxLevel))
+                            {
+                                tileMap.MaxLevel = maxLevel;
+                            }
+                            break;
+                        case "EPSG":
+                            if (int.TryParse(item.Value, out int epsg))
+                            {
+                                tileMap.EPSG = epsg;
+                            }
+                            break;
+                    }
+                }
+            }
+        }
         private void Map_GeoMouseMove(object? sender, IGeoMouseEventArgs e)
         {
             Dispatcher.CurrentDispatcher.BeginInvoke(() =>

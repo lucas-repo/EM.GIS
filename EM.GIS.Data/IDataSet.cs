@@ -12,7 +12,7 @@ namespace EM.GIS.Data
         /// <summary>
         /// 范围
         /// </summary>
-        IExtent Extent { get; }
+        IExtent Extent { get; set; }
         /// <summary>
         /// 路径
         /// </summary>
@@ -32,7 +32,7 @@ namespace EM.GIS.Data
         /// <summary>
         /// 投影
         /// </summary>
-        ProjectionInfo Projection { get; }
+        ProjectionInfo Projection { get; set; }
         /// <summary>
         /// 保存
         /// </summary>

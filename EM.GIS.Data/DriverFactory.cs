@@ -44,7 +44,7 @@ namespace EM.GIS.Data
                 }
             }
         }
-        public DriverFactory(IEnumerable<IFileDriver> drivers)
+        public DriverFactory(IEnumerable<IDriver> drivers)
         {
             Drivers = drivers;
         }

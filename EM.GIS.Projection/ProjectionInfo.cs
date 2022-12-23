@@ -44,7 +44,6 @@ namespace EM.GIS.Projections
                 AuthorityCode = value.ToString();
             }
         }
-
         /// <summary>
         ///   Gets or sets the auxiliary sphere type.
         /// </summary>
@@ -365,5 +364,17 @@ namespace EM.GIS.Projections
         /// <param name="destProjection">目标投影</param>
         /// <param name="geometry">几何体</param>
         public abstract void ReProject(ProjectionInfo destProjection, IGeometry geometry);
+        public override bool Equals(object obj)
+        {
+            bool ret = base.Equals(obj);
+            if (!ret)
+            {
+                if (EPSG.HasValue && obj is ProjectionInfo projection && projection.EPSG.HasValue)
+                {
+                    ret=EPSG==projection.EPSG.Value;
+                }
+            }
+            return ret;
+        }
     }
 }

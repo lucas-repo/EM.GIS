@@ -34,7 +34,7 @@ namespace EM.GIS.Symbology
                 for (int j = 0; j < pointCount; j++)
                 {
                     var coord = geometry.Coordinates[j];
-                    PointF point = drawArgs.CoordinateToPointF(coord);
+                    PointF point = drawArgs.ProjToPixelF(coord);
                     symbolizer.DrawPoint(drawArgs.Device, scaleSize, point);
                 }
             }

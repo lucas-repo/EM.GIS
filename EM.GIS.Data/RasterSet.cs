@@ -31,9 +31,9 @@ namespace EM.GIS.Data
         public IRasterBounds Bounds { get; set; }
         /// <inheritdoc/>
         public override IExtent Extent
-        { 
-            get => Bounds.Extent; 
-            protected set => Bounds.Extent=value; 
+        {
+            get => Bounds.Extent;
+            set => Bounds.Extent = value;
         }
         /// <summary>
         /// 像素间隔
@@ -53,23 +53,7 @@ namespace EM.GIS.Data
         {
             Bands = new List<IRasterSet>();
         }
-        /// <inheritdoc/>
-        public virtual Image GetImage()
-        {
-            return null;
-        }
 
-        /// <inheritdoc/>
-        public Image GetImage(IExtent envelope, Size size)
-        {
-            return GetImage(envelope, new Rectangle(new Point(0, 0), size));
-        }
-
-        /// <inheritdoc/>
-        public virtual Image GetImage(IExtent envelope, Rectangle window, Action<int> progressAction = null, Func<bool> cancelFunc = null)
-        {
-            return null;
-        }
         /// <summary>
         /// 获取分类颜色
         /// </summary>
@@ -121,5 +105,8 @@ namespace EM.GIS.Data
 
             return 0;
         }
+        /// <inheritdoc/>
+        public virtual void Draw(Graphics graphics, RectangleF rectangle, IExtent extent, Action<int> progressAction = null, Func<bool> cancelFunc = null)
+        { }
     }
 }

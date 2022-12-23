@@ -113,7 +113,17 @@ namespace EM.GIS.Symbology
             OnDraw(graphics, rectangle, extent, selected, cancelFunc, invalidateMapFrameAction);
             Progress?.Invoke(100, ProgressMessage);
         }
+        /// <summary>
+        /// 绘制图层到画布
+        /// </summary>
+        /// <param name="graphics">画布</param>
+        /// <param name="rectangle">矩形</param>
+        /// <param name="extent">范围</param>
+        /// <param name="selected">是否绘制选择</param>
+        /// <param name="cancelFunc">取消匿名方法</param>
+        /// <param name="invalidateMapFrameAction">使地图无效匿名方法</param>
         protected abstract void OnDraw(Graphics graphics, Rectangle rectangle, IExtent extent, bool selected = false, Func<bool> cancelFunc = null, Action invalidateMapFrameAction = null);
+        /// <inheritdoc/>
         public bool GetVisible(IExtent extent, Rectangle rectangle)
         {
             bool visible = false;
