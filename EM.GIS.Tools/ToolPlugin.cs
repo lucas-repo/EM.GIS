@@ -1,22 +1,24 @@
-using EM.GIS.Controls;
-using EM.GIS.WPFControls;
+锘縰sing EM.GIS.WPFControls;
 using EM.IOC;
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 using System.Windows.Controls.Ribbon;
 
-namespace EM.GIS.Downloads
+namespace EM.GIS.Tools
 {
     /// <summary>
-    /// 下载器扩展
+    /// 宸ュ叿鎵╁睍
     /// </summary>
     [Injectable(ServiceLifetime = ServiceLifetime.Singleton, ServiceType = typeof(IPlugin))]
-    public class DownloaderPlugin : Plugin
+    public class ToolPlugin : Plugin
     {
         IWpfAppManager WpfAppManager { get; }
         RibbonGroup RibbonGroup { get; set; }
         RibbonButton RibbonButton { get; set; }
-        public DownloaderPlugin(IWpfAppManager appManager)
+        public ToolPlugin(IWpfAppManager appManager)
         {
             WpfAppManager = appManager ?? throw new ArgumentNullException(nameof(appManager));
         }
@@ -37,9 +39,9 @@ namespace EM.GIS.Downloads
                                     RibbonGroup = ribbonGroup;
                                     RibbonButton = new RibbonButton()
                                     {
-                                        Label = "下载",
-                                        ToolTip = "下载在线地图",
-                                        Command = new Command(Dowload)
+                                        Label = "宸ュ叿",
+                                        ToolTip = "甯哥敤宸ュ叿",
+                                        Command = new Command(OpenTools)
                                     };
                                     break;
                                 }
@@ -56,10 +58,10 @@ namespace EM.GIS.Downloads
             return base.OnLoad();
         }
 
-        private void Dowload(object? obj)
+        private void OpenTools(object? obj)
         {
-            Downloader downloader = new Downloader();
-            downloader.ShowDialog();
+            MainWindow window = new MainWindow();
+            window.ShowDialog();
         }
 
         public override bool OnUnload()
