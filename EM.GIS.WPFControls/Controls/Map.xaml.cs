@@ -1,9 +1,7 @@
 ﻿using EM.GIS.Controls;
-using EM.GIS.Data;
 using EM.GIS.Geometries;
 using EM.GIS.Symbology;
 using EM.IOC;
-using Microsoft.Win32;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -38,9 +36,7 @@ namespace EM.GIS.WPFControls
                 }
             }
         }
-        /// <summary>
-        /// 地图视图
-        /// </summary>
+        /// <inheritdoc/>
         public IView View => Frame.MapView;
         /// <inheritdoc/>
         public bool IsBusy { get; set; }
@@ -59,16 +55,11 @@ namespace EM.GIS.WPFControls
         }
 
         /// <inheritdoc/>
-        public IExtent Extent { get => Frame.Extent; }
-        /// <inheritdoc/>
-        public Rectangle Bound { get => View.Bound; }
-
-        /// <inheritdoc/>
         public ILayerCollection Layers => Frame.Children;
 
         /// <inheritdoc/>
         public List<ITool> MapTools { get; }
-       
+
         /// <inheritdoc/>
         public event EventHandler<IGeoMouseEventArgs> GeoMouseMove;
         /// <inheritdoc/>
@@ -76,7 +67,7 @@ namespace EM.GIS.WPFControls
 
         public Map()
         {
-            InitializeComponent(); 
+            InitializeComponent();
             Frame = new Symbology.Frame((int)ActualWidth, (int)ActualHeight)
             {
                 Text = "地图框"
@@ -94,7 +85,7 @@ namespace EM.GIS.WPFControls
             }
             ActivateMapToolWithZoom(pan);
         }
-        
+
         private void MapView_PropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
             switch (e.PropertyName)
@@ -149,20 +140,21 @@ namespace EM.GIS.WPFControls
         /// <inheritdoc/>
         protected override void OnRender(DrawingContext drawingContext)
         {
-            if (drawingContext != null && Bound.Width > 0 || Bound.Height > 0)
+            if (drawingContext != null && View.Width > 0 || View.Height > 0)
             {
                 BitmapSource bitmapSource;
-                using (Bitmap bmp = new(Bound.Width, Bound.Height))
+                Rectangle bound = new Rectangle(0, 0, View.Width, View.Height);
+                using (Bitmap bmp = new(View.Width, View.Height))
                 {
                     using (Graphics g = Graphics.FromImage(bmp))
                     {
-                        View.Draw(g, Bound);
+                        View.Draw(g, bound); 
                     }
                     bitmapSource = bmp.ToBitmapImage();
                 }
-                var rect = Bound.ToRect();
-                double offsetX = (ActualWidth - Bound.Width) / 2.0;
-                double offsetY = (ActualHeight - Bound.Height) / 2.0;
+                var rect = bound.ToRect();
+                double offsetX = (ActualWidth - bound.Width) / 2.0;
+                double offsetY = (ActualHeight - bound.Height) / 2.0;
                 Transform transform = new TranslateTransform(offsetX, offsetY);
                 drawingContext.PushTransform(transform);
                 drawingContext.DrawImage(bitmapSource, rect);
@@ -197,7 +189,7 @@ namespace EM.GIS.WPFControls
                     break;
             }
         }
-        private void AddLayerEvent(IList? list) 
+        private void AddLayerEvent(IList? list)
         {
             if (list != null)
             {
@@ -395,7 +387,7 @@ namespace EM.GIS.WPFControls
         }
 
         /// <inheritdoc/>
-        public IGroup AddGroup(string groupName )
+        public IGroup AddGroup(string groupName)
         {
             return Layers.AddGroup(groupName);
         }

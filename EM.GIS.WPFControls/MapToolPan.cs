@@ -1,11 +1,7 @@
-﻿using EM.GIS.Controls;
-using EM.GIS.Controls.Properties;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
+﻿using EM.Bases;
+using EM.GIS.Controls;
+using EM.GIS.Geometries;
 using System.Drawing;
-using System.IO;
-using System.Text;
 
 namespace EM.GIS.WPFControls
 {
@@ -16,9 +12,9 @@ namespace EM.GIS.WPFControls
     {
         #region Fields
 
-        private Point _dragStart;
+        private ICoordinate _dragStart;
         private bool _preventDrag;
-        private Rectangle _source;
+        private RectangleF _source;
         private bool _isDragging;
 
         #endregion
@@ -41,7 +37,7 @@ namespace EM.GIS.WPFControls
         {
             if (e.LeftButton == System.Windows.Input.MouseButtonState.Pressed && !_preventDrag)
             {
-                _dragStart = e.Location;
+                _dragStart = e.Location.Copy();
                 _source = e.Map.View.ViewBound;
                 _isDragging = true;
             }
@@ -61,7 +57,7 @@ namespace EM.GIS.WPFControls
 
                 var dx = _dragStart.X - e.Location.X;
                 var dy = _dragStart.Y - e.Location.Y;
-                e.Map.View.ViewBound = new Rectangle(_source.X + dx, _source.Y + dy, _source.Width, _source.Height);
+                e.Map.View.ViewBound = new RectangleF((float)(_source.X + dx), (float)(_source.Y + dy), _source.Width, _source.Height);
             }
 
             base.DoMouseMove(e);
@@ -80,9 +76,9 @@ namespace EM.GIS.WPFControls
                 Map.IsBusy = false;
                 BusySet = false;
             }
-
-            _dragStart = Point.Empty;
-            _source = Rectangle.Empty;
+            _dragStart.X = double.NaN;
+            _dragStart.Y = double.NaN;
+            _source = RectangleF.Empty;
             base.DoMouseUp(e);
         }
 

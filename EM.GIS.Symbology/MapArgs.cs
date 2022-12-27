@@ -10,10 +10,25 @@ namespace EM.GIS.Symbology
     /// </summary>
     public class MapArgs : IProj
     {
+        /// <summary>
+        /// 画布
+        /// </summary>
         public Graphics Device { get; }
+        /// <summary>
+        /// 范围
+        /// </summary>
         public IExtent Extent { get; }
+        /// <summary>
+        /// 窗口范围
+        /// </summary>
         public Rectangle Bound { get; }
+        /// <summary>
+        /// x分辨率
+        /// </summary>
         public double Dx { get; }
+        /// <summary>
+        /// y分辨率
+        /// </summary>
         public double Dy { get; }
         public MapArgs(Rectangle rectangle, IExtent extent)
         {

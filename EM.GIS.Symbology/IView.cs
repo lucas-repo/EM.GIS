@@ -38,7 +38,7 @@ namespace EM.GIS.Symbology
         /// <summary>
         /// 视图边界
         /// </summary>
-        Rectangle ViewBound { get; set; }
+        RectangleF ViewBound { get; set; }
         /// <summary>
         /// 进度委托
         /// </summary>
@@ -52,7 +52,7 @@ namespace EM.GIS.Symbology
         /// </summary>
         /// <param name="g">画板</param>
         /// <param name="rectangle">范围</param>
-        void Draw(Graphics g, Rectangle rectangle);
+        void Draw(Graphics g, RectangleF rectangle);
 
         /// <summary>
         /// 根据视图边界重设视图范围

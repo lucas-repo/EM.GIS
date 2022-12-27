@@ -1,11 +1,11 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <OutputType>WinExe</OutputType>
-    <TargetFramework>net6.0-windows</TargetFramework>
+    <OutputType>Library</OutputType>
+    <TargetFramework>net7.0-windows</TargetFramework>
     <Nullable>enable</Nullable>
     <UseWPF>true</UseWPF>
-    <AssemblyName>GIS工具</AssemblyName>
+    <AssemblyName>EM.GIS.Tools</AssemblyName>
     <UseWindowsForms>False</UseWindowsForms>
     <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
   </PropertyGroup>

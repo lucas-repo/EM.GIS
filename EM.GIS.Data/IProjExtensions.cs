@@ -47,6 +47,21 @@ namespace EM.GIS.Data
         /// <summary>
         /// 将像素坐标转为世界坐标
         /// </summary>
+        /// <param name="point">像素坐标</param>
+        /// <param name="rectangle">像素范围</param>
+        /// <param name="extent">世界范围</param>
+        /// <returns>世界坐标</returns>
+        public static ICoordinate PixelToProj(this ICoordinate point, Rectangle rectangle, IExtent extent)
+        {
+            if (rectangle.Width == 0 || rectangle.Height == 0 || extent == null || extent.IsEmpty())
+            {
+                return null;
+            }
+            return PixelToProj(point.X, point.Y, rectangle, extent);
+        }
+        /// <summary>
+        /// 将像素坐标转为世界坐标
+        /// </summary>
         /// <param name="x">像素X坐标</param>
         /// <param name="y">像素Y坐标</param>
         /// <param name="rectangle">像素范围</param>

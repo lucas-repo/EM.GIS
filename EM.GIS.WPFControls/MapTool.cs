@@ -6,6 +6,9 @@ using System.Windows.Input;
 
 namespace EM.GIS.WPFControls
 {
+    /// <summary>
+    /// 地图工具
+    /// </summary>
     public abstract class MapTool:Tool, IMapTool
     {
         public event EventHandler<KeyEventArgs> KeyUp;

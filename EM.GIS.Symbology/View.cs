@@ -14,9 +14,9 @@ namespace EM.GIS.Symbology
     /// <summary>
     /// 视图
     /// </summary>
-    public class View:BaseCopy,IView
+    public class View : BaseCopy, IView
     {
-        private readonly object _lockObj=new object();
+        private readonly object _lockObj = new object();
         private int _extentChangedSuspensionCount;
         private bool _extentsChanged;
 
@@ -65,13 +65,6 @@ namespace EM.GIS.Symbology
             set { SetProperty(ref _backGround, value); }
         }
 
-        private Rectangle _viewBound;
-        /// <inheritdoc/>
-        public Rectangle ViewBound
-        {
-            get { return _viewBound; }
-            set { SetProperty(ref _viewBound, value); }
-        }
         private Image _backBuffer;
         /// <inheritdoc/>
         public Image BackBuffer
@@ -88,7 +81,7 @@ namespace EM.GIS.Symbology
                     _backBuffer?.Dispose();
                     _backBuffer = value;
                     //更改视图矩形
-                    _viewBound = new Rectangle(0, 0, Width, Height);
+                    _viewBound = new RectangleF(0, 0, Width, Height);
                     OnPropertyChanged(nameof(BackBuffer));
                 }
             }
@@ -112,7 +105,7 @@ namespace EM.GIS.Symbology
             {
                 if (_extent == value || value == null) return;
                 IExtent ext = value.Copy();
-               ExtentExtensions.ResetAspectRatio(ext,Width,Height);
+                ExtentExtensions.ResetAspectRatio(ext, Width, Height);
 
                 // 重新绘制背景图片
                 SuspendExtentChanged();
@@ -127,16 +120,23 @@ namespace EM.GIS.Symbology
         {
             get => new Rectangle(0, 0, Width, Height);
         }
+        private RectangleF _viewBound;
+        /// <inheritdoc/>
+        public RectangleF ViewBound
+        {
+            get { return _viewBound; }
+            set { SetProperty(ref _viewBound, value); }
+        }
 
         /// <inheritdoc/>
         public Action<string, int> Progress { get; set; }
-        public View(IFrame frame,int width, int height)
+        public View(IFrame frame, int width, int height)
         {
-            Frame = frame??throw new ArgumentNullException(nameof(frame));
+            Frame = frame ?? throw new ArgumentNullException(nameof(frame));
             Width = width;
             Height = height;
 
-            _viewBound = new Rectangle(0, 0, Width, Height);
+            _viewBound = new RectangleF(0, 0, Width, Height);
             _bw = new BackgroundWorker
             {
                 WorkerSupportsCancellation = true,
@@ -208,7 +208,7 @@ namespace EM.GIS.Symbology
                                 break;
                             }
                             bool selected = i == 1;
-                            Frame.Draw(g,Frame.Projection, Bound, Extent, selected,Progress, CancellationPending, resetBufferAction);
+                            Frame.Draw(g, Frame.Projection, Bound, Extent, selected, Progress, CancellationPending, resetBufferAction);
                         }
                     }
                     #endregion
@@ -264,11 +264,11 @@ namespace EM.GIS.Symbology
                 _bw.CancelAsync();
         }
         /// <inheritdoc/>
-        public void Draw(Graphics g, Rectangle rectangle)
+        public void Draw(Graphics g, RectangleF rectangle)
         {
             if (BackBuffer != null && g != null)
             {
-                Rectangle srcRectangle = GetRectangleToView(rectangle);
+                var srcRectangle = GetRectangleToView(rectangle);
                 try
                 {
                     lock (_lockObj)
@@ -287,9 +287,9 @@ namespace EM.GIS.Symbology
         /// </summary>
         /// <param name="rectangle">矩形范围</param>
         /// <returns>相对于背景图像的矩形范围</returns>
-        public Rectangle GetRectangleToView(Rectangle rectangle)
+        public RectangleF GetRectangleToView(RectangleF rectangle)
         {
-            Rectangle result = new Rectangle
+            var result = new RectangleF
             {
                 X = ViewBound.X + (rectangle.X * ViewBound.Width / Width),
                 Y = ViewBound.Y + (rectangle.Y * ViewBound.Height / Height),
@@ -301,7 +301,8 @@ namespace EM.GIS.Symbology
 
         public void ResetViewExtent()
         {
-            IExtent env = BufferToProj(ViewBound);
+            //IExtent env = BufferToProj(ViewBound);
+            IExtent env = IProjExtensions.PixelToProj(ViewBound, Bound, Extent);
             Extent = env;
         }
         public IExtent BufferToProj(Rectangle rect)
@@ -336,7 +337,7 @@ namespace EM.GIS.Symbology
             if (destWidth < 5) destWidth = 5;
             if (destHeight < 5) destHeight = 5;
 
-            _viewBound = new Rectangle(ViewBound.X, ViewBound.Y, destWidth, destHeight);
+            _viewBound = new RectangleF(ViewBound.X, ViewBound.Y, destWidth, destHeight);
             ResetViewExtent();
 
             Width = width;
@@ -345,7 +346,7 @@ namespace EM.GIS.Symbology
 
         public void ZoomToMaxExtent()
         {
-            var maxExtent =Frame.GetMaxExtent(true);
+            var maxExtent = Frame.GetMaxExtent(true);
             if (maxExtent != null)
             {
                 Extent = maxExtent;
@@ -362,12 +363,12 @@ namespace EM.GIS.Symbology
                     if (_bw != null)
                     {
                         _bw.Dispose();
-                        _bw=null;
+                        _bw = null;
                     }
                     if (BackBuffer != null)
                     {
                         BackBuffer.Dispose();
-                        BackBuffer=null;
+                        BackBuffer = null;
                     }
                 }
 

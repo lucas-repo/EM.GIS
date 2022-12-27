@@ -4,14 +4,14 @@ using System.Drawing;
 namespace EM.GIS.Controls
 {
     /// <summary>
-    /// 几何参数
+    /// 几何鼠标参数
     /// </summary>
     public interface IGeoMouseEventArgs
     {
         /// <summary>
         /// 屏幕坐标
         /// </summary>
-        Point Location { get; }
+        ICoordinate Location { get; }
         /// <summary>
         /// 地理坐标
         /// </summary>
