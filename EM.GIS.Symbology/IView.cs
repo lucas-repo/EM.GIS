@@ -9,7 +9,7 @@ namespace EM.GIS.Symbology
     /// <summary>
     /// 视图接口
     /// </summary>
-    public interface IView : IProj, ICloneable, INotifyPropertyChanged, ICancelable, IDisposable
+    public interface IView :  ICloneable, INotifyPropertyChanged,  IDisposable,IProj
     {
         /// <summary>
         /// 地图框架
@@ -18,7 +18,7 @@ namespace EM.GIS.Symbology
         /// <summary>
         /// 背景颜色
         /// </summary>
-        Color BackGround { get; set; }
+        Color Background { get; set; }
         /// <summary>
         /// 宽度
         /// </summary>
@@ -28,17 +28,21 @@ namespace EM.GIS.Symbology
         /// </summary>
         int Height { get; }
         /// <summary>
-        /// 后台缓存图片，用以获取缓存图片
+        /// 正在工作
         /// </summary>
-        Image BackBuffer { get; set; }
+        bool IsWorking { get; }
+        /// <summary>
+        /// 后台缓存图片
+        /// </summary>
+        ViewCache BackImage { get; }
+        /// <summary>
+        /// 视图窗口
+        /// </summary>
+        RectangleF ViewBound { get; set; }
         /// <summary>
         /// 视图范围
         /// </summary>
-        new IExtent Extent { get; set; }
-        /// <summary>
-        /// 视图边界
-        /// </summary>
-        RectangleF ViewBound { get; set; }
+        IExtent ViewExtent { get; set; }
         /// <summary>
         /// 进度委托
         /// </summary>
@@ -46,16 +50,18 @@ namespace EM.GIS.Symbology
         /// <summary>
         /// 重绘缓存
         /// </summary>
-        void ResetBuffer();
+        /// <param name="rectangle">画布大小</param>
+        /// <param name="extent">地图范围</param>
+        /// <param name="drawingExtent">重绘范围</param>
+        void ResetBuffer(Rectangle rectangle, IExtent extent, IExtent drawingExtent);
         /// <summary>
         /// 绘制背景图至指定画板的指定范围
         /// </summary>
         /// <param name="g">画板</param>
         /// <param name="rectangle">范围</param>
         void Draw(Graphics g, RectangleF rectangle);
-
         /// <summary>
-        /// 根据视图边界重设视图范围
+        /// 根据视图矩形重设视图范围
         /// </summary>
         void ResetViewExtent();
         /// <summary>
@@ -65,7 +71,7 @@ namespace EM.GIS.Symbology
         /// <param name="height"></param>
         void Resize(int width, int height);
         /// <summary>
-        /// 居中至最大范围
+        /// 缩放至最大范围
         /// </summary>
         void ZoomToMaxExtent();
     }

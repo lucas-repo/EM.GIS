@@ -19,10 +19,6 @@ namespace EM.GIS.Controls
         /// </summary>
         IFrame Frame { get; set; }
         /// <summary>
-        /// 地图框架
-        /// </summary>
-        IView View { get; }
-        /// <summary>
         /// 是否在工作中
         /// </summary>
         bool IsBusy { get; set; }
@@ -40,20 +36,6 @@ namespace EM.GIS.Controls
         /// </summary>
         void Invalidate();
         /// <summary>
-        /// 缩放至最大范围
-        /// </summary>
-        void ZoomToMaxExtent();
-        /// <summary>
-        /// 添加分组
-        /// </summary>
-        /// <param name="groupName">分组名</param>
-        /// <returns>分组</returns>
-        IGroup AddGroup(string groupName);
-        /// <summary>
-        /// 图层
-        /// </summary>
-        ILayerCollection Layers { get; }
-        /// <summary>
         /// 地图方法
         /// </summary>
         List<ITool> MapTools { get; }
@@ -66,7 +48,10 @@ namespace EM.GIS.Controls
         /// 使所有地图工具无效
         /// </summary>
         void DeactivateAllMapTools();
-
+        /// <summary>
+        /// 视图
+        /// </summary>
+        IView View { get; }
         #region 事件
         /// <summary>
         /// 鼠标移动事件

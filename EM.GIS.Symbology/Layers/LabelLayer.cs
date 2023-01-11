@@ -1,4 +1,5 @@
-﻿using EM.GIS.Geometries;
+﻿using EM.GIS.Data;
+using EM.GIS.Geometries;
 using System;
 using System.Drawing;
 using System.Threading;
@@ -25,7 +26,7 @@ namespace EM.GIS.Symbology
         {
             throw new NotImplementedException();
         }
-        protected override void OnDraw(Graphics graphics, Rectangle rectangle, IExtent extent, bool selected = false, Action<string, int> progressAction = null, Func<bool> cancelFunc = null, Action invalidateMapFrameAction = null)
+        protected override void OnDraw(MapArgs mapArgs, bool selected = false, Action<string, int> progressAction = null, Func<bool> cancelFunc = null, Action invalidateMapFrameAction = null)
         {
             throw new NotImplementedException();
         }

@@ -150,7 +150,7 @@ namespace EM.GIS.WPFControls.ViewModels
             if (appManager?.Map != null)
             {
                 appManager.Map.GeoMouseMove += Map_GeoMouseMove;
-                appManager.Map.Frame.MapView.Progress = ReportProgress;
+                appManager.Map.View.Progress = ReportProgress;
             }
 
             LoadTileMaps();
@@ -174,14 +174,14 @@ namespace EM.GIS.WPFControls.ViewModels
             switch (e.PropertyName)
             {
                 case nameof(TileMap):
-                    if (Map!=null&& !Map.Layers.Any(x => x.Text == TileMap.Name))
+                    if (Map?.Frame!=null&& !Map.Frame.Children.Any(x => x.Text == TileMap.Name))
                     {
                         var driver = DriverFactory?.Drivers.FirstOrDefault(x => x is IWebMapDriver) as IWebMapDriver;
                         if (driver != null)
                         {
                             var tileSet= driver.OpenXYZ(TileMap.Name, TileMap.Url, TileMap.Servers, TileMap.MinLevel, TileMap.MaxLevel);
                             RasterLayer rasterLayer=new RasterLayer(tileSet);
-                            Map.Layers.Add(rasterLayer);
+                            Map.Frame.Children.Add(rasterLayer);
                         }
                     }
                     break;

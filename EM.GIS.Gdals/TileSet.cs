@@ -58,9 +58,9 @@ namespace EM.GIS.Gdals
             base.Dispose(disposeManagedResources);
         }
         /// <inheritdoc/>
-        public void Draw(Graphics graphics, RectangleF rectangle, IExtent extent, Action<int> progressAction = null, Func<bool> cancelFunc = null)
+        public void Draw(MapArgs mapArgs, Action<int> progressAction = null, Func<bool> cancelFunc = null)
         {
-            if (extent == null || extent.IsEmpty() || rectangle.IsEmpty || Projection == null)
+            if (mapArgs == null || mapArgs.Graphics == null || mapArgs.Bound.IsEmpty || mapArgs.Extent == null || mapArgs.Extent.IsEmpty() || mapArgs.DestExtent == null || mapArgs.DestExtent.IsEmpty() || cancelFunc?.Invoke() == true)
             {
                 return;
             }
@@ -74,16 +74,16 @@ namespace EM.GIS.Gdals
 
                 if (cancelFunc?.Invoke() == true) return;
                 // 若为投影坐标系，记录投影坐标范围
-                IExtent geogExtent = extent.Copy();//地理范围
-                IExtent destExtent = extent.Copy();//要下载的地图范围
-                var destRectangle = rectangle;
+                IExtent geogExtent = mapArgs.DestExtent.Copy();//地理范围
+                IExtent destExtent = mapArgs.DestExtent.Copy();//要下载的地图范围
+                var destRectangle = mapArgs.ProjToPixel(mapArgs.DestExtent);
                 if (Projection.Equals(TileCalculator.WebMercProj.Value))
                 {
                     destExtent.MinX = TileCalculator.Clip(destExtent.MinX, TileCalculator.MinWebMercX, TileCalculator.MaxWebMercX);
                     destExtent.MaxX = TileCalculator.Clip(destExtent.MaxX, TileCalculator.MinWebMercX, TileCalculator.MaxWebMercX);
                     destExtent.MinY = TileCalculator.Clip(destExtent.MinY, TileCalculator.MinWebMercY, TileCalculator.MaxWebMercY);
                     destExtent.MaxY = TileCalculator.Clip(destExtent.MaxY, TileCalculator.MinWebMercY, TileCalculator.MaxWebMercY);
-                    destRectangle = destExtent.ProjToPixelF(rectangle, extent);
+                    destRectangle = mapArgs.ProjToPixel(destExtent);
                     geogExtent = destExtent.Copy();
                     Projection.ReProject(TileCalculator.Wgs84Proj.Value, geogExtent);
                 }
@@ -93,7 +93,7 @@ namespace EM.GIS.Gdals
                     destExtent.MinX = TileCalculator.Clip(destExtent.MaxX, TileCalculator.MinLongitude, TileCalculator.MaxLongitude);
                     destExtent.MinY = TileCalculator.Clip(destExtent.MinY, TileCalculator.MinLatitude, TileCalculator.MaxLatitude);
                     destExtent.MaxY = TileCalculator.Clip(destExtent.MaxY, TileCalculator.MinLatitude, TileCalculator.MaxLatitude);
-                    destRectangle = destExtent.ProjToPixelF(rectangle, extent);
+                    destRectangle = mapArgs.ProjToPixel(destExtent);
                     geogExtent = destExtent.Copy();
                 }
 
@@ -184,9 +184,9 @@ namespace EM.GIS.Gdals
                         Debug.WriteLine($"{nameof(Draw)}取消_{tile.Key.Level}_{tile.Key.Col}_{tile.Key.Row}");
                         return;
                     }
-                    if (tile.Value.Extent.Intersects(extent))
+                    if (tile.Value.Extent.Intersects(mapArgs.DestExtent))
                     {
-                        tile.Value.Draw(graphics, rectangle, extent, progressAction, cancelFunc);
+                        tile.Value.Draw(mapArgs, progressAction, cancelFunc);
                     }
                     //var srcExtent = GetIntersectExtent(tile.Value.Extent, extent);
                     //if (srcExtent == null)

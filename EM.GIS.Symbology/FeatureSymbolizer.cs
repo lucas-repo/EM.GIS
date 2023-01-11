@@ -10,7 +10,7 @@ namespace EM.GIS.Symbology
 
         public IFeatureSymbolCollection Symbols { get;  set; }
 
-        public double GetScale(MapArgs drawArgs)
+        public double GetScale(IProj drawArgs)
         {
             if (ScaleMode == ScaleMode.Geographic)
             {

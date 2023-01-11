@@ -66,9 +66,9 @@ namespace EM.GIS.Symbology
             Children = new LayerCollection(this);
         }
         /// <inheritdoc/>
-        public virtual void Draw(Graphics graphics, ProjectionInfo projection, Rectangle rectangle, IExtent extent, bool selected = false, Action<string, int> progressAction = null, Func<bool> cancelFunc = null, Action invalidateMapFrameAction = null)
+        public virtual void Draw(MapArgs mapArgs, bool selected = false, Action<string, int> progressAction = null, Func<bool> cancelFunc = null, Action invalidateMapFrameAction = null)
         {
-            if (graphics == null || rectangle.IsEmpty || extent == null || extent.IsEmpty() || cancelFunc?.Invoke() == true || Children.Count == 0)
+            if (mapArgs == null || mapArgs.Graphics == null || mapArgs.Bound.IsEmpty || mapArgs.Extent == null || mapArgs.Extent.IsEmpty() || mapArgs.DestExtent == null || mapArgs.DestExtent.IsEmpty() || cancelFunc?.Invoke() == true || Children.Count == 0)
             {
                 return;
             }
@@ -91,11 +91,11 @@ namespace EM.GIS.Symbology
                 {
                     if (item is ILayer layer)
                     {
-                        layer.Draw(graphics, projection, rectangle, extent, selected, newProgressAction, cancelFunc, invalidateMapFrameAction);
+                        layer.Draw(mapArgs, selected, newProgressAction, cancelFunc, invalidateMapFrameAction);
                     }
                     else if (item is IGroup group)
                     {
-                        group.Draw(graphics, projection, rectangle, extent, selected, newProgressAction, cancelFunc, invalidateMapFrameAction);
+                        group.Draw(mapArgs, selected, newProgressAction, cancelFunc, invalidateMapFrameAction);
                     }
                 }
                 totalProgress += (int)increment;

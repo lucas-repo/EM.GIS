@@ -15,7 +15,7 @@ namespace EM.GIS.Symbology
             set => base.DefaultCategory = value;
         }
 
-        public new IPolygonCategoryCollection Children { get=> base.Children as IPolygonCategoryCollection; protected set => base.Children = value; }
+        public new IPolygonCategoryCollection Children { get => base.Children as IPolygonCategoryCollection; protected set => base.Children = value; }
 
         public PolygonLayer(IFeatureSet featureSet) : base(featureSet)
         {
@@ -25,17 +25,16 @@ namespace EM.GIS.Symbology
                 Text = "默认"
             };
         }
-        protected override void DrawGeometry(MapArgs drawArgs, IFeatureSymbolizer symbolizer, IGeometry geometry)
+        protected override void DrawGeometry(IProj proj, Graphics graphics, IFeatureSymbolizer symbolizer, IGeometry geometry)
         {
-            if (drawArgs == null || !(symbolizer is IPolygonSymbolizer polygonSymbolizer) || geometry == null)
+            if (symbolizer is IPolygonSymbolizer polygonSymbolizer)
             {
-                return;
-            }
-            float scaleSize = (float)symbolizer.GetScale(drawArgs);
-            using (GraphicsPath path = new GraphicsPath())
-            {
-                GetPolygons(drawArgs, geometry, path);
-                polygonSymbolizer.DrawPolygon(drawArgs.Device, scaleSize, path);
+                float scaleSize = (float)symbolizer.GetScale(proj);
+                using (GraphicsPath path = new GraphicsPath())
+                {
+                    GetPolygons(proj, geometry, path);
+                    polygonSymbolizer.DrawPolygon(graphics, scaleSize, path);
+                }
             }
         }
         private void DrawGeometry(MapArgs drawArgs, Graphics context, float scaleSize, IPolygonSymbolizer polygonSymbolizer, IGeometry geometry)
@@ -62,21 +61,21 @@ namespace EM.GIS.Symbology
                 }
             }
         }
-        private void GetPolygons(MapArgs drawArgs, IGeometry geometry, GraphicsPath path)
+        private void GetPolygons(IProj proj, IGeometry geometry, GraphicsPath path)
         {
             switch (geometry.GeometryType)
             {
                 case GeometryType.MultiPolygon:
                     foreach (var partGeo in geometry.Geometries)
                     {
-                        GetPolygons(drawArgs, partGeo, path);
+                        GetPolygons(proj, partGeo, path);
                     }
                     break;
                 case GeometryType.Polygon:
                     foreach (var partGeo in geometry.Geometries)
                     {
                         path.StartFigure();
-                        GetPolygons(drawArgs, partGeo, path);
+                        GetPolygons(proj, partGeo, path);
                     }
                     break;
                 case GeometryType.LineString:
@@ -85,7 +84,7 @@ namespace EM.GIS.Symbology
                     for (int j = 0; j < pointCount; j++)
                     {
                         var coord = geometry.Coordinates[j];
-                        PointF point = drawArgs.ProjToPixelF(coord);
+                        PointF point = proj.ProjToPixelF(coord);
                         points[j] = point;
                     }
                     //去重

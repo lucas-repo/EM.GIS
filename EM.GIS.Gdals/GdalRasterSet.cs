@@ -166,38 +166,38 @@ namespace EM.GIS.Gdals
         #region Methods
 
         /// <inheritdoc/>
-        public override void Draw(Graphics g, RectangleF window, IExtent envelope, Action<int> progressAction = null, Func<bool> cancelFunc = null)
+        public override void Draw(MapArgs mapArgs, Action<int> progressAction = null, Func<bool> cancelFunc = null)
         {
-            if (g==null|| window.IsEmpty||envelope==null|| envelope.IsEmpty()|| cancelFunc?.Invoke()==true)
+            if (mapArgs == null || mapArgs.Graphics == null || mapArgs.Bound.IsEmpty || mapArgs.Extent == null || mapArgs.Extent.IsEmpty() || mapArgs.DestExtent == null || mapArgs.DestExtent.IsEmpty() || cancelFunc?.Invoke() == true)
             {
-                return ;
+                return;
             }
 
             progressAction?.Invoke(5);
 
             // Gets the scaling factor for converting from geographic to pixel coordinates
-            double dx = window.Width / envelope.Width;
-            double dy = window.Height / envelope.Height;
+            double dx = mapArgs.Bound.Width / mapArgs.Extent.Width;
+            double dy = mapArgs.Bound.Height / mapArgs.Extent.Height;
 
-            double[] a = Bounds.AffineCoefficients;
+            double[] affine = Bounds.AffineCoefficients;
 
             // calculate inverse
-            double p = 1 / ((a[1] * a[5]) - (a[2] * a[4]));
+            double p = 1 / ((affine[1] * affine[5]) - (affine[2] * affine[4]));
             double[] aInv = new double[4];
-            aInv[0] = a[5] * p;
-            aInv[1] = -a[2] * p;
-            aInv[2] = -a[4] * p;
-            aInv[3] = a[1] * p;
+            aInv[0] = affine[5] * p;
+            aInv[1] = -affine[2] * p;
+            aInv[2] = -affine[4] * p;
+            aInv[3] = affine[1] * p;
 
             // estimate rectangle coordinates
-            double tlx = ((envelope.MinX - a[0]) * aInv[0]) + ((envelope.MaxY - a[3]) * aInv[1]);
-            double tly = ((envelope.MinX - a[0]) * aInv[2]) + ((envelope.MaxY - a[3]) * aInv[3]);
-            double trx = ((envelope.MaxX - a[0]) * aInv[0]) + ((envelope.MaxY - a[3]) * aInv[1]);
-            double trY = ((envelope.MaxX - a[0]) * aInv[2]) + ((envelope.MaxY - a[3]) * aInv[3]);
-            double blx = ((envelope.MinX - a[0]) * aInv[0]) + ((envelope.MinY - a[3]) * aInv[1]);
-            double bly = ((envelope.MinX - a[0]) * aInv[2]) + ((envelope.MinY - a[3]) * aInv[3]);
-            double brx = ((envelope.MaxX - a[0]) * aInv[0]) + ((envelope.MinY - a[3]) * aInv[1]);
-            double bry = ((envelope.MaxX - a[0]) * aInv[2]) + ((envelope.MinY - a[3]) * aInv[3]);
+            double tlx = ((mapArgs.DestExtent.MinX - affine[0]) * aInv[0]) + ((mapArgs.DestExtent.MaxY - affine[3]) * aInv[1]);
+            double tly = ((mapArgs.DestExtent.MinX - affine[0]) * aInv[2]) + ((mapArgs.DestExtent.MaxY - affine[3]) * aInv[3]);
+            double trx = ((mapArgs.DestExtent.MaxX - affine[0]) * aInv[0]) + ((mapArgs.DestExtent.MaxY - affine[3]) * aInv[1]);
+            double trY = ((mapArgs.DestExtent.MaxX - affine[0]) * aInv[2]) + ((mapArgs.DestExtent.MaxY - affine[3]) * aInv[3]);
+            double blx = ((mapArgs.DestExtent.MinX - affine[0]) * aInv[0]) + ((mapArgs.DestExtent.MinY - affine[3]) * aInv[1]);
+            double bly = ((mapArgs.DestExtent.MinX - affine[0]) * aInv[2]) + ((mapArgs.DestExtent.MinY - affine[3]) * aInv[3]);
+            double brx = ((mapArgs.DestExtent.MaxX - affine[0]) * aInv[0]) + ((mapArgs.DestExtent.MinY - affine[3]) * aInv[1]);
+            double bry = ((mapArgs.DestExtent.MaxX - affine[0]) * aInv[2]) + ((mapArgs.DestExtent.MinY - affine[3]) * aInv[3]);
 
             // get absolute maximum and minimum coordinates to make a rectangle on projected coordinates
             // that overlaps all the visible area.
@@ -221,15 +221,15 @@ namespace EM.GIS.Gdals
             progressAction?.Invoke(10);
 
             // gets the affine scaling factors.
-            float m11 = Convert.ToSingle(a[1] * dx);
-            float m22 = Convert.ToSingle(a[5] * -dy);
-            float m21 = Convert.ToSingle(a[2] * dx);
-            float m12 = Convert.ToSingle(a[4] * -dy);
-            double l = a[0] - (.5 * (a[1] + a[2])); // Left of top left pixel
-            double t = a[3] - (.5 * (a[4] + a[5])); // top of top left pixel
-            float xShift = (float)((l - envelope.MinX) * dx);
-            float yShift = (float)((envelope.MaxY - t) * dy);
-            g.PixelOffsetMode = PixelOffsetMode.Half;
+            float m11 = Convert.ToSingle(affine[1] * dx);
+            float m22 = Convert.ToSingle(affine[5] * -dy);
+            float m21 = Convert.ToSingle(affine[2] * dx);
+            float m12 = Convert.ToSingle(affine[4] * -dy);
+            double l = affine[0] - (.5 * (affine[1] + affine[2])); // Left of top left pixel
+            double t = affine[3] - (.5 * (affine[4] + affine[5])); // top of top left pixel
+            float xShift = (float)((l - mapArgs.Extent.MinX) * dx);
+            float yShift = (float)((mapArgs.Extent.MaxY - t) * dy);
+            mapArgs.Graphics.PixelOffsetMode = PixelOffsetMode.Half;
 
             float xRatio = 1, yRatio = 1;
             if (_overviewCount > 0)
@@ -243,7 +243,7 @@ namespace EM.GIS.Gdals
             if (m11 > xRatio || m22 > yRatio)
             {
                 // out of pyramids
-                g.InterpolationMode = InterpolationMode.NearestNeighbor;
+                mapArgs.Graphics.InterpolationMode = InterpolationMode.NearestNeighbor;
                 _overview = -1; // don't use overviews when zooming behind the max res.
             }
             else
@@ -270,7 +270,7 @@ namespace EM.GIS.Gdals
             m12 *= (float)overviewPow;
             m21 *= (float)overviewPow;
             m22 *= (float)overviewPow;
-            g.Transform = new Matrix(m11, m12, m21, m22, xShift, yShift);
+            mapArgs.Graphics.Transform = new Matrix(m11, m12, m21, m22, xShift, yShift);
 
             int blockXsize = 0, blockYsize = 0;
 
@@ -342,7 +342,7 @@ namespace EM.GIS.Gdals
                     {
                         if (bitmap != null)
                         {
-                            g.DrawImage(bitmap, xOffsetI, yOffsetI);
+                            mapArgs.Graphics.DrawImage(bitmap, xOffsetI, yOffsetI);
                         }
                     }
                     progressPercent += increment;
@@ -576,7 +576,7 @@ namespace EM.GIS.Gdals
             }
             return result;
         }
-       
+
         private Bitmap GetBitmap(int xOffset, int yOffset, int xSize, int ySize)
         {
             Bitmap result = null;

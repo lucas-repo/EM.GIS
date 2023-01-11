@@ -17,6 +17,7 @@ using System.Threading.Tasks;
 using EM.IOC;
 using System.Windows.Input;
 using EM.GIS.Geometries;
+using System.Net;
 
 namespace EM.GIS.Gdals
 {
@@ -36,7 +37,11 @@ namespace EM.GIS.Gdals
             {
                 if (_client == null)
                 {
-                    _client = new HttpClient();
+                    _client = new HttpClient()
+                    {
+                        Timeout = new TimeSpan(0, 0, 5)
+                    };
+                    ServicePointManager.DefaultConnectionLimit = Environment.ProcessorCount; // 设置最大连接数
                     _client.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", @"Mozilla / 5.0(Windows; U; Windows NT 6.0; en - US; rv: 1.9.1.7) Gecko / 20091221 Firefox / 3.5.7");
                 }
                 return _client;

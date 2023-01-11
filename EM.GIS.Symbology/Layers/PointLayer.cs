@@ -21,21 +21,24 @@ namespace EM.GIS.Symbology
             };
         }
 
-        protected override void DrawGeometry(MapArgs drawArgs, IFeatureSymbolizer symbolizer, IGeometry geometry)
+        protected override void DrawGeometry(IProj proj, Graphics graphics, IFeatureSymbolizer symbolizer, IGeometry geometry)
         {
-            DrawPoint(drawArgs, symbolizer as IPointSymbolizer, geometry);
+            if (symbolizer is IPointSymbolizer pointSymbolizer)
+            {
+                DrawPoint(proj, graphics, pointSymbolizer, geometry);
+            }
         }
-        private void DrawPoint(MapArgs drawArgs, IPointSymbolizer symbolizer, IGeometry geometry)
+        private void DrawPoint(IProj proj, Graphics graphics, IPointSymbolizer symbolizer, IGeometry geometry)
         {
             if (geometry.Geometries.Count == 0)
             {
-                float scaleSize = (float)symbolizer.GetScale(drawArgs);
+                float scaleSize = (float)symbolizer.GetScale(proj);
                 int pointCount = geometry.Coordinates.Count;
                 for (int j = 0; j < pointCount; j++)
                 {
                     var coord = geometry.Coordinates[j];
-                    PointF point = drawArgs.ProjToPixelF(coord);
-                    symbolizer.DrawPoint(drawArgs.Device, scaleSize, point);
+                    PointF point = proj.ProjToPixelF(coord);
+                    symbolizer.DrawPoint(graphics, scaleSize, point);
                 }
             }
             else
@@ -44,10 +47,9 @@ namespace EM.GIS.Symbology
                 for (int i = 0; i < geoCount; i++)
                 {
                     var partGeo = geometry.Geometries[i];
-                    DrawPoint(drawArgs, symbolizer, partGeo);
+                    DrawPoint(proj, graphics, symbolizer, partGeo);
                 }
             }
-
         }
     }
 }

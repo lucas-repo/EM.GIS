@@ -48,5 +48,11 @@ namespace EM.GIS.Symbology
         /// <param name="rectangle">矩形</param>
         /// <returns>可见为true反之false</returns>
         bool GetVisible(IExtent extent,Rectangle rectangle);
+        /// <summary>
+        /// 在指定范围是否可见
+        /// </summary>
+        /// <param name="extent">范围</param>
+        /// <returns>可见为true反之false</returns>
+        bool GetVisible(IExtent extent);
     }
 }

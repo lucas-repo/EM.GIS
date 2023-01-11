@@ -104,33 +104,33 @@ namespace EM.GIS.Symbology
             DataSet = dataSet;
         }
         /// <inheritdoc/>
-        public void Draw(Graphics graphics, ProjectionInfo projection, Rectangle rectangle, IExtent extent, bool selected = false, Action<string, int> progressAction = null, Func<bool> cancelFunc = null, Action invalidateMapFrameAction = null)
+        public void Draw(MapArgs mapArgs, bool selected = false, Action<string, int> progressAction = null, Func<bool> cancelFunc = null, Action invalidateMapFrameAction = null)
         {
-            if (graphics == null || rectangle.IsEmpty || extent == null || extent.IsEmpty() || cancelFunc?.Invoke() == true)
+            if (mapArgs == null || mapArgs.Graphics == null ||  mapArgs.Bound.IsEmpty || mapArgs.Extent == null || mapArgs.Extent.IsEmpty() || mapArgs.DestExtent == null || mapArgs.DestExtent.IsEmpty() ||!GetVisible(mapArgs.DestExtent)|| cancelFunc?.Invoke() == true)
             {
                 return;
             }
             progressAction?.Invoke(ProgressMessage, 0);
-            IExtent destExtent = extent;
-            if (projection != null && DataSet?.Projection != null && !projection.Equals(DataSet.Projection))
+            MapArgs destMapArgs = mapArgs.Copy();
+            if (mapArgs.Projection != null && DataSet?.Projection != null && !mapArgs.Projection.Equals(DataSet.Projection))
             {
-                destExtent = extent.Copy();
-                projection.ReProject(DataSet.Projection, destExtent);
+                destMapArgs.Extent = mapArgs.DestExtent.Copy();
+                mapArgs.Projection.ReProject(DataSet.Projection, destMapArgs.Extent);
+                destMapArgs.DestExtent = mapArgs.DestExtent.Copy();
+                mapArgs.Projection.ReProject(DataSet.Projection, destMapArgs.DestExtent);
             }
-            OnDraw(graphics, rectangle, destExtent, selected, progressAction, cancelFunc, invalidateMapFrameAction);
+            OnDraw(destMapArgs, selected, progressAction, cancelFunc, invalidateMapFrameAction);
             progressAction?.Invoke(ProgressMessage, 100);
         }
         /// <summary>
         /// 绘制图层到画布
         /// </summary>
-        /// <param name="graphics">画布</param>
-        /// <param name="rectangle">矩形</param>
-        /// <param name="extent">范围</param>
+        /// <param name="mapArgs">参数</param>
         /// <param name="selected">是否绘制选择</param>
         /// <param name="progressAction">进度委托</param>
         /// <param name="cancelFunc">取消匿名方法</param>
         /// <param name="invalidateMapFrameAction">使地图无效匿名方法</param>
-        protected abstract void OnDraw(Graphics graphics, Rectangle rectangle, IExtent extent, bool selected = false, Action<string, int> progressAction = null, Func<bool> cancelFunc = null, Action invalidateMapFrameAction = null);
+        protected abstract void OnDraw(MapArgs mapArgs, bool selected = false, Action<string, int> progressAction = null, Func<bool> cancelFunc = null, Action invalidateMapFrameAction = null);
         /// <inheritdoc/>
         public bool GetVisible(IExtent extent, Rectangle rectangle)
         {
@@ -146,6 +146,29 @@ namespace EM.GIS.Symbology
             }
 
             return true;
+        }
+        /// <summary>
+        /// 判断在指定范围是否可见
+        /// </summary>
+        /// <param name="extent">范围</param>
+        /// <returns>是否可见</returns>
+        public bool GetVisible(IExtent extent)
+        {
+            bool ret = false;
+            if (!IsVisible)
+            {
+                return ret;
+            }
+            if (Extent.Intersects(extent))
+            {
+                ret= true;
+            }
+            if (UseDynamicVisibility)
+            {
+                //todo compare the scalefactor 
+            }
+
+            return ret;
         }
 
         #region IDisposable Support

@@ -1,4 +1,5 @@
 ﻿using EM.Bases;
+using EM.GIS.Controls;
 using EM.GIS.Symbology;
 using EM.IOC;
 using System;
@@ -19,14 +20,14 @@ namespace EM.GIS.WPFControls
     {
         protected override void OnExecute(object? parameter)
         {
-            if (parameter is IFrame frame&& frame.MapView!=null)
+            if (parameter is IMap map&& map.View!=null)
             {
-                frame.MapView.ZoomToMaxExtent();
+                map.View.ZoomToMaxExtent();
             }
         }
         public override bool CanExecute(object? parameter)
         {
-            return parameter is IFrame frame && frame.MapView != null;
+            return parameter is IMap map && map.View != null;
         }
     }
 }

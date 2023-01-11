@@ -17,11 +17,11 @@ namespace EM.GIS.WPFControls
         #region Fields
 
         private int _direction;
-        private Point _dragStart;
+        private PointD _dragStart;
         private bool _isDragging;
         private bool _preventDrag;
         private double _sensitivity;
-        private Rectangle _source;
+        private RectangleF _source;
         private int _timerInterval;
         private Timer _zoomTimer;
 
@@ -111,7 +111,7 @@ namespace EM.GIS.WPFControls
 
                 var dx = _dragStart.X - e.Location.X;
                 var dy = _dragStart.Y - e.Location.Y;
-                e.Map.View.ViewBound = new Rectangle(_source.X + dx, _source.Y + dy, _source.Width, _source.Height);
+                e.Map.View.ViewBound = new RectangleF((float)(_source.X + dx), (float)((_source.Y + dy)), _source.Width, _source.Height);
             }
 
             base.DoMouseMove(e);
@@ -130,7 +130,7 @@ namespace EM.GIS.WPFControls
                 BusySet = false;
             }
 
-            _dragStart = Point.Empty;
+            _dragStart = PointD.Empty;
             _source = Rectangle.Empty;
             base.DoMouseUp(e);
         }
@@ -139,7 +139,7 @@ namespace EM.GIS.WPFControls
         {
             // Fix this
             _zoomTimer.Stop(); // if the timer was already started, stop it.
-            Rectangle r = e.Map.View.ViewBound;
+            var r = e.Map.View.ViewBound;
 
             // For multiple zoom steps before redrawing, we actually
             // want the x coordinate relative to the screen, not

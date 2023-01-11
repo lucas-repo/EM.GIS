@@ -106,7 +106,7 @@ namespace EM.GIS.Data
             return 0;
         }
         /// <inheritdoc/>
-        public virtual void Draw(Graphics graphics, RectangleF rectangle, IExtent extent, Action<int> progressAction = null, Func<bool> cancelFunc = null)
+        public virtual void Draw(MapArgs mapArgs, Action<int> progressAction = null, Func<bool> cancelFunc = null)
         { }
     }
 }

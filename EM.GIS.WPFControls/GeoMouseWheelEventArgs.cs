@@ -9,7 +9,7 @@ namespace EM.GIS.WPFControls
     /// <summary>
     /// 鼠标滚轮事件参数
     /// </summary>
-    public class GeoMouseWheelEventArgs: MouseWheelEventArgs, IGeoMouseEventArgs
+    public class GeoMouseWheelEventArgs : MouseWheelEventArgs, IGeoMouseEventArgs
     {
         #region  Constructors
 
@@ -23,7 +23,7 @@ namespace EM.GIS.WPFControls
         {
             Map = map ?? throw new ArgumentNullException(nameof(map));
             var position = e.GetPosition(map);
-            Location = new Coordinate(position.X, position.Y);
+            Location = new PointD(position.X, position.Y);
             GeographicLocation = map.View.PixelToProj(position.X, position.Y);
         }
 
@@ -35,7 +35,7 @@ namespace EM.GIS.WPFControls
         /// <inheritdoc/>
         public IMap Map { get; }
         /// <inheritdoc/>
-        public ICoordinate Location { get; }
+        public PointD Location { get; }
         #endregion
     }
 }

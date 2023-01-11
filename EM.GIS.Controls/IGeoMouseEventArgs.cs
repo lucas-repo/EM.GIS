@@ -1,4 +1,5 @@
-﻿using EM.GIS.Geometries;
+﻿using EM.GIS.Data;
+using EM.GIS.Geometries;
 using System.Drawing;
 
 namespace EM.GIS.Controls
@@ -11,7 +12,7 @@ namespace EM.GIS.Controls
         /// <summary>
         /// 屏幕坐标
         /// </summary>
-        ICoordinate Location { get; }
+        PointD Location { get; }
         /// <summary>
         /// 地理坐标
         /// </summary>

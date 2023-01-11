@@ -2,6 +2,7 @@
 using EM.GIS.Data;
 using EM.GIS.Geometries;
 using System;
+using System.Drawing;
 using System.Windows.Input;
 
 namespace EM.GIS.WPFControls
@@ -9,7 +10,7 @@ namespace EM.GIS.WPFControls
     /// <summary>
     /// 带几何鼠标事件参数
     /// </summary>
-    public class GeoMouseButtonEventArgs: MouseButtonEventArgs, IGeoMouseEventArgs
+    public class GeoMouseButtonEventArgs : MouseButtonEventArgs, IGeoMouseEventArgs
     {
         #region  Constructors
         /// <summary>
@@ -18,11 +19,11 @@ namespace EM.GIS.WPFControls
         /// <param name="e">鼠标事件参数</param>
         /// <param name="map">地图</param>
         /// <exception cref="ArgumentNullException">参数为空时</exception>
-        public GeoMouseButtonEventArgs(MouseButtonEventArgs e, Map map) : base(e.MouseDevice, e.Timestamp,e.ChangedButton)
+        public GeoMouseButtonEventArgs(MouseButtonEventArgs e, Map map) : base(e.MouseDevice, e.Timestamp, e.ChangedButton)
         {
             Map = map ?? throw new ArgumentNullException(nameof(map));
             var position = e.GetPosition(map);
-            Location = new Coordinate(position.X, position.Y);
+            Location = new PointD(position.X, position.Y);
             GeographicLocation = map.View.PixelToProj(position.X, position.Y);
         }
         #endregion
@@ -33,7 +34,7 @@ namespace EM.GIS.WPFControls
         /// <inheritdoc/>
         public IMap Map { get; }
         /// <inheritdoc/>
-        public ICoordinate Location { get; }
+        public PointD Location { get; }
         #endregion
     }
 }

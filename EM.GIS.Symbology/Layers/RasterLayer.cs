@@ -48,7 +48,7 @@ namespace EM.GIS.Symbology
         }
 
         /// <inheritdoc/>
-        protected override void OnDraw(Graphics graphics, Rectangle rectangle, IExtent extent, bool selected = false, Action<string, int> progressAction = null, Func<bool> cancelFunc = null, Action invalidateMapFrameAction = null)
+        protected override void OnDraw(MapArgs mapArgs, bool selected = false, Action<string, int> progressAction = null, Func<bool> cancelFunc = null, Action invalidateMapFrameAction = null)
         {
             if (selected || cancelFunc?.Invoke() == true)
             {
@@ -57,7 +57,7 @@ namespace EM.GIS.Symbology
             if (DataSet is IDrawable drawable)
             {
                 Action<int> newProgressAction = (progress) => progressAction?.Invoke(ProgressMessage, progress);
-                drawable.Draw(graphics, rectangle, extent, newProgressAction, cancelFunc);
+                drawable.Draw(mapArgs, newProgressAction, cancelFunc);
             }
         }
     }

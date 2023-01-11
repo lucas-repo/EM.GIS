@@ -22,9 +22,9 @@ namespace EM.GIS.Symbology
         /// </summary>
         bool IsDirty { get; }
         /// <summary>
-        /// 地图视图
+        /// 第一个图层添加事件
         /// </summary>
-        IView MapView { get; }
+        event EventHandler FirstLayerAdded;
         /// <summary>
         /// 计算最大范围
         /// </summary>

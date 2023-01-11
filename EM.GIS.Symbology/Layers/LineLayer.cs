@@ -24,20 +24,20 @@ namespace EM.GIS.Symbology
             };
         }
 
-        protected override void DrawGeometry(MapArgs drawArgs, IFeatureSymbolizer symbolizer, IGeometry geometry)
+        protected override void DrawGeometry(IProj proj, Graphics graphics, IFeatureSymbolizer symbolizer, IGeometry geometry)
         {
-            if (drawArgs == null || !(symbolizer is ILineSymbolizer lineSymbolizer) || geometry == null)
+            if (!(symbolizer is ILineSymbolizer lineSymbolizer))
             {
                 return;
             }
-            float scaleSize = (float)symbolizer.GetScale(drawArgs);
+            float scaleSize = (float)symbolizer.GetScale(proj);
             using (GraphicsPath path = new GraphicsPath())
             {
-                GetLines(drawArgs, geometry, path);
-                lineSymbolizer.DrawLine(drawArgs.Device, scaleSize, path);
+                GetLines(proj, geometry, path);
+                lineSymbolizer.DrawLine(graphics, scaleSize, path);
             }
         }
-        private void GetLines(MapArgs drawArgs, IGeometry geometry, GraphicsPath path)
+        private void GetLines(IProj proj, IGeometry geometry, GraphicsPath path)
         {
             if (geometry.Geometries.Count == 0)
             {
@@ -46,7 +46,7 @@ namespace EM.GIS.Symbology
                 for (int j = 0; j < pointCount; j++)
                 {
                     var coord = geometry.Coordinates[j];
-                    PointF point = drawArgs.ProjToPixelF(coord);
+                    PointF point = proj.ProjToPixelF(coord);
                     points[j] = point;
                 }
 
@@ -64,7 +64,7 @@ namespace EM.GIS.Symbology
                 {
                     var partGeo = geometry.Geometries[i];
                     path.StartFigure();
-                    GetLines(drawArgs, partGeo, path);
+                    GetLines(proj, partGeo, path);
                 }
             }
         }

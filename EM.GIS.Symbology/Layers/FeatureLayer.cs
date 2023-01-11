@@ -47,13 +47,13 @@ namespace EM.GIS.Symbology
         }
        
         public Dictionary<long, IFeatureCategory> FidCategoryDic { get; } = new Dictionary<long, IFeatureCategory>();
-        protected override void OnDraw(Graphics graphics, Rectangle rectangle, IExtent extent, bool selected = false, Action<string, int> progressAction = null, Func<bool> cancelFunc = null, Action invalidateMapFrameAction = null)
+        protected override void OnDraw(MapArgs mapArgs, bool selected = false, Action<string, int> progressAction = null, Func<bool> cancelFunc = null, Action invalidateMapFrameAction = null)
         {
             if (selected && Selection.Count == 0 || cancelFunc?.Invoke() == true)
             {
                 return;
             }
-            DataSet.SetSpatialExtentFilter(extent);
+            DataSet.SetSpatialExtentFilter(mapArgs.DestExtent);
             long featureCount = DataSet.FeatureCount;
             progressAction?.Invoke(ProgressMessage,5 );
             var features = new List<IFeature>();
@@ -69,8 +69,7 @@ namespace EM.GIS.Symbology
                     {
                         percent = (int)(drawnFeatureCount * 90 / featureCount);
                         progressAction?.Invoke(ProgressMessage,percent);
-                        MapArgs drawArgs = new MapArgs(rectangle, extent, graphics);
-                        DrawFeatures(drawArgs, features, selected, progressAction, cancelFunc);
+                        DrawFeatures(mapArgs, mapArgs.Graphics, features, selected, progressAction, cancelFunc);
                         drawnFeatureCount += features.Count;
                         invalidateMapFrameAction?.Invoke();
                     }
@@ -166,13 +165,14 @@ namespace EM.GIS.Symbology
         /// <summary>
         /// 绘制几何要素
         /// </summary>
-        /// <param name="drawArgs"></param>
-        /// <param name="symbolizer"></param>
-        /// <param name="geometry"></param>
-        protected abstract void DrawGeometry(MapArgs drawArgs, IFeatureSymbolizer symbolizer, IGeometry geometry);
-        private void DrawFeatures(MapArgs drawArgs, List<IFeature> features, bool selected, Action<string, int> progressAction = null, Func<bool> cancelFunc = null)
+        /// <param name="proj">投影参数</param>
+        /// <param name="graphics">画布</param>
+        /// <param name="symbolizer">要素符号</param>
+        /// <param name="geometry">几何体</param>
+        protected abstract void DrawGeometry(IProj proj, Graphics graphics, IFeatureSymbolizer symbolizer, IGeometry geometry);
+        private void DrawFeatures(IProj proj, Graphics graphics,List<IFeature> features, bool selected, Action<string, int> progressAction = null, Func<bool> cancelFunc = null)
         {
-            if (drawArgs == null || features == null || cancelFunc?.Invoke() == true)
+            if (proj == null|| proj.Bound.IsEmpty|| proj.Extent==null|| proj.Extent.IsEmpty() || graphics == null || features == null || cancelFunc?.Invoke() == true)
             {
                 return;
             }
@@ -184,9 +184,17 @@ namespace EM.GIS.Symbology
                     return;
                 }
                 IFeature feature = item.Key;
+                if (feature.Geometry == null)
+                {
+                    continue;
+                }
                 var category = item.Value;
                 var symbolizer = selected ? category.SelectionSymbolizer : category.Symbolizer;
-                DrawGeometry(drawArgs, symbolizer, feature.Geometry);
+                if(symbolizer==null)
+                {
+                    continue;
+                }
+                DrawGeometry(proj, graphics, symbolizer, feature.Geometry);
             }
         }
 

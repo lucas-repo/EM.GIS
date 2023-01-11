@@ -1,4 +1,6 @@
-﻿using EM.GIS.Controls;
+﻿using EM.Bases;
+using EM.GIS.Controls;
+using EM.GIS.Data;
 using EM.GIS.Geometries;
 using EM.GIS.Symbology;
 using EM.IOC;
@@ -7,8 +9,10 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -23,25 +27,20 @@ namespace EM.GIS.WPFControls
     [Injectable(ServiceLifetime = ServiceLifetime.Singleton, ServiceType = typeof(IMap))]
     public partial class Map : UserControl, IMap
     {
-        private IFrame _frame;
+        private bool disposedValue;
+        /// <inheritdoc/>
+        public IView View { get; }
+        private IFrame frame;
         /// <inheritdoc/>
         public IFrame Frame
         {
-            get { return _frame; }
-            set
-            {
-                if (_frame != value)
-                {
-                    _frame = value;
-                }
-            }
+            get { return frame; }
+            set { SetProperty(ref frame, value); }
         }
-        /// <inheritdoc/>
-        public IView View => Frame.MapView;
+
         /// <inheritdoc/>
         public bool IsBusy { get; set; }
         private ILegend _legend;
-        private bool disposedValue;
 
         /// <inheritdoc/>
         public ILegend Legend
@@ -68,12 +67,13 @@ namespace EM.GIS.WPFControls
         public Map()
         {
             InitializeComponent();
-            Frame = new Symbology.Frame((int)ActualWidth, (int)ActualHeight)
+            PropertyChanged += Map_PropertyChanged;
+            Frame = new Symbology.Frame()
             {
                 Text = "地图框"
             };
-            Frame.MapView.PropertyChanged += MapView_PropertyChanged;
-            Frame.Children.CollectionChanged += LegendItems_CollectionChanged;
+            View = new View(Frame, (int)ActualWidth, (int)ActualHeight);
+            View.PropertyChanged += View_PropertyChanged;
             var pan = new MapToolPan(this);
             var zoom = new MapToolZoom(this);
             ITool[] mapTools = { pan, zoom };
@@ -86,11 +86,23 @@ namespace EM.GIS.WPFControls
             ActivateMapToolWithZoom(pan);
         }
 
-        private void MapView_PropertyChanged(object? sender, PropertyChangedEventArgs e)
+        private void Map_PropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
             switch (e.PropertyName)
             {
-                case nameof(View.BackBuffer):
+                case nameof(Background):
+                    break;
+            }
+        }
+
+        private void View_PropertyChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            switch (e.PropertyName)
+            {
+                case nameof(View.Background):
+                    Background = View.Background.ToBrush();
+                    break;
+                case nameof(View.BackImage):
                     Invalidate();
                     break;
                 case nameof(View.ViewBound):
@@ -133,11 +145,6 @@ namespace EM.GIS.WPFControls
             Dispatcher.BeginInvoke(action);
         }
         /// <inheritdoc/>
-        public void ZoomToMaxExtent()
-        {
-            View.ZoomToMaxExtent();
-        }
-        /// <inheritdoc/>
         protected override void OnRender(DrawingContext drawingContext)
         {
             if (drawingContext != null && View.Width > 0 || View.Height > 0)
@@ -148,7 +155,7 @@ namespace EM.GIS.WPFControls
                 {
                     using (Graphics g = Graphics.FromImage(bmp))
                     {
-                        View.Draw(g, bound); 
+                        View.Draw(g, bound);
                     }
                     bitmapSource = bmp.ToBitmapImage();
                 }
@@ -160,70 +167,6 @@ namespace EM.GIS.WPFControls
                 drawingContext.DrawImage(bitmapSource, rect);
             }
             base.OnRender(drawingContext);
-        }
-        private void Layer_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
-        {
-            switch (e.PropertyName)
-            {
-                case nameof(ILegendItem.IsVisible):
-                    View.ResetBuffer();
-                    break;
-            }
-        }
-        private void LegendItems_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
-        {
-            switch (e.Action)
-            {
-                case NotifyCollectionChangedAction.Add:
-                    AddLayerEvent(e.NewItems);
-                    break;
-                case NotifyCollectionChangedAction.Remove:
-                    RemoveLayerEvent(e.OldItems);
-                    break;
-                case NotifyCollectionChangedAction.Replace:
-                    RemoveLayerEvent(e.OldItems);
-                    AddLayerEvent(e.NewItems);
-                    break;
-                case NotifyCollectionChangedAction.Reset:
-                    RemoveLayerEvent(e.OldItems);
-                    break;
-            }
-        }
-        private void AddLayerEvent(IList? list)
-        {
-            if (list != null)
-            {
-                foreach (ILegendItem item in list)
-                {
-                    AddLayerEvent(item);
-                }
-            }
-        }
-        private void AddLayerEvent(ILegendItem layer)
-        {
-            if (layer != null)
-            {
-                layer.PropertyChanged += Layer_PropertyChanged;
-                layer.Children.CollectionChanged += LegendItems_CollectionChanged;
-            }
-        }
-        private void RemoveLayerEvent(IList? list)
-        {
-            if (list != null)
-            {
-                foreach (ILegendItem item in list)
-                {
-                    RemoveLayerEvent(item);
-                }
-            }
-        }
-        private void RemoveLayerEvent(ILegendItem layer)
-        {
-            if (layer != null)
-            {
-                layer.PropertyChanged -= Layer_PropertyChanged;
-                layer.Children.CollectionChanged -= LegendItems_CollectionChanged;
-            }
         }
 
         public void ActivateMapToolWithZoom(ITool tool)
@@ -261,7 +204,7 @@ namespace EM.GIS.WPFControls
             }
             tool.Activate();
         }
-
+        /// <inheritdoc/>
         public void DeactivateAllMapTools()
         {
             foreach (var f in MapTools)
@@ -274,12 +217,11 @@ namespace EM.GIS.WPFControls
         {
             if (Frame != null && sizeInfo.NewSize.Width > 0 && sizeInfo.NewSize.Height > 0)
             {
-                int width = (int)Math.Ceiling(sizeInfo.NewSize.Width);
-                int height = (int)Math.Ceiling(sizeInfo.NewSize.Height);
-                View.Resize(width, height);
+                View.Resize((int)sizeInfo.NewSize.Width, (int)sizeInfo.NewSize.Height);
             }
             base.OnRenderSizeChanged(sizeInfo);
         }
+
         #region 鼠标事件
         /// <inheritdoc/>
         protected override void OnMouseDoubleClick(MouseButtonEventArgs e)
@@ -386,23 +328,16 @@ namespace EM.GIS.WPFControls
             base.OnKeyDown(e);
         }
 
-        /// <inheritdoc/>
-        public IGroup AddGroup(string groupName)
-        {
-            return Layers.AddGroup(groupName);
-        }
-
         protected virtual void Dispose(bool disposing)
         {
             if (!disposedValue)
             {
                 if (disposing)
                 {
+                    View.PropertyChanged -= View_PropertyChanged;
                     // TODO: 释放托管状态(托管对象)
                     if (Frame != null)
                     {
-                        Frame.MapView.PropertyChanged -= MapView_PropertyChanged;
-                        Frame.Children.CollectionChanged -= LegendItems_CollectionChanged;
                         Frame.Dispose();
                     }
                 }
@@ -420,6 +355,7 @@ namespace EM.GIS.WPFControls
         //     Dispose(disposing: false);
         // }
 
+        /// <inheritdoc/>
         public void Dispose()
         {
             // 不要更改此代码。请将清理代码放入“Dispose(bool disposing)”方法中
@@ -428,5 +364,27 @@ namespace EM.GIS.WPFControls
         }
 
         #endregion
+        /// <summary>
+        /// 设置值并通知属性改变
+        /// </summary>
+        /// <typeparam name="T">泛型</typeparam>
+        /// <param name="t">字段</param>
+        /// <param name="value">值</param>
+        /// <param name="propertyName">属性名</param>
+        /// <returns>成功为true</returns>
+        public bool SetProperty<T>(ref T t, T value, [CallerMemberName] string? propertyName = null)
+        {
+            if (!Equals(t, value))
+            {
+                t = value;
+                OnPropertyChanged(propertyName);
+                return true;
+            }
+            return false;
+        }
+        private void OnPropertyChanged(string? propertyName)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
     }
 }

@@ -20,9 +20,9 @@ namespace EM.GIS.WPFControls
         /// <exception cref="ArgumentNullException">参数为空时</exception>
         public GeoMouseEventArgs(MouseEventArgs e, Map map) : base(e.MouseDevice, e.Timestamp)
         {
-            Map = map??throw new ArgumentNullException(nameof(map));
-            var position = e.GetPosition(map); 
-            Location = new  Coordinate(position.X, position.Y);
+            Map = map ?? throw new ArgumentNullException(nameof(map));
+            var position = e.GetPosition(map);
+            Location = new PointD(position.X, position.Y);
             GeographicLocation = map.View.PixelToProj(position.X, position.Y);
         }
         #endregion
@@ -33,7 +33,7 @@ namespace EM.GIS.WPFControls
         /// <inheritdoc/>
         public IMap Map { get; }
         /// <inheritdoc/>
-        public ICoordinate Location { get; }
+        public PointD Location { get; }
         #endregion
     }
 }

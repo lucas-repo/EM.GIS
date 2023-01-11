@@ -34,7 +34,7 @@
                 </RibbonGroup>
                 <RibbonGroup Header="导航">
                     <RibbonButton Label="平移" ToolTip="平移" SmallImageSource="pack://application:,,,/EM.GIS.Resources;Component/Images/Pan16.png" LargeImageSource="pack://application:,,,/EM.GIS.Resources;Component/Images/Pan32.png" Command="{Binding PanCmd}" CommandParameter="{Binding ElementName=map}"/>
-                    <RibbonButton Label="居中" ToolTip="居中" SmallImageSource="pack://application:,,,/EM.GIS.Resources;Component/Images/Global16.png" LargeImageSource="pack://application:,,,/EM.GIS.Resources;Component/Images/Global32.png" Command="{Binding ZoomToMaxExtentCmd}" CommandParameter="{Binding ElementName=map,Path=Frame}"/>
+                    <RibbonButton Label="居中" ToolTip="居中" SmallImageSource="pack://application:,,,/EM.GIS.Resources;Component/Images/Global16.png" LargeImageSource="pack://application:,,,/EM.GIS.Resources;Component/Images/Global32.png" Command="{Binding ZoomToMaxExtentCmd}" CommandParameter="{Binding ElementName=map}"/>
                     <RibbonButton Label="识别" ToolTip="识别" SmallImageSource="pack://application:,,,/EM.GIS.Resources;Component/Images/Identify16.png" LargeImageSource="pack://application:,,,/EM.GIS.Resources;Component/Images/Identify32.png" Command="{Binding IdentifyCmd}" CommandParameter="{Binding ElementName=map}"/>
                 </RibbonGroup>
                 <RibbonGroup Header="图层">

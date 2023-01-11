@@ -2,12 +2,12 @@
 using EM.GIS.Data;
 using EM.GIS.Geometries;
 using System;
-using System.Collections.Generic;
+using System.Collections;
+using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
-using System.Text;
-using System.Threading;
+using System.Drawing.Drawing2D;
 
 namespace EM.GIS.Symbology
 {
@@ -16,16 +16,135 @@ namespace EM.GIS.Symbology
     /// </summary>
     public class View : BaseCopy, IView
     {
+        /// <summary>
+        /// 锁
+        /// </summary>
         private readonly object _lockObj = new object();
-        private int _extentChangedSuspensionCount;
-        private bool _extentsChanged;
+        /// <summary>
+        /// 视图范围改变次数
+        /// </summary>
+        private int viewExtentChangedCount;
+        /// <summary>
+        /// 视图范围是否改变
+        /// </summary>
+        private bool viewExtentChanged;
+        private BackgroundWorker bw;
+        /// <summary>
+        /// 正在绘制的缓存图片
+        /// </summary>
+        private ViewCache drawingViewCache;
+        private bool disposedValue;
 
-        private BackgroundWorker _bw;
-        private int _busyCount;
+        /// <summary>
+        /// 暂停触发ViewExtentsChanged
+        /// </summary>
+        protected void SuspendExtentChanged()
+        {
+            if (viewExtentChangedCount == 0) viewExtentChanged = false;
+            viewExtentChangedCount++;
+        }
+        /// <summary>
+        /// 恢复ViewExtentsChanged
+        /// </summary>
+        protected void ResumeExtentChanged()
+        {
+            viewExtentChangedCount--;
+            if (viewExtentChangedCount == 0)
+            {
+                if (viewExtentChanged)
+                {
+                    if (viewExtentChangedCount > 0) return;
+                    OnPropertyChanged(nameof(ViewExtent));
+                }
+            }
+        }
+        /// <inheritdoc/>
+        public int Width { get; private set; }
+        /// <inheritdoc/>
+        public int Height { get; private set; }
+        private Color background;
+        /// <inheritdoc/>
+        public Color Background
+        {
+            get { return background; }
+            set { SetProperty(ref background, value); }
+        }
 
+        ViewCache backImage;
+        /// <inheritdoc/>
+        public ViewCache BackImage
+        {
+            get
+            {
+                return backImage;
+            }
+            set
+            {
+                lock (_lockObj)
+                {
+                    if (backImage == value)
+                    {
+                        return;
+                    }
+                    backImage?.Dispose();
+                    backImage = value;
+                    OnPropertyChanged(nameof(BackImage));
+                }
+            }
+        }
+        /// <inheritdoc/>
+        public Rectangle Bound
+        {
+            get => new Rectangle(0, 0, Width, Height);
+        }
+        /// <inheritdoc/>
+        public IExtent Extent => Frame.Extent;
+        private RectangleF viewBound;
+        /// <inheritdoc/>
+        public RectangleF ViewBound
+        {
+            get
+            {
+                if (viewBound.IsEmpty)
+                {
+                    return Bound;
+                }
+                else
+                {
+                    return viewBound;
+                }
+            }
+            set { SetProperty(ref viewBound, value); }
+        }
+        private IExtent viewExtent;
+        /// <inheritdoc/>
+        public IExtent ViewExtent
+        {
+            get
+            {
+                if (viewExtent == null)
+                {
+                    viewExtent = Frame?.Extent != null ? Frame.Extent.Copy() : new Extent(-180, -90, 180, 90);
+                }
+                return viewExtent;
+            }
+            set
+            {
+                if (Equals( viewExtent , value) || value == null) return;
 
+                IExtent ext = value.Copy();
+                ExtentExtensions.ResetAspectRatio(ext, Width, Height);
+
+                ResetBuffer(Bound,ext,ext);
+                //OnPropertyChanged(nameof(ViewExtent));
+            }
+        }
         /// <inheritdoc/>
         public IFrame Frame { get; }
+        /// <summary>
+        /// 计数器
+        /// </summary>
+        private int _busyCount;
         /// <inheritdoc/>
         public bool IsWorking
         {
@@ -49,110 +168,111 @@ namespace EM.GIS.Symbology
                 }
             }
         }
-
-        /// <inheritdoc/>
-        public CancellationTokenSource CancellationTokenSource { get; set; }
-        /// <inheritdoc/>
-        public int Width { get; private set; }
-        /// <inheritdoc/>
-        public int Height { get; private set; }
-
-        private Color _backGround = Color.Transparent;
-        /// <inheritdoc/>
-        public Color BackGround
-        {
-            get { return _backGround; }
-            set { SetProperty(ref _backGround, value); }
-        }
-
-        private Image _backBuffer;
-        /// <inheritdoc/>
-        public Image BackBuffer
-        {
-            get { return _backBuffer; }
-            set
-            {
-                lock (_lockObj)
-                {
-                    if (_backBuffer == value)
-                    {
-                        return;
-                    }
-                    _backBuffer?.Dispose();
-                    _backBuffer = value;
-                    //更改视图矩形
-                    _viewBound = new RectangleF(0, 0, Width, Height);
-                    OnPropertyChanged(nameof(BackBuffer));
-                }
-            }
-        }
-
-        private IExtent _extent;
-        private bool disposedValue;
-
-        /// <inheritdoc/>
-        public virtual IExtent Extent
-        {
-            get
-            {
-                if (_extent == null)
-                {
-                    _extent = Frame?.Extent != null ? Frame.Extent.Copy() : new Extent(-180, -90, 180, 90);
-                }
-                return _extent;
-            }
-            set
-            {
-                if (_extent == value || value == null) return;
-                IExtent ext = value.Copy();
-                ExtentExtensions.ResetAspectRatio(ext, Width, Height);
-
-                // 重新绘制背景图片
-                SuspendExtentChanged();
-                _extent = ext;
-                _extentsChanged = true;
-                ResetBuffer();
-                ResumeExtentChanged(); // fires the needed event.
-            }
-        }
-        /// <inheritdoc/>
-        public Rectangle Bound
-        {
-            get => new Rectangle(0, 0, Width, Height);
-        }
-        private RectangleF _viewBound;
-        /// <inheritdoc/>
-        public RectangleF ViewBound
-        {
-            get { return _viewBound; }
-            set { SetProperty(ref _viewBound, value); }
-        }
-
         /// <inheritdoc/>
         public Action<string, int> Progress { get; set; }
         public View(IFrame frame, int width, int height)
         {
             Frame = frame ?? throw new ArgumentNullException(nameof(frame));
+            Frame.FirstLayerAdded += Frame_FirstLayerAdded;
+            Frame.Children.CollectionChanged += LegendItems_CollectionChanged;
             Width = width;
             Height = height;
-
-            _viewBound = new RectangleF(0, 0, Width, Height);
-            _bw = new BackgroundWorker
+            PropertyChanged += View_PropertyChanged;
+            bw = new BackgroundWorker
             {
                 WorkerSupportsCancellation = true,
                 WorkerReportsProgress = true
             };
-            _bw.DoWork += BwDoWork;
-            _bw.RunWorkerCompleted += BwRunWorkerCompleted;
-            PropertyChanged += View_PropertyChanged;
+            bw.ProgressChanged += BwProgressChanged;
+            bw.DoWork += BwDoWork;
+            bw.RunWorkerCompleted += BwRunWorkerCompleted;
         }
-        private void View_PropertyChanged(object sender, PropertyChangedEventArgs e)
+
+        private void Frame_FirstLayerAdded(object sender, EventArgs e)
+        {
+            var extent = Frame.Extent.Copy();
+            if (!extent.IsEmpty())
+            {
+                extent.ExpandBy(extent.Width / 10, extent.Height / 10);
+            }
+            ViewExtent = extent;
+        }
+
+        private void LegendItems_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            switch (e.Action)
+            {
+                case NotifyCollectionChangedAction.Add:
+                    AddLayerEvent(e.NewItems);
+                    break;
+                case NotifyCollectionChangedAction.Remove:
+                    RemoveLayerEvent(e.OldItems);
+                    break;
+                case NotifyCollectionChangedAction.Replace:
+                    RemoveLayerEvent(e.OldItems);
+                    AddLayerEvent(e.NewItems);
+                    break;
+                case NotifyCollectionChangedAction.Reset:
+                    RemoveLayerEvent(e.OldItems);
+                    break;
+            }
+            ResetBuffer(Bound,ViewExtent,ViewExtent);
+        }
+        private void Layer_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
             switch (e.PropertyName)
             {
-                case nameof(BackGround):
-                    ResetBuffer();
+                case nameof(ILegendItem.IsVisible):
+                    ResetBuffer(Bound, ViewExtent, ViewExtent);
                     break;
+            }
+        }
+        private void AddLayerEvent(IList? list)
+        {
+            if (list != null)
+            {
+                foreach (ILegendItem item in list)
+                {
+                    AddLayerEvent(item);
+                }
+            }
+        }
+        private void AddLayerEvent(ILegendItem layer)
+        {
+            if (layer != null)
+            {
+                layer.PropertyChanged += Layer_PropertyChanged;
+                layer.Children.CollectionChanged += LegendItems_CollectionChanged;
+            }
+        }
+        private void RemoveLayerEvent(IList? list)
+        {
+            if (list != null)
+            {
+                foreach (ILegendItem item in list)
+                {
+                    RemoveLayerEvent(item);
+                }
+            }
+        }
+        private void RemoveLayerEvent(ILegendItem layer)
+        {
+            if (layer != null)
+            {
+                layer.PropertyChanged -= Layer_PropertyChanged;
+                layer.Children.CollectionChanged -= LegendItems_CollectionChanged;
+            }
+        }
+        private void BwProgressChanged(object sender, ProgressChangedEventArgs e)
+        {
+            if (Progress != null)
+            {
+                string msg = string.Empty;
+                if (e.UserState is string str)
+                {
+                    msg = str;
+                }
+                Progress.Invoke(msg, e.ProgressPercentage);
             }
         }
         private void BwRunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
@@ -162,118 +282,128 @@ namespace EM.GIS.Symbology
                 IsWorking = false;
                 if (IsWorking)
                 {
-                    bw.RunWorkerAsync();
-                    return;
+                    bw.RunWorkerAsync(drawingViewCache);
+                }
+                else if (e.Result is ViewCache viewCache)
+                {
+                    bool viewExtentChanged = false;
+                    bool viewBoundChanged=false;
+                    if (viewExtent != viewCache.Extent)
+                    {
+                        viewExtent = viewCache.Extent;
+                        viewExtentChanged = true;
+                    }
+                    if (viewBound != viewCache.Bound)
+                    {
+                        viewBound = viewCache.Bound;
+                        viewBoundChanged = true;
+                    }
+                    BackImage = viewCache;
+                    if(viewExtentChanged)OnPropertyChanged(nameof(ViewExtent));
+                    if (viewBoundChanged) OnPropertyChanged(nameof(ViewBound));
                 }
             }
         }
         private void BwDoWork(object sender, DoWorkEventArgs e)
         {
-            if (sender is BackgroundWorker worker)
+            if (!(sender is BackgroundWorker worker) || !(e.Argument is ViewCache viewCache) || Frame == null)
             {
-                if (worker.CancellationPending)
+                return;
+            }
+            Func<bool> cancelFunc = () =>
+            {
+                bool ret = worker.CancellationPending;
+                if (ret && !e.Cancel)
                 {
                     e.Cancel = true;
                 }
-                else
-                {
-                    if (Extent == null || Extent.IsEmpty() || Width <= 0 || Height <= 0 || CancellationPending())
-                    {
-                        return;
-                    }
-                    Image tmpBuffer = new Bitmap(Width, Height);
-                    Action resetBufferAction = () =>
-                    {
-                        if (!CancellationPending())
-                        {
-                            if (BackBuffer != tmpBuffer)
-                            {
-                                BackBuffer = tmpBuffer;
-                            }
-                            else
-                            {
-                                OnPropertyChanged(nameof(BackBuffer));
-                            }
-                        }
-                    };
-                    #region 绘制BackBuffer
-                    using (Graphics g = Graphics.FromImage(tmpBuffer))
-                    {
-                        g.Clear(BackGround); //填充背景色
-                        int count = 2;
-                        for (int i = 0; i < count; i++)
-                        {
-                            if (CancellationPending())
-                            {
-                                break;
-                            }
-                            bool selected = i == 1;
-                            Frame.Draw(g, Frame.Projection, Bound, Extent, selected, Progress, CancellationPending, resetBufferAction);
-                        }
-                    }
-                    #endregion
-                    resetBufferAction();
-                    if (BackBuffer != tmpBuffer && CancellationPending())//若取消绘制则释放图片
-                    {
-                        tmpBuffer.Dispose();
-                    }
-                }
-            }
-        }
-
-        /// <summary>
-        /// 是否取消绘制
-        /// </summary>
-        /// <returns></returns>
-        private bool CancellationPending()
-        {
-            bool ret = CancellationTokenSource?.IsCancellationRequested == true || _bw.CancellationPending;
-            return ret;
-        }
-        /// <summary>
-        /// 恢复ViewExtentsChanged
-        /// </summary>
-        protected void ResumeExtentChanged()
-        {
-            _extentChangedSuspensionCount--;
-            if (_extentChangedSuspensionCount == 0)
+                return ret;
+            };
+            Action<string, int> progressAction = (txt, progress) =>
             {
-                if (_extentsChanged)
+                worker.ReportProgress(progress, txt);
+            };
+            #region 绘制BackBuffer
+            using (Graphics g = Graphics.FromImage(viewCache.Image))
+            {
+                MapArgs mapArgs = new MapArgs(viewCache.Bound, viewCache.Extent, g, Frame.Projection, viewCache.DrawingExtent);
+                using (GraphicsPath gp = new GraphicsPath())
                 {
-                    if (_extentChangedSuspensionCount > 0) return;
-                    OnPropertyChanged(nameof(Extent));
+                    #region 设置绘制裁剪区域
+                    var rect = mapArgs.ProjToPixelF(mapArgs.DestExtent);
+                    gp.StartFigure();
+                    gp.AddRectangle(rect);
+                    g.Clip = new Region(gp);
+                    #endregion
+
+                    g.Clear(Background); //填充背景色
+                    int count = 2;
+                    for (int i = 0; i < count; i++)
+                    {
+                        if (cancelFunc())
+                        {
+                            break;
+                        }
+                        bool selected = i == 1;
+                        Frame.Draw(mapArgs, selected, progressAction, cancelFunc);
+                    }
                 }
+            }
+            #endregion
+            if (cancelFunc())//若取消绘制则释放图片
+            {
+                viewCache.Dispose();
+            }
+            else
+            {
+                e.Result = viewCache;
             }
         }
 
-        /// <summary>
-        /// 暂停触发ViewExtentsChanged
-        /// </summary>
-        protected void SuspendExtentChanged()
-        {
-            if (_extentChangedSuspensionCount == 0) _extentsChanged = false;
-            _extentChangedSuspensionCount++;
-        }
         /// <inheritdoc/>
-        public void ResetBuffer()
+        public void ResetBuffer(Rectangle rectangle,IExtent extent, IExtent drawingExtent)
         {
+            if (rectangle.IsEmpty|| extent == null || extent.IsEmpty() || drawingExtent == null || drawingExtent.IsEmpty())
+            {
+                return;
+            }
             IsWorking = true;
-            if (!_bw.IsBusy)
-                _bw.RunWorkerAsync();
+            //记录正在绘制的视图缓存
+            if (BackImage?.Image != null && BackImage.Bound.Equals(rectangle) && BackImage.Extent.Equals(extent))
+            {
+                var bitmap = BackImage.Image.Copy();
+                drawingViewCache = new ViewCache(bitmap,rectangle,extent, drawingExtent);
+            }
             else
-                _bw.CancelAsync();
+            {
+                drawingViewCache = new ViewCache(rectangle.Width, rectangle.Height,rectangle, extent, drawingExtent);
+            }
+            if (!bw.IsBusy)
+                bw.RunWorkerAsync(drawingViewCache);
+            else
+                bw.CancelAsync();
         }
+        private void View_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            switch (e.PropertyName)
+            {
+                case nameof(Background):
+                    ResetBuffer(Bound, ViewExtent, ViewExtent);
+                    break;
+            }
+        }
+
         /// <inheritdoc/>
         public void Draw(Graphics g, RectangleF rectangle)
         {
-            if (BackBuffer != null && g != null)
+            if (BackImage?.Image != null && g != null)
             {
                 var srcRectangle = GetRectangleToView(rectangle);
                 try
                 {
                     lock (_lockObj)
                     {
-                        g.DrawImage(BackBuffer, rectangle, srcRectangle, GraphicsUnit.Pixel);
+                        g.DrawImage(BackImage.Image, rectangle, srcRectangle, GraphicsUnit.Pixel);
                     }
                 }
                 catch (Exception e)
@@ -298,32 +428,10 @@ namespace EM.GIS.Symbology
             };
             return result;
         }
-
         public void ResetViewExtent()
         {
-            //IExtent env = BufferToProj(ViewBound);
-            IExtent env = IProjExtensions.PixelToProj(ViewBound, Bound, Extent);
-            Extent = env;
-        }
-        public IExtent BufferToProj(Rectangle rect)
-        {
-            Point tl = new Point(rect.X, rect.Y);
-            Point br = new Point(rect.Right, rect.Bottom);
-
-            var topLeft = BufferToProj(tl);
-            var bottomRight = BufferToProj(br);
-            return new Extent(topLeft.X, bottomRight.Y, bottomRight.X, topLeft.Y);
-        }
-        public ICoordinate BufferToProj(Point position)
-        {
-            ICoordinate coordinate = null;
-            if (Extent != null)
-            {
-                double x = (position.X * Extent.Width / Width) + Extent.MinX;
-                double y = Extent.MaxY - (position.Y * Extent.Height / Height);
-                coordinate = new Coordinate(x, y, 0.0);
-            }
-            return coordinate;
+            IExtent env = IProjExtensions.PixelToProj(ViewBound, Bound, ViewExtent);
+            ResetBuffer(Bound, env, env);
         }
         /// <inheritdoc/>
         public void Resize(int width, int height)
@@ -337,22 +445,21 @@ namespace EM.GIS.Symbology
             if (destWidth < 5) destWidth = 5;
             if (destHeight < 5) destHeight = 5;
 
-            _viewBound = new RectangleF(ViewBound.X, ViewBound.Y, destWidth, destHeight);
+            viewBound = new RectangleF(ViewBound.X, ViewBound.Y, destWidth, destHeight);
             ResetViewExtent();
 
             Width = width;
             Height = height;
         }
-
+        /// <inheritdoc/>
         public void ZoomToMaxExtent()
         {
-            var maxExtent = Frame.GetMaxExtent(true);
+            var maxExtent = Frame?.GetMaxExtent(true);
             if (maxExtent != null)
             {
-                Extent = maxExtent;
+                ViewExtent = maxExtent;
             }
         }
-
         protected virtual void Dispose(bool disposing)
         {
             if (!disposedValue)
@@ -360,15 +467,21 @@ namespace EM.GIS.Symbology
                 if (disposing)
                 {
                     // TODO: 释放托管状态(托管对象)
-                    if (_bw != null)
+                    PropertyChanged -= View_PropertyChanged;
+                    if (bw != null)
                     {
-                        _bw.Dispose();
-                        _bw = null;
+                        bw.Dispose();
+                        bw = null;
                     }
-                    if (BackBuffer != null)
+                    if (BackImage != null)
                     {
-                        BackBuffer.Dispose();
-                        BackBuffer = null;
+                        BackImage.Dispose();
+                        BackImage = null;
+                    }
+                    if (Frame != null)
+                    {
+                        Frame.FirstLayerAdded -= Frame_FirstLayerAdded;
+                        Frame.Children.CollectionChanged -= LegendItems_CollectionChanged;
                     }
                 }
 
