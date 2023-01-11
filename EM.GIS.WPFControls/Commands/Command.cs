@@ -39,13 +39,13 @@ namespace EM.GIS.WPFControls
         /// <inheritdoc/>
         public virtual bool CanExecute(object? parameter)
         {
-            if (CanExecute == null)
+            if (CanExecuteFunc == null)
             {
                 return true;
             }
             else
             {
-                return CanExecute(parameter);
+                return CanExecuteFunc(parameter);
             }
         }
         /// <inheritdoc/>

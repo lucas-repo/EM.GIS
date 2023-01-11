@@ -28,32 +28,32 @@ namespace EM.GIS.Tools
             {
                 if (WpfAppManager.Ribbon != null)
                 {
-                    for (int i = WpfAppManager.Ribbon.Items.Count - 1; i >= 0; i--)
+                    WpfAppManager.Ribbon.Dispatcher.Invoke(() =>
                     {
-                        if (WpfAppManager.Ribbon.Items[i] is RibbonTab ribbonTab)
+                        for (int i = WpfAppManager.Ribbon.Items.Count - 1; i >= 0; i--)
                         {
-                            for (int j = ribbonTab.Items.Count - 1; j >= 0; j--)
+                            if (WpfAppManager.Ribbon.Items[i] is RibbonTab ribbonTab)
                             {
-                                if (ribbonTab.Items[j] is RibbonGroup ribbonGroup)
+                                for (int j = ribbonTab.Items.Count - 1; j >= 0; j--)
                                 {
-                                    RibbonGroup = ribbonGroup;
-                                    RibbonButton = new RibbonButton()
+                                    if (ribbonTab.Items[j] is RibbonGroup ribbonGroup)
                                     {
-                                        Label = "工具",
-                                        ToolTip = "常用工具",
-                                        Command = new Command(OpenTools)
-                                    };
-                                    break;
+                                        RibbonGroup = ribbonGroup;
+                                        RibbonButton = new RibbonButton()
+                                        {
+                                            Label = "工具",
+                                            ToolTip = "常用工具",
+                                            Command = new Command(OpenTools)
+                                        };
+                                        RibbonGroup.Items.Add(RibbonButton);
+                                        break;
+                                    }
                                 }
+                                break;
                             }
-                            break;
                         }
-                    }
+                    });
                 }
-            }
-            if (RibbonGroup != null && !RibbonGroup.Items.Contains(RibbonButton))
-            {
-                RibbonGroup.Items.Add(RibbonButton);
             }
             return base.OnLoad();
         }

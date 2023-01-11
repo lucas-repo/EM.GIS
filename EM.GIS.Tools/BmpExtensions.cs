@@ -1,12 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Drawing.Imaging;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using static SQLite.SQLite3;
-using System.Windows.Media;
 using System.Drawing;
+using System.Drawing.Imaging;
 using System.IO;
 
 namespace EM.GIS.Tools

@@ -1,46 +1,33 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <OutputType>Library</OutputType>
-    <TargetFramework>net7.0-windows</TargetFramework>
-    <Nullable>enable</Nullable>
-    <UseWPF>true</UseWPF>
-    <AssemblyName>EM.GIS.Tools</AssemblyName>
-    <UseWindowsForms>False</UseWindowsForms>
-    <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
-  </PropertyGroup>
+	<PropertyGroup>
+		<OutputType>Library</OutputType>
+		<TargetFramework>net7.0-windows</TargetFramework>
+		<Nullable>enable</Nullable>
+		<UseWPF>true</UseWPF>
+		<AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+		<BaseOutputPath>..\bin</BaseOutputPath>
+		<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+		<AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+		<GenerateDocumentationFile>True</GenerateDocumentationFile>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="EM.WpfBases" Version="1.0.0" />
-    <PackageReference Include="Gdal.Core" Version="2.3.0-beta-023" />
-    <PackageReference Include="Gdal.Core.WindowsRuntime" Version="2.3.0-beta-023" />
-    <PackageReference Include="MaterialDesignThemes" Version="4.3.0" />
-    <PackageReference Include="NPOI" Version="2.6.0" />
-    <PackageReference Include="System.Drawing.Common" Version="7.0.0" />
-    <PackageReference Include="WindowsAPICodePack" Version="7.0.1" />
-  </ItemGroup>
+	<ItemGroup>
+	  <Compile Remove="App.xaml.cs" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\..\..\EM.IOC\EM.IOC\EM.IOC.csproj" />
-    <ProjectReference Include="..\EM.GIS.CoordinateTransformation\EM.GIS.CoordinateTransformation.csproj" />
-    <ProjectReference Include="..\EM.GIS.GdalExtensions\EM.GIS.GdalExtensions.csproj" />
-    <ProjectReference Include="..\EM.GIS.WPFControls\EM.GIS.WPFControls.csproj" />
-  </ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="EM.WpfBases" Version="1.0.0" />
+		<PackageReference Include="MaterialDesignThemes" Version="4.7.0" />
+		<PackageReference Include="NPOI" Version="2.6.0" />
+		<PackageReference Include="WindowsAPICodePack" Version="7.0.1" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <Compile Update="Views\CoordTransformControl.xaml.cs">
-      <SubType>Code</SubType>
-    </Compile>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Page Update="Views\ComputeSimpleCenterPointControl.xaml">
-      <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
-    </Page>
-    <Page Update="Views\CoordTransformControl.xaml">
-      <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
-      <SubType>Designer</SubType>
-    </Page>
-  </ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\..\..\EM.IOC\EM.IOC\EM.IOC.csproj" />
+		<ProjectReference Include="..\EM.GIS.CoordinateTransformation\EM.GIS.CoordinateTransformation.csproj" />
+		<ProjectReference Include="..\EM.GIS.GdalExtensions\EM.GIS.GdalExtensions.csproj" />
+		<ProjectReference Include="..\EM.GIS.WPFControls\EM.GIS.WPFControls.csproj" />
+	</ItemGroup>
 
 </Project>

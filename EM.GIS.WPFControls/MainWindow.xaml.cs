@@ -42,7 +42,7 @@ namespace EM.GIS.WPFControls
             DataContext = ViewModel;
             if (ViewModel.IocManager != null)
             {
-                ViewModel.IocManager.LoadPlugins();
+                var plugins= ViewModel.IocManager.LoadPlugins();
             }
         }
      

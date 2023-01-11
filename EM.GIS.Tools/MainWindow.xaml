@@ -38,5 +38,5 @@
             <ProgressBar x:Name="progressBar" Background="Transparent" BorderThickness="0"/>
             <TextBlock x:Name="progressTextBlock" VerticalAlignment="Center" HorizontalAlignment="Center"/>
         </Grid>
-        </Grid>
+    </Grid>
 </Window>

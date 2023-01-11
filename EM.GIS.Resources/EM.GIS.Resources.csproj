@@ -10,6 +10,13 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+	  <Compile Remove="Libs\**" />
+	  <EmbeddedResource Remove="Libs\**" />
+	  <None Remove="Libs\**" />
+	  <Page Remove="Libs\**" />
+	</ItemGroup>
+
+	<ItemGroup>
 	  <None Remove="Images\Add16.png" />
 	  <None Remove="Images\Add32.png" />
 	  <None Remove="Images\File128.png" />
@@ -191,10 +198,6 @@
 	  <Resource Include="Images\ZoomOut32.png">
 	    <CopyToOutputDirectory>Never</CopyToOutputDirectory>
 	  </Resource>
-	</ItemGroup>
-
-	<ItemGroup>
-	  <Folder Include="Libs\" />
 	</ItemGroup>
 
 </Project>
