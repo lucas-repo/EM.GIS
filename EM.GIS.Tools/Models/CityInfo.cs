@@ -5,10 +5,9 @@ namespace EM.GIS.Tools
     /// <summary>
     /// 城市信息
     /// </summary>
-    public class CityInfo:TreeItem<int>
+    public class CityInfo:TreeItem
     {
-        private int _childrenNum;
-
+        public int Item { get;  }
         public CityInfo(int value)
         {
             Item = value;
@@ -21,6 +20,7 @@ namespace EM.GIS.Tools
             Text = text;
         }
 
+        private int _childrenNum;
         /// <summary>
         /// 下属城市个数
         /// </summary>

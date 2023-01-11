@@ -219,7 +219,9 @@ namespace EM.GIS.Tools
                             {
                                 try
                                 {
-                                    bytes = tileSource.GetTile(tileInfo);
+                                    var task = tileSource.GetTileAsync(tileInfo);
+                                    task.ConfigureAwait(false);
+                                    bytes = task.Result;
                                 }
                                 catch (Exception e)
                                 {
