@@ -1,5 +1,6 @@
 ﻿using EM.Bases;
 using EM.GIS.Data;
+using EM.GIS.Geometries;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -24,5 +25,10 @@ namespace EM.GIS.Symbology
         /// <param name="graphics">画布</param>
         /// <param name="rectangle">矩形</param>
         void DrawLegend(Graphics graphics, Rectangle rectangle);
+        /// <summary>
+        /// 在地图上是否可见
+        /// </summary>
+        /// <returns>是否可见</returns>
+        bool GetVisible();
     }
 }

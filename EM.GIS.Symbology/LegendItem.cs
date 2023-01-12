@@ -18,10 +18,11 @@ namespace EM.GIS.Symbology
         /// <summary>
         /// 是否已释放
         /// </summary>
-        protected bool IsDisposed { get;private set; }
+        protected bool IsDisposed { get; private set; }
 
         public LegendItem()
         {
+            IsVisible = true;
         }
         public LegendItem(ILegendItem parent) : this()
         {
@@ -68,6 +69,29 @@ namespace EM.GIS.Symbology
             // 不要更改此代码。请将清理代码放入“Dispose(bool disposing)”方法中
             Dispose(disposing: true);
             GC.SuppressFinalize(this);
+        }
+        /// <inheritdoc/>
+        public bool GetVisible()
+        {
+            bool ret = IsVisible;
+            if (!IsVisible)
+            {
+                return ret;
+            }
+            ITreeItem? parent = Parent;
+            while (parent != null)
+            {
+                if (!parent.IsVisible)
+                {
+                    ret = false;
+                    break;
+                }
+                else
+                {
+                    parent = parent.Parent;
+                }
+            }
+            return ret;
         }
     }
 }

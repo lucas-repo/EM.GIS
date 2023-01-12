@@ -35,7 +35,7 @@ namespace EM.GIS.Symbology
         /// </summary>
         /// <param name="index">索引</param>
         /// <returns></returns>
-        ILayer GetLayer(int index);
+        ILayer? GetLayer(int index);
         /// <summary>
         /// 获取图层集合
         /// </summary>

@@ -58,7 +58,7 @@ namespace EM.GIS.Symbology
         }
 
         /// <inheritdoc/>
-        public override void Draw(MapArgs mapArgs, bool selected = false, Action<string, int> progressAction = null, Func<bool> cancelFunc = null, Action invalidateMapFrameAction = null)
+        public override void Draw(MapArgs mapArgs, bool selected = false, Action<string, int>? progressAction = null, Func<bool>? cancelFunc = null, Action? invalidateMapFrameAction = null)
         {
             if (mapArgs == null || mapArgs.Graphics == null || mapArgs.Bound.IsEmpty || mapArgs.Extent == null || mapArgs.Extent.IsEmpty() || mapArgs.DestExtent == null || mapArgs.DestExtent.IsEmpty() || cancelFunc?.Invoke() == true || Children.Count == 0)
             {
@@ -66,16 +66,25 @@ namespace EM.GIS.Symbology
             }
             progressAction?.Invoke(string.Empty, 0);
 
+            var visibleLayers = GetAllLayers().Where(x => x.GetVisible(mapArgs.DestExtent));
+            var visibleLabelLayers = visibleLayers.Where(x => x is IFeatureLayer featureLayer && featureLayer.LabelLayer?.GetVisible(mapArgs.DestExtent) == true).Select(x => (x as IFeatureLayer).LabelLayer).ToList();
+            var totalCount = visibleLayers.Count() + visibleLabelLayers.Count;//要素图层需要绘制标注，所以多算一次
+            if (totalCount == 0)
+            {
+                return;
+            }
+            double layerPercent = visibleLayers.Count() / totalCount;//可见图层占比
+            double labelLayerPercent = visibleLabelLayers.Count / totalCount;//标注图层占比
             #region 绘制图层
             Action<string, int> drawLayerProgressAction = (txt, progress) =>
             {
                 if (progressAction != null)
                 {
-                    var destProgress = (int)(progress / 100.0 * 90);
+                    var destProgress = (int)(progress* layerPercent);
                     progressAction.Invoke(txt, destProgress);
                 }
             };
-            base.Draw(mapArgs, selected, progressAction, cancelFunc, invalidateMapFrameAction);//绘制图层
+            base.Draw(mapArgs, selected, drawLayerProgressAction, cancelFunc, invalidateMapFrameAction);//绘制图层
             #endregion
 
             #region 绘制标注
@@ -83,19 +92,17 @@ namespace EM.GIS.Symbology
             {
                 if (progressAction != null)
                 {
-                    var destProgress = 90 + (int)(progress / 10.0);
+                    var destProgress = (int)(100.0 * layerPercent + progress / 100 * labelLayerPercent);
                     progressAction.Invoke(txt, destProgress);
                 }
             };
-            var visibleLayers = GetAllLayers().Where(x => x.GetVisible(mapArgs.DestExtent));
-            var labelLayers = visibleLayers.Where(x => x is IFeatureLayer featureLayer && featureLayer.LabelLayer?.GetVisible(mapArgs.DestExtent) == true).Select(x => (x as IFeatureLayer).LabelLayer).ToList();
-            for (int i = labelLayers.Count - 1; i >= 0; i--)
+            for (int i = visibleLabelLayers.Count - 1; i >= 0; i--)
             {
                 if (cancelFunc?.Invoke() == true)
                 {
                     break;
                 }
-                labelLayers[i].Draw(mapArgs, selected, drawLabelProgressAction, cancelFunc, invalidateMapFrameAction);
+                visibleLabelLayers[i].Draw(mapArgs, selected, drawLabelProgressAction, cancelFunc, invalidateMapFrameAction);
             }
             #endregion
 

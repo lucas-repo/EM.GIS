@@ -97,14 +97,13 @@ namespace EM.GIS.Symbology
 
         public Layer()
         {
-            IsVisible = true;
         }
         public Layer(IDataSet dataSet) : this()
         {
             DataSet = dataSet;
         }
         /// <inheritdoc/>
-        public void Draw(MapArgs mapArgs, bool selected = false, Action<string, int> progressAction = null, Func<bool> cancelFunc = null, Action invalidateMapFrameAction = null)
+        public void Draw(MapArgs mapArgs, bool selected = false, Action<string, int>? progressAction = null, Func<bool>? cancelFunc = null, Action? invalidateMapFrameAction = null)
         {
             if (mapArgs == null || mapArgs.Graphics == null ||  mapArgs.Bound.IsEmpty || mapArgs.Extent == null || mapArgs.Extent.IsEmpty() || mapArgs.DestExtent == null || mapArgs.DestExtent.IsEmpty() ||!GetVisible(mapArgs.DestExtent)|| cancelFunc?.Invoke() == true)
             {
@@ -154,20 +153,12 @@ namespace EM.GIS.Symbology
         /// <returns>是否可见</returns>
         public bool GetVisible(IExtent extent)
         {
-            bool ret = false;
-            if (!IsVisible)
+            bool ret = GetVisible();
+            if (!ret)
             {
                 return ret;
             }
-            if (Extent.Intersects(extent))
-            {
-                ret= true;
-            }
-            if (UseDynamicVisibility)
-            {
-                //todo compare the scalefactor 
-            }
-
+            ret = Extent.Intersects(extent);
             return ret;
         }
 

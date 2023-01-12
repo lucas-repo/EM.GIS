@@ -8,6 +8,8 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Drawing2D;
+using System.Linq;
+using System.Security.Cryptography.X509Certificates;
 
 namespace EM.GIS.Symbology
 {
@@ -130,12 +132,12 @@ namespace EM.GIS.Symbology
             }
             set
             {
-                if (Equals( viewExtent , value) || value == null) return;
+                if (Equals(viewExtent, value) || value == null) return;
 
                 IExtent ext = value.Copy();
                 ExtentExtensions.ResetAspectRatio(ext, Width, Height);
 
-                ResetBuffer(Bound,ext,ext);
+                ResetBuffer(Bound, ext, ext);
                 //OnPropertyChanged(nameof(ViewExtent));
             }
         }
@@ -216,7 +218,7 @@ namespace EM.GIS.Symbology
                     RemoveLayerEvent(e.OldItems);
                     break;
             }
-            ResetBuffer(Bound,ViewExtent,ViewExtent);
+            ResetBuffer(Bound, ViewExtent, ViewExtent);
         }
         private void Layer_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
@@ -287,7 +289,7 @@ namespace EM.GIS.Symbology
                 else if (e.Result is ViewCache viewCache)
                 {
                     bool viewExtentChanged = false;
-                    bool viewBoundChanged=false;
+                    bool viewBoundChanged = false;
                     if (viewExtent != viewCache.Extent)
                     {
                         viewExtent = viewCache.Extent;
@@ -299,7 +301,7 @@ namespace EM.GIS.Symbology
                         viewBoundChanged = true;
                     }
                     BackImage = viewCache;
-                    if(viewExtentChanged)OnPropertyChanged(nameof(ViewExtent));
+                    if (viewExtentChanged) OnPropertyChanged(nameof(ViewExtent));
                     if (viewBoundChanged) OnPropertyChanged(nameof(ViewBound));
                 }
             }
@@ -319,10 +321,6 @@ namespace EM.GIS.Symbology
                 }
                 return ret;
             };
-            Action<string, int> progressAction = (txt, progress) =>
-            {
-                worker.ReportProgress(progress, txt);
-            };
             #region 绘制BackBuffer
             using (Graphics g = Graphics.FromImage(viewCache.Image))
             {
@@ -330,13 +328,20 @@ namespace EM.GIS.Symbology
                 using (GraphicsPath gp = new GraphicsPath())
                 {
                     #region 设置绘制裁剪区域
-                    var rect = mapArgs.ProjToPixelF(mapArgs.DestExtent);
-                    gp.StartFigure();
-                    gp.AddRectangle(rect);
-                    g.Clip = new Region(gp);
+                    if (!Equals(mapArgs.Extent, mapArgs.DestExtent))
+                    {
+                        var rect = mapArgs.ProjToPixelF(mapArgs.DestExtent);
+                        gp.StartFigure();
+                        gp.AddRectangle(rect);
+                        g.Clip = new Region(gp);
+                    }
                     #endregion
 
                     g.Clear(Background); //填充背景色
+                    Action<string, int> progressAction = (txt, progress) =>
+                    {
+                        worker.ReportProgress(progress, txt);
+                    };
                     int count = 2;
                     for (int i = 0; i < count; i++)
                     {
@@ -345,7 +350,8 @@ namespace EM.GIS.Symbology
                             break;
                         }
                         bool selected = i == 1;
-                        Frame.Draw(mapArgs, selected, progressAction, cancelFunc);
+                        Action<string, int>? destProgressAction = selected ? null : progressAction;//不更新绘制选择要素的进度
+                        Frame.Draw(mapArgs, selected, destProgressAction, cancelFunc);
                     }
                 }
             }
@@ -361,9 +367,9 @@ namespace EM.GIS.Symbology
         }
 
         /// <inheritdoc/>
-        public void ResetBuffer(Rectangle rectangle,IExtent extent, IExtent drawingExtent)
+        public void ResetBuffer(Rectangle rectangle, IExtent extent, IExtent drawingExtent)
         {
-            if (rectangle.IsEmpty|| extent == null || extent.IsEmpty() || drawingExtent == null || drawingExtent.IsEmpty())
+            if (rectangle.IsEmpty || extent == null || extent.IsEmpty() || drawingExtent == null || drawingExtent.IsEmpty())
             {
                 return;
             }
@@ -372,11 +378,11 @@ namespace EM.GIS.Symbology
             if (BackImage?.Image != null && BackImage.Bound.Equals(rectangle) && BackImage.Extent.Equals(extent))
             {
                 var bitmap = BackImage.Image.Copy();
-                drawingViewCache = new ViewCache(bitmap,rectangle,extent, drawingExtent);
+                drawingViewCache = new ViewCache(bitmap, rectangle, extent, drawingExtent);
             }
             else
             {
-                drawingViewCache = new ViewCache(rectangle.Width, rectangle.Height,rectangle, extent, drawingExtent);
+                drawingViewCache = new ViewCache(rectangle.Width, rectangle.Height, rectangle, extent, drawingExtent);
             }
             if (!bw.IsBusy)
                 bw.RunWorkerAsync(drawingViewCache);

@@ -21,6 +21,6 @@ namespace EM.GIS.Symbology
         /// <param name="progressAction">进度委托</param>
         /// <param name="cancelFunc">取消委托</param>
         /// <param name="invalidateMapFrameAction">重绘地图委托）</param>
-        void Draw(MapArgs mapArgs, bool selected = false, Action<string, int> progressAction = null, Func<bool> cancelFunc = null, Action invalidateMapFrameAction = null);
+        void Draw(MapArgs mapArgs, bool selected = false, Action<string, int>? progressAction = null, Func<bool>? cancelFunc = null, Action? invalidateMapFrameAction = null);
     }
 }

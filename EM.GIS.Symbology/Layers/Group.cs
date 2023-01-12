@@ -66,27 +66,30 @@ namespace EM.GIS.Symbology
             Children = new LayerCollection(this);
         }
         /// <inheritdoc/>
-        public virtual void Draw(MapArgs mapArgs, bool selected = false, Action<string, int> progressAction = null, Func<bool> cancelFunc = null, Action invalidateMapFrameAction = null)
+        public virtual void Draw(MapArgs mapArgs, bool selected = false, Action<string, int>? progressAction = null, Func<bool>? cancelFunc = null, Action? invalidateMapFrameAction = null)
         {
             if (mapArgs == null || mapArgs.Graphics == null || mapArgs.Bound.IsEmpty || mapArgs.Extent == null || mapArgs.Extent.IsEmpty() || mapArgs.DestExtent == null || mapArgs.DestExtent.IsEmpty() || cancelFunc?.Invoke() == true || Children.Count == 0)
             {
                 return;
             }
+
+            var allVisibleLayers = GetAllLayers().Where(x => x.GetVisible(mapArgs.DestExtent));
             string progressStr = this.GetProgressString();
             progressAction?.Invoke(progressStr, 0);
-            double increment = 100.0 / Children.Count();
-            int totalProgress = 0;
+            double increment = 100.0 / allVisibleLayers.Count();
+            double totalProgress = 0;
             Action<string, int> newProgressAction = (txt, progress) =>
             {
                 if (progressAction != null)
                 {
-                    var destProgress = (int)((double)progress / Children.Count + totalProgress);
+                    var destProgress = (int)((double)progress / allVisibleLayers.Count() + totalProgress);
                     progressAction.Invoke(txt, destProgress);
                 }
             };
-            for (int i = Children.Count-1; i >=0; i--)
+            var visibleChildren = Children.Where(x => x is LegendItem legendItem && legendItem.IsVisible).ToList();
+            for (int i = visibleChildren.Count-1; i >=0; i--)
             {
-                var item = Children[i];
+                var item = visibleChildren[i];
                 if (item is ILegendItem legendItem && legendItem.IsVisible)
                 {
                     if (item is ILayer layer)
@@ -98,15 +101,15 @@ namespace EM.GIS.Symbology
                         group.Draw(mapArgs, selected, newProgressAction, cancelFunc, invalidateMapFrameAction);
                     }
                 }
-                totalProgress += (int)increment;
+                totalProgress += increment;
                 invalidateMapFrameAction?.Invoke();
             }
             progressAction?.Invoke(progressStr, 100);
         }
         /// <inheritdoc/>
-        public ILayer GetLayer(int index)
+        public ILayer? GetLayer(int index)
         {
-            ILayer layer = null;
+            ILayer? layer = null;
             if (index >= 0 && index < LayerCount)
             {
                 layer = GetLayers().ElementAt(index);

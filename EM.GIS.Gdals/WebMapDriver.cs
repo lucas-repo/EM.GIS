@@ -122,7 +122,7 @@ namespace EM.GIS.Gdals
         /// <returns>字节数组</returns>
         public static async Task<byte[]> FetchTile(Uri uri)
         {
-            return await Client.GetByteArrayAsync(uri).ConfigureAwait(false);
+            return await Client.GetByteArrayAsync(uri);
         }
     }
 }
