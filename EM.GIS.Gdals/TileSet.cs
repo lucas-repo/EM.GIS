@@ -1,24 +1,20 @@
-﻿using EM.GIS.Geometries;
-using OSGeo.OGR;
+﻿using BruTile;
+using BruTile.Web;
+using EM.Bases;
+using EM.GIS.Data;
+using EM.GIS.Gdals.Properties;
+using EM.GIS.Geometries;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
-using System.Text;
-using System.Threading.Tasks;
-using System.Threading;
-using System.Xml.Linq;
-using EM.Bases;
-using EM.GIS.Data;
-using System.Linq;
-using BruTile;
-using System.IO;
-using System.Resources;
-using BruTile.Web;
-using EM.GIS.Gdals.Properties;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
+using System.IO;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace EM.GIS.Gdals
 {
@@ -28,7 +24,7 @@ namespace EM.GIS.Gdals
     public class TileSet : DataSet, ITileSet
     {
         /// <inheritdoc/>
-        public ConcurrentDictionary<BruTile.TileIndex, IRasterSet> Tiles { get; } = new ConcurrentDictionary<BruTile.TileIndex, IRasterSet>();
+        public ConcurrentDictionary<TileIndex, (IRasterSet Tile, bool IsNodata)> Tiles { get; } = new ConcurrentDictionary<TileIndex, (IRasterSet Tile, bool IsNodata)>();
         private LockContainer _lockContainer = new LockContainer();
         /// <inheritdoc/>
         public BruTile.ITileSource TileSource { get; set; }
@@ -49,10 +45,11 @@ namespace EM.GIS.Gdals
                     {
                         foreach (var item in Tiles)
                         {
-                            item.Value?.Dispose();
+                            item.Value.Tile?.Dispose();
                         }
                         Tiles.Clear();
                     }
+                    Nodata?.Dispose();
                 }
             }
             base.Dispose(disposeManagedResources);
@@ -118,7 +115,7 @@ namespace EM.GIS.Gdals
                         {
                             if (cancelFunc?.Invoke() != true)
                             {
-                                var newCancelFunc = (Func<bool>)(() =>
+                                var newCancelFunc = () =>
                                 {
                                     bool isCancel = cancelFunc?.Invoke() == true;
                                     if (isCancel && !parallelCts.IsCancellationRequested)
@@ -129,27 +126,43 @@ namespace EM.GIS.Gdals
                                         }
                                     }
                                     return isCancel;
-                                });
+                                };
 
-                                // 如果未包含该瓦片，则需进行下载至缓存
-                                if (!Tiles.ContainsKey(tileInfo.Index))
+                                if (!Tiles.ContainsKey(tileInfo.Index))// 如果未包含该瓦片，则需进行下载至缓存
                                 {
-                                    using (var task = GetBitmapAsync(tileInfo, 1, newCancelFunc).ContinueWith(
-                                        (bitmapTask) =>
-                                        {
-                                            AddTileToTileSet(tileInfo, bitmapTask.Result, newCancelFunc);
-                                        }))
+                                    using (var task = GetBitmapAsync(tileInfo, 1, newCancelFunc).ContinueWith((bitmapTask) =>
                                     {
+                                        AddTileToTileSet(tileInfo, bitmapTask.Result, newCancelFunc);
+                                    }))
+                                    {
+                                        task.ConfigureAwait(false);
                                         task.Wait(); // 等待任务完成
                                     }
                                 }
                                 else
                                 {
-                                    //if (refreshMap)
-                                    //{
-                                    //    var tileExtent = new Extent(tileInfo.Extent.MinX, tileInfo.Extent.MinY, tileInfo.Extent.MaxX, tileInfo.Extent.MaxY);
-                                    //    RefreshMapFrame(tileExtent, newCancelFunc);
-                                    //}
+                                    if (Tiles.TryGetValue(tileInfo.Index, out var oldTleInfo) && oldTleInfo.IsNodata) // 重新下载nodata的瓦片
+                                    {
+                                        using (var task = GetBitmapAsync(tileInfo, 1, newCancelFunc).ContinueWith((bitmapTask) =>
+                                        {
+                                            var bitmap = bitmapTask.Result.Bitmap;
+                                            if (bitmap != null)
+                                            {
+                                                var tileImage = new ImageSet(bitmap, oldTleInfo.Tile.Extent)
+                                                {
+                                                    Name = Name,
+                                                    Projection = Projection,
+                                                    Bounds = new RasterBounds(bitmap.Height, bitmap.Width, oldTleInfo.Tile.Extent)
+                                                };
+                                                oldTleInfo.Tile.Dispose();
+                                                Tiles[tileInfo.Index] = (tileImage, bitmapTask.Result.IsNodata);
+                                            }
+                                        }))
+                                        {
+                                            task.ConfigureAwait(false);
+                                            task.Wait(); // 等待任务完成
+                                        }
+                                    }
                                 }
                                 count++;
                                 progressAction?.Invoke((int)(30 + count * 60.0 / tileInfos.Count));
@@ -162,21 +175,43 @@ namespace EM.GIS.Gdals
                         return;
                     }
                 }
-                // 移除多余的缓存图片
-                for (int i = Tiles.Count - 1; i >= 0; i--)
+
+                #region 移除级别不一致的瓦片
+                var firstTileInfo = tileInfos.FirstOrDefault();
+                if (firstTileInfo != null)
                 {
-                    var existedTileInfo = Tiles.ElementAt(i);
-                    if (!tileInfos.Any(x => x.Index == existedTileInfo.Key))
+                    for (int i = Tiles.Count - 1; i >= 0; i--)
                     {
-                        if (Tiles.TryRemove(existedTileInfo.Key, out var rasterSet))
+                        var existedTileInfo = Tiles.ElementAt(i);
+                        if (existedTileInfo.Key.Level != firstTileInfo.Index.Level)
                         {
-                            rasterSet?.Dispose();
+                            if (Tiles.TryRemove(existedTileInfo.Key, out var tileInfo))
+                            {
+                                tileInfo.Tile?.Dispose();
+                            }
                         }
                     }
                 }
+                #endregion
+
+                #region 超过缓存数后，移除多余的缓存图片
+                if (Tiles.Count > 100)
+                {
+                    for (int i = Tiles.Count - 1; i >= 0; i--)
+                    {
+                        var existedTileInfo = Tiles.ElementAt(i);
+                        if (!tileInfos.Any(x => x.Index == existedTileInfo.Key))
+                        {
+                            if (Tiles.TryRemove(existedTileInfo.Key, out var tileInfo))
+                            {
+                                tileInfo.Tile?.Dispose();
+                            }
+                        }
+                    }
+                }
+                #endregion
 
                 #region 绘制相交的图片
-
                 foreach (var tile in Tiles)
                 {
                     if (cancelFunc?.Invoke() == true)
@@ -184,16 +219,10 @@ namespace EM.GIS.Gdals
                         Debug.WriteLine($"{nameof(Draw)}取消_{tile.Key.Level}_{tile.Key.Col}_{tile.Key.Row}");
                         return;
                     }
-                    if (tile.Value.Extent.Intersects(mapArgs.DestExtent))
+                    if (tile.Value.Tile.Extent.Intersects(mapArgs.DestExtent))
                     {
-                        tile.Value.Draw(mapArgs, progressAction, cancelFunc);
+                        tile.Value.Tile.Draw(mapArgs, progressAction, cancelFunc);
                     }
-                    //var srcExtent = GetIntersectExtent(tile.Value.Extent, extent);
-                    //if (srcExtent == null)
-                    //{
-                    //    continue;
-                    //}
-                    //DrawBmp(graphics,rectangle,extent, tile.Value, srcExtent, cancelFunc);
                 }
                 #endregion
             }
@@ -201,7 +230,7 @@ namespace EM.GIS.Gdals
             {
                 Debug.WriteLine($"已正常取消获取瓦片。"); // 不用管该异常
             }
-            catch (System.Exception ex)
+            catch (Exception ex)
             {
                 Debug.WriteLine($"{nameof(Draw)}失败，{ex}");
             }
@@ -277,11 +306,11 @@ namespace EM.GIS.Gdals
         /// 将瓦片缓存到瓦片数据集
         /// </summary>
         /// <param name="tileInfo">瓦片信息</param>
-        /// <param name="image">瓦片缓存</param>
+        /// <param name="tileBitmap">瓦片缓存</param>
         /// <param name="cancelFunc">取消委托</param>
-        private void AddTileToTileSet(BruTile.TileInfo tileInfo, Image image, Func<bool> cancelFunc = null)
+        private void AddTileToTileSet(BruTile.TileInfo tileInfo, (Bitmap Bitmap, bool IsNodata) tileBitmap, Func<bool> cancelFunc = null)
         {
-            if (tileInfo == null || tileInfo.Extent == null || tileInfo.Index == null || image == null || cancelFunc?.Invoke() == true)
+            if (tileInfo == null || tileInfo.Extent == null || tileInfo.Index == null || tileBitmap.Bitmap == null || cancelFunc?.Invoke() == true)
             {
                 return;
             }
@@ -291,20 +320,20 @@ namespace EM.GIS.Gdals
                 var extent = new Geometries.Extent(tileInfo.Extent.MinX, tileInfo.Extent.MinY, tileInfo.Extent.MaxX, tileInfo.Extent.MaxY);
                 if (!Tiles.ContainsKey(tileInfo.Index))
                 {
-                    var destImage = image;
-                    bool isIndex = IsPixelFormatIndexed(image.PixelFormat); // 是否为索引模式
+                    var destImage = tileBitmap.Bitmap;
+                    bool isIndex = IsPixelFormatIndexed(tileBitmap.Bitmap.PixelFormat); // 是否为索引模式
 
                     // 需要把索引图片转成普通位图，才能正常绘制到地图上
                     if (isIndex)
                     {
-                        var bmp = new Bitmap(image.Width, image.Height, PixelFormat.Format24bppRgb);
-                        bmp.SetResolution(image.HorizontalResolution, image.VerticalResolution); // 设置dpi，防止与屏幕dpi不一致导致拼接错位
+                        var bmp = new Bitmap(tileBitmap.Bitmap.Width, tileBitmap.Bitmap.Height, PixelFormat.Format24bppRgb);
+                        bmp.SetResolution(tileBitmap.Bitmap.HorizontalResolution, tileBitmap.Bitmap.VerticalResolution); // 设置dpi，防止与屏幕dpi不一致导致拼接错位
                         using (var g = Graphics.FromImage(bmp))
                         {
                             g.SmoothingMode = SmoothingMode.HighQuality;
                             g.InterpolationMode = InterpolationMode.HighQualityBicubic;
                             g.CompositingQuality = CompositingQuality.HighQuality;
-                            g.DrawImage(image, 0, 0);
+                            g.DrawImage(tileBitmap.Bitmap, 0, 0);
                         }
 
                         destImage = bmp;
@@ -325,7 +354,7 @@ namespace EM.GIS.Gdals
                         Debug.WriteLine($"{nameof(GetInRamImageData)}失败_{tileInfo.Index.Level}_{tileInfo.Index.Col}_{tileInfo.Index.Row}");
                         return;
                     }
-                    Tiles.TryAdd(tileInfo.Index, inRamImageData);
+                    Tiles.TryAdd(tileInfo.Index, (inRamImageData, tileBitmap.IsNodata));
                 }
             }
             catch (Exception ex)
@@ -396,11 +425,6 @@ namespace EM.GIS.Gdals
                     Projection = Projection,
                     Bounds = new RasterBounds(image.Height, image.Width, bmpExtent)
                 };
-                //if (Map != null && TileManager.ServiceProvider.Projection?.Equals(Map.Projection) == false)
-                //{
-                //    tileImage.Reproject(Map.Projection);
-                //    tileImage.Projection = Map.Projection;
-                //}
             }
             catch (Exception e)
             {
@@ -420,9 +444,10 @@ namespace EM.GIS.Gdals
         /// <param name="reloadTimes">重试次数</param>
         /// <param name="cancelFunc">取消委托</param>
         /// <returns>瓦片位图</returns>
-        public async Task<Bitmap> GetBitmapAsync(TileInfo tileInfo, int reloadTimes = 1, Func<bool> cancelFunc = null)
+        public async Task<(Bitmap Bitmap, bool IsNodata)> GetBitmapAsync(TileInfo tileInfo, int reloadTimes = 1, Func<bool> cancelFunc = null)
         {
             Bitmap bitmap = null;
+            bool isNodata = false;
             if (TileSource is HttpTileSource httpTileSource)
             {
                 byte[] data = null;
@@ -476,9 +501,10 @@ namespace EM.GIS.Gdals
             }
             if (bitmap == null)
             {
-                bitmap = Nodata;
+                bitmap = Nodata.Copy();
+                isNodata = true;
             }
-            return bitmap;
+            return (bitmap, isNodata);
         }
         private Bitmap _nodata;
         /// <summary>

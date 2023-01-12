@@ -42,7 +42,14 @@ namespace EM.GIS.Data
             RectangleF destRect = mapArgs.ProjToPixelF(destExtent);
             destRect = RectangleF.FromLTRB((float)Math.Floor(destRect.Left), (float)Math.Floor(destRect.Top), (float)Math.Ceiling(destRect.Right), (float)Math.Ceiling(destRect.Bottom));
             if (!mapArgs.Graphics.VisibleClipBounds.IsEmpty) mapArgs.Graphics.DrawImage(Bitmap, destRect, srcRect, GraphicsUnit.Pixel);
-
+        }
+        protected override void Dispose(bool disposing)
+        {
+            if (!IsDisposed && disposing)
+            {
+                Bitmap?.Dispose();
+            }
+            base.Dispose(disposing);
         }
     }
 }
