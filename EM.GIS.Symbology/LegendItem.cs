@@ -12,7 +12,7 @@ namespace EM.GIS.Symbology
     [Serializable]
     public abstract class LegendItem : TreeItem, ILegendItem
     {
-        public ObservableCollection<IBaseCommand> ContextCommands { get; } = new ObservableCollection<IBaseCommand>();
+        public ObservableCollection<IContextCommand> ContextCommands { get; } = new ObservableCollection<IContextCommand>();
 
         private ProgressDelegate _progress;
         /// <summary>

@@ -11,6 +11,6 @@ namespace EM.GIS.Controls
         /// <summary>
         /// 命令
         /// </summary>
-        ObservableCollection<IBaseCommand> Commands { get; }
+        ObservableCollection<IContextCommand> Commands { get; }
     }
 }

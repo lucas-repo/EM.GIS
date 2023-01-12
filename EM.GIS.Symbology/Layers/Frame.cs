@@ -5,6 +5,7 @@ using EM.GIS.Projections;
 using EM.IOC;
 using System;
 using System.Collections.Specialized;
+using System.ComponentModel;
 using System.Linq;
 
 namespace EM.GIS.Symbology
@@ -16,9 +17,12 @@ namespace EM.GIS.Symbology
     public class Frame : Group, IFrame
     {
         /// <inheritdoc/>
+        public IView View { get; }
+        /// <inheritdoc/>
         public ProjectionInfo Projection { get; set; }
-        public Frame()
+        public Frame(int width, int height)
         {
+            View = new View(this, width,  height);
             Children.CollectionChanged += Layers_CollectionChanged;
         }
 
@@ -170,6 +174,8 @@ namespace EM.GIS.Symbology
                 if (disposing)
                 {
                     //释放托管资源
+                    View.Dispose();
+                    Children.CollectionChanged -= Layers_CollectionChanged;
                 }
             }
             base.Dispose(disposing);

@@ -48,7 +48,7 @@ namespace EM.GIS.Symbology
         }
 
         /// <inheritdoc/>
-        protected override void OnDraw(MapArgs mapArgs, bool selected = false, Action<string, int> progressAction = null, Func<bool> cancelFunc = null, Action invalidateMapFrameAction = null)
+        protected override void OnDraw(MapArgs mapArgs, bool selected = false, Action<string, int>? progressAction = null, Func<bool>? cancelFunc = null, Action? invalidateMapFrameAction = null)
         {
             if (selected || cancelFunc?.Invoke() == true)
             {

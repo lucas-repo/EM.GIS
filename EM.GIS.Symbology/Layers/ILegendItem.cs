@@ -18,7 +18,7 @@ namespace EM.GIS.Symbology
         /// <summary>
         /// 右键菜单命令集合
         /// </summary>
-        ObservableCollection<IBaseCommand> ContextCommands { get; }
+        ObservableCollection<IContextCommand> ContextCommands { get; }
         /// <summary>
         /// 绘制图例
         /// </summary>

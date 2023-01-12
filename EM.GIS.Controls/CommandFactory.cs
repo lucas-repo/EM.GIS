@@ -12,6 +12,6 @@ namespace EM.GIS.Controls
     /// </summary>
     public class CommandFactory :NotifyClass, ICommandFactory
     {
-        public ObservableCollection<IBaseCommand> Commands { get; } = new ObservableCollection<IBaseCommand>();
+        public ObservableCollection<IContextCommand> Commands { get; } = new ObservableCollection<IContextCommand>();
     }
 }

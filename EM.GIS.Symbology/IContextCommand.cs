@@ -5,12 +5,12 @@ namespace EM.GIS.Symbology
     /// <summary>
     /// 命令
     /// </summary>
-    public interface IBaseCommand : ICommand
+    public interface IContextCommand : ICommand
     {
         /// <summary>
         /// 标题
         /// </summary>
-        object Header { get; set; }
+        string Header { get; set; }
         /// <summary>
         /// 名称
         /// </summary>
@@ -18,14 +18,10 @@ namespace EM.GIS.Symbology
         /// <summary>
         /// 提示
         /// </summary>
-        object ToolTip { get; set; }
+        string ToolTip { get; set; }
         /// <summary>
         /// 图标
         /// </summary>
-        object Icon { get; set; }
-        /// <summary>
-        /// 大图标
-        /// </summary>
-        object LargeIcon { get; set; }
+        object? Image { get; set; }
     }
 }

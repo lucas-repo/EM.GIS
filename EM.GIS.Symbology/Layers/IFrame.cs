@@ -10,6 +10,10 @@ namespace EM.GIS.Symbology
     public interface IFrame : IGroup
     {
         /// <summary>
+        /// 视图
+        /// </summary>
+        IView View { get; }
+        /// <summary>
         /// 投影信息
         /// </summary>
         ProjectionInfo Projection { get; set; }

@@ -47,7 +47,7 @@ namespace EM.GIS.Symbology
         }
        
         public Dictionary<long, IFeatureCategory> FidCategoryDic { get; } = new Dictionary<long, IFeatureCategory>();
-        protected override void OnDraw(MapArgs mapArgs, bool selected = false, Action<string, int> progressAction = null, Func<bool> cancelFunc = null, Action invalidateMapFrameAction = null)
+        protected override void OnDraw(MapArgs mapArgs, bool selected = false, Action<string, int>? progressAction = null, Func<bool>? cancelFunc = null, Action? invalidateMapFrameAction = null)
         {
             if (selected && Selection.Count == 0 || cancelFunc?.Invoke() == true)
             {

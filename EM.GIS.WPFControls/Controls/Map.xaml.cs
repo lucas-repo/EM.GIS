@@ -28,8 +28,6 @@ namespace EM.GIS.WPFControls
     public partial class Map : UserControl, IMap
     {
         private bool disposedValue;
-        /// <inheritdoc/>
-        public IView View { get; }
         private IFrame frame;
         /// <inheritdoc/>
         public IFrame Frame
@@ -68,12 +66,11 @@ namespace EM.GIS.WPFControls
         {
             InitializeComponent();
             PropertyChanged += Map_PropertyChanged;
-            Frame = new Symbology.Frame()
+            Frame = new Symbology.Frame((int)ActualWidth, (int)ActualHeight)
             {
                 Text = "地图框"
             };
-            View = new View(Frame, (int)ActualWidth, (int)ActualHeight);
-            View.PropertyChanged += View_PropertyChanged;
+           Frame.View.PropertyChanged += View_PropertyChanged;
             var pan = new MapToolPan(this);
             var zoom = new MapToolZoom(this);
             ITool[] mapTools = { pan, zoom };
@@ -100,7 +97,7 @@ namespace EM.GIS.WPFControls
             switch (e.PropertyName)
             {
                 case nameof(View.Background):
-                    Background = View.Background.ToBrush();
+                    Background =Frame.View.Background.ToBrush();
                     break;
                 case nameof(View.BackImage):
                     Invalidate();
@@ -147,15 +144,15 @@ namespace EM.GIS.WPFControls
         /// <inheritdoc/>
         protected override void OnRender(DrawingContext drawingContext)
         {
-            if (drawingContext != null && View.Width > 0 || View.Height > 0)
+            if (drawingContext != null && Frame.View.Width > 0 && Frame.View.Height > 0)
             {
                 BitmapSource bitmapSource;
-                Rectangle bound = new Rectangle(0, 0, View.Width, View.Height);
-                using (Bitmap bmp = new(View.Width, View.Height))
+                Rectangle bound = new Rectangle(0, 0, Frame.View.Width, Frame.View.Height);
+                using (Bitmap bmp = new(Frame.View.Width, Frame.View.Height))
                 {
                     using (Graphics g = Graphics.FromImage(bmp))
                     {
-                        View.Draw(g, bound);
+                        Frame.View.Draw(g, bound);
                     }
                     bitmapSource = bmp.ToBitmapImage();
                 }
@@ -217,7 +214,7 @@ namespace EM.GIS.WPFControls
         {
             if (Frame != null && sizeInfo.NewSize.Width > 0 && sizeInfo.NewSize.Height > 0)
             {
-                View.Resize((int)sizeInfo.NewSize.Width, (int)sizeInfo.NewSize.Height);
+                Frame.View.Resize((int)sizeInfo.NewSize.Width, (int)sizeInfo.NewSize.Height);
             }
             base.OnRenderSizeChanged(sizeInfo);
         }
@@ -334,7 +331,7 @@ namespace EM.GIS.WPFControls
             {
                 if (disposing)
                 {
-                    View.PropertyChanged -= View_PropertyChanged;
+                    Frame.View.PropertyChanged -= View_PropertyChanged;
                     // TODO: 释放托管状态(托管对象)
                     if (Frame != null)
                     {

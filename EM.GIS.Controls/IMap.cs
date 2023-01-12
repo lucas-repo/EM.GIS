@@ -48,10 +48,6 @@ namespace EM.GIS.Controls
         /// 使所有地图工具无效
         /// </summary>
         void DeactivateAllMapTools();
-        /// <summary>
-        /// 视图
-        /// </summary>
-        IView View { get; }
         #region 事件
         /// <summary>
         /// 鼠标移动事件

@@ -1,9 +1,5 @@
 ﻿using EM.Bases;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Input;
 
 namespace EM.GIS.WPFControls
@@ -11,7 +7,7 @@ namespace EM.GIS.WPFControls
     /// <summary>
     /// 命令基类
     /// </summary>
-    public class Command : ICommand
+    public class Command :NotifyClass, ICommand
     {
         /// <inheritdoc/>
         public event EventHandler? CanExecuteChanged;

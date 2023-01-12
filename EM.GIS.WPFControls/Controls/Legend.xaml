@@ -9,11 +9,6 @@
     <TreeView.ContextMenu>
         <ContextMenu ItemsSource="{Binding SelectedItem.ContextCommands}" ItemContainerStyle="{DynamicResource menuItemStyle}"/>
     </TreeView.ContextMenu>
-    <TreeView.Style>
-        <Style TargetType="{x:Type TreeView}">
-            <EventSetter Event="TreeView.SelectedItemChanged" Handler="TreeView_SelectedItemChanged"/>
-        </Style>
-    </TreeView.Style>
     <TreeView.Resources>
         <local:CategoryToImage x:Key="categoryToImage"/>
         <local:LegendItemTemplateSelector x:Key="legendItemTemplateSelector">

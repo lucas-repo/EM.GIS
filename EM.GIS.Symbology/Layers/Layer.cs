@@ -129,7 +129,7 @@ namespace EM.GIS.Symbology
         /// <param name="progressAction">进度委托</param>
         /// <param name="cancelFunc">取消匿名方法</param>
         /// <param name="invalidateMapFrameAction">使地图无效匿名方法</param>
-        protected abstract void OnDraw(MapArgs mapArgs, bool selected = false, Action<string, int> progressAction = null, Func<bool> cancelFunc = null, Action invalidateMapFrameAction = null);
+        protected abstract void OnDraw(MapArgs mapArgs, bool selected = false, Action<string, int>? progressAction = null, Func<bool>? cancelFunc = null, Action? invalidateMapFrameAction = null);
         /// <inheritdoc/>
         public bool GetVisible(IExtent extent, Rectangle rectangle)
         {
