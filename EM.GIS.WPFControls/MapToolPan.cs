@@ -39,7 +39,7 @@ namespace EM.GIS.WPFControls
             if (e.LeftButton == System.Windows.Input.MouseButtonState.Pressed && !_preventDrag)
             {
                 _startPoint = e.Location;
-                _source = e.Map.View.ViewBound;
+                _source = e.Map.Frame.View.ViewBound;
                 _isDragging = true;
             }
 
@@ -58,7 +58,7 @@ namespace EM.GIS.WPFControls
 
                 var dx = _startPoint.X - e.Location.X;
                 var dy = _startPoint.Y - e.Location.Y;
-                e.Map.View.ViewBound = new RectangleF((float)(_source.X + dx), (float)(_source.Y + dy), _source.Width, _source.Height);
+                e.Map.Frame.View.ViewBound = new RectangleF((float)(_source.X + dx), (float)(_source.Y + dy), _source.Width, _source.Height);
             }
 
             base.DoMouseMove(e);
@@ -72,7 +72,7 @@ namespace EM.GIS.WPFControls
                 _isDragging = false;
 
                 _preventDrag = true;
-                e.Map.View.ResetViewExtent();
+                e.Map.Frame.View.ResetViewExtent();
                 _preventDrag = false;
                 Map.IsBusy = false;
                 BusySet = false;

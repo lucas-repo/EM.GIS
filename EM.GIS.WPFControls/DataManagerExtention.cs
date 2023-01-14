@@ -206,13 +206,9 @@ namespace EM.GIS.WPFControls
                 var dataSets = driverFactory.OpenFiles(owner);
                 if (dataSets.Count>0)
                 {
-                    var layers = frame.GetAllLayers().Where(x => x.IsSelected && x is IGroup);
-                    IGroup? destGroup = null;
-                    if (layers.Count() == 1 && layers.First() is IGroup group)
-                    {
-                        destGroup = group;
-                    }
-                    else
+                    var groups = frame.GetGroups();
+                    IGroup? destGroup = groups.FirstOrDefault();
+                    if (destGroup==null)
                     {
                         destGroup = frame;
                     }
@@ -220,7 +216,7 @@ namespace EM.GIS.WPFControls
                     {
                         if (dataSet != null)
                         {
-                            var layer = destGroup.AddLayer(dataSet);
+                            var layer = destGroup.Children.AddLayer(dataSet);
                             if (layer != null)
                             {
                                 ret.Add(layer);

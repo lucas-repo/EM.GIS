@@ -23,5 +23,9 @@ namespace EM.GIS.Symbology
         /// 图标
         /// </summary>
         object? Image { get; set; }
+        /// <summary>
+        /// 大图标
+        /// </summary>
+        object? LargeImage { get; set; }
     }
 }

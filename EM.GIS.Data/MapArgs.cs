@@ -27,16 +27,16 @@ namespace EM.GIS.Data
         /// <summary>
         /// 投影
         /// </summary>
-        public ProjectionInfo Projection { get; set; }
+        public IProjection Projection { get; set; }
         /// <summary>
         /// 要绘制的范围
         /// </summary>
         public IExtent DestExtent { get; set; }
-        public MapArgs(Rectangle rectangle, IExtent extent, Graphics graphics, ProjectionInfo projection, IExtent destExtent):this(rectangle,  extent,  projection,  destExtent)
+        public MapArgs(Rectangle rectangle, IExtent extent, Graphics graphics, IProjection projection, IExtent destExtent):this(rectangle,  extent,  projection,  destExtent)
         {
             Graphics = graphics;
         }
-        public MapArgs(Rectangle rectangle, IExtent extent,ProjectionInfo projection, IExtent destExtent)
+        public MapArgs(Rectangle rectangle, IExtent extent,IProjection projection, IExtent destExtent)
         {
             Projection = projection;
             DestExtent = destExtent;

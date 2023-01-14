@@ -68,8 +68,35 @@ namespace EM.GIS.WPFControls
             }
         }
 
+        /// <summary>
+        /// 图标
+        /// </summary>
+        public ImageSource? LargeImage
+        {
+            get
+            {
+                if ((this as IContextCommand).LargeImage is ImageSource imageSource)
+                {
+                    return imageSource;
+                }
+                else
+                {
+                    return null;
+                }
+            }
+            set
+            {
+                if ((this as IContextCommand).LargeImage != value)
+                {
+                    (this as IContextCommand).LargeImage = value;
+                    OnPropertyChanged(nameof(LargeImage));
+                }
+            }
+        }
         object? IContextCommand.Image { get; set; }
-
+        object? IContextCommand.LargeImage { get; set; }
+        protected ContextCommand()
+        { }
         public ContextCommand(Action<object?> excute) : base(excute)
         {
         }

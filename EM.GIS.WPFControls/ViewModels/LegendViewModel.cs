@@ -1,5 +1,6 @@
 ﻿using EM.Bases;
 using EM.GIS.Symbology;
+using EM.IOC;
 using EM.WpfBases;
 using System;
 using System.Collections.Generic;
@@ -9,6 +10,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Input;
 
 namespace EM.GIS.WPFControls
 {
@@ -38,8 +40,10 @@ namespace EM.GIS.WPFControls
         /// 元素集合
         /// </summary>
         public ObservableCollection<ITreeItem> LegendItems { get; }
-        public LegendViewModel(Legend t) : base(t)
+        private IIocManager IocManager { get; }
+        public LegendViewModel(Legend t, IIocManager iocManager) : base(t)
         {
+            IocManager = iocManager;
             LegendItems = new ObservableCollection<ITreeItem>();
             LegendItems.CollectionChanged += LegendItems_CollectionChanged;
         }
@@ -80,68 +84,107 @@ namespace EM.GIS.WPFControls
                         }
                         legendItem.PropertyChanged += Item_PropertyChanged;
                         InitializedItems[legendItem] = new List<IContextCommand>();
+                        AddAddGroupCommand(legendItem);
+                        AddAddLayersCommand(legendItem);
                         AddZoomCommand(legendItem);
                         AddRemoveCommand(legendItem);
+                        AddPropertiesCommand(legendItem);
                     }
                 }
             }
         }
-        private void AddZoomCommand(ILegendItem legendItem)
+        /// <summary>
+        /// 添加属性命令
+        /// </summary>
+        /// <param name="legendItem">图例元素</param>
+        private void AddPropertiesCommand(ILegendItem legendItem)
         {
-            IContextCommand? zoomCmd = null;
+            //IContextCommand? cmd = null;
+
+            //if (cmd != null)
+            //{
+            //    legendItem.ContextCommands.Add(cmd);
+            //    InitializedItems[legendItem].Add(cmd);
+            //}
+        }
+        /// <summary>
+        /// 添加新建图层组命令
+        /// </summary>
+        /// <param name="legendItem">图例元素</param>
+        private void AddAddGroupCommand(ILegendItem legendItem)
+        {
+            IContextCommand? cmd = null;
             switch (legendItem)
             {
-                case ILayer layer:
-                    zoomCmd = new ContextCommand((obj) =>
-                    {
-                        if (Frame != null && !layer.Extent.IsEmpty())
-                        {
-                            Frame.View.ViewExtent = layer.Extent;
-                        }
-                    });
-                    break;
                 case IGroup group:
-                    zoomCmd = new ContextCommand((obj) =>
-                    {
-                        if (Frame != null && !group.Extent.IsEmpty())
-                        {
-                            Frame.View.ViewExtent = group.Extent;
-                        }
-                    })
-                    {
-                        Name="居中"
-                    };
+                    cmd = new AddNewGroupCommand(group);
                     break;
             }
-            if (zoomCmd != null)
+            if (cmd != null)
             {
-                legendItem.ContextCommands.Add(zoomCmd);
-                InitializedItems[legendItem].Add(zoomCmd);
+                legendItem.ContextCommands.Add(cmd);
+                InitializedItems[legendItem].Add(cmd);
             }
         }
-        private void AddRemoveCommand(ILegendItem legendItem)
+        /// <summary>
+        /// 添加新建图层组命令
+        /// </summary>
+        /// <param name="legendItem">图例元素</param>
+        private void AddAddLayersCommand(ILegendItem legendItem)
         {
-            IContextCommand? zoomCmd = null;
+            IContextCommand? cmd = null;
             switch (legendItem)
             {
-                case ILayer layer:
                 case IGroup group:
-                    zoomCmd = new ContextCommand((obj) =>
-                    {
-                        if (legendItem.Parent != null)
-                        {
-                            legendItem.Parent.Children.Remove(legendItem);
-                        }
-                    })
-                    {
-                        Name="移除"
-                    };
+                    cmd = IocManager.GetService<ICommand, AddLayersCommand>();
                     break;
             }
-            if (zoomCmd != null)
+            if (cmd != null)
             {
-                legendItem.ContextCommands.Add(zoomCmd);
-                InitializedItems[legendItem].Add(zoomCmd);
+                legendItem.ContextCommands.Add(cmd);
+                InitializedItems[legendItem].Add(cmd);
+            }
+        }
+        /// <summary>
+        /// 添加居中命令
+        /// </summary>
+        /// <param name="legendItem">图例元素</param>
+        private void AddZoomCommand(ILegendItem legendItem)
+        {
+            IContextCommand? cmd = null;
+            switch (legendItem)
+            {
+                case ILayer:
+                case IGroup:
+                    cmd = IocManager.GetService<ICommand, ZoomToItemCommand>();
+                    break;
+            }
+            if (cmd != null)
+            {
+                legendItem.ContextCommands.Add(cmd);
+                InitializedItems[legendItem].Add(cmd);
+            }
+        }
+        /// <summary>
+        /// 添加移除命令
+        /// </summary>
+        /// <param name="legendItem">图例元素</param>
+        private void AddRemoveCommand(ILegendItem legendItem)
+        {
+            IContextCommand? cmd = null;
+            switch (legendItem)
+            {
+                case IFrame:
+                    break;
+                case ILayer:
+                case IGroup:
+                    cmd = IocManager.GetService<ICommand, RemoveSelectedLayersCommand>();
+                    break;
+            }
+            if (cmd != null)
+            {
+                legendItem.ContextCommands.Add(cmd);
+                InitializedItems[legendItem].Add(cmd);
             }
         }
         private void HandleOldItems(NotifyCollectionChangedEventArgs e)

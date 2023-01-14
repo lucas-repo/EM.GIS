@@ -30,5 +30,9 @@ namespace EM.GIS.Symbology
         /// </summary>
         /// <returns>是否可见</returns>
         bool GetVisible();
+        /// <summary>
+        /// 地图框架
+        /// </summary>
+        IFrame? Frame { get; set; }
     }
 }

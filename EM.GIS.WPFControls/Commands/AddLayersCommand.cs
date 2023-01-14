@@ -1,5 +1,6 @@
 ﻿using EM.Bases;
 using EM.GIS.Data;
+using EM.GIS.Resources;
 using EM.GIS.Symbology;
 using EM.IOC;
 using Microsoft.Win32;
@@ -9,6 +10,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Input;
 
 namespace EM.GIS.WPFControls
@@ -17,24 +19,31 @@ namespace EM.GIS.WPFControls
     /// 添加图层命令
     /// </summary>
     [Injectable(ServiceLifetime = ServiceLifetime.Singleton, ServiceType = typeof(ICommand))]
-    public class AddLayersCommand : Command
+    public class AddLayersCommand : ContextCommand
     {
         private IDriverFactory? DriverFactory { get; }
-        public AddLayersCommand(IDriverFactory? driverFactory)
+        private IFrame? Frame { get; }
+        public AddLayersCommand(IDriverFactory? driverFactory,IFrame? frame)
         {
             DriverFactory = driverFactory;
+            Frame = frame;
+            Name = nameof(AddLayersCommand);
+            Header = "添加图层";
+            ToolTip = "添加图层至当前分组下";
+            Image = ResourcesHelper.GetBitmapImage("Add16.png");
+            LargeImage = ResourcesHelper.GetBitmapImage("Add32.png");
         }
 
         protected override void OnExecute(object? parameter)
         {
-            if (parameter is IFrame frame && DriverFactory != null)
+            if (Frame != null && DriverFactory != null)
             {
-                frame.AddLayers(DriverFactory, Application.Current.MainWindow);
+                Frame.AddLayers(DriverFactory, Application.Current.MainWindow);
             }
         }
         public override bool CanExecute(object? parameter)
         {
-            return parameter is IFrame && DriverFactory != null;
+            return Frame != null && DriverFactory != null;
         }
     }
 }

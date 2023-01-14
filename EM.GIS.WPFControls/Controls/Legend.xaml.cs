@@ -1,6 +1,7 @@
 ﻿using EM.Bases;
 using EM.GIS.Controls;
 using EM.GIS.Symbology;
+using EM.IOC;
 using EM.WpfBases;
 using System;
 using System.Collections.ObjectModel;
@@ -17,14 +18,15 @@ namespace EM.GIS.WPFControls
     /// <summary>
     /// Legend.xaml 的交互逻辑
     /// </summary>
+    [Injectable(ServiceLifetime = ServiceLifetime.Singleton, ServiceType = typeof(ILegend))]
     public partial class Legend : TreeView, ILegend
     {
         private LegendViewModel ViewModel { get; }
-        public Legend()
+        public Legend(IIocManager iocManager)
         {
             InitializeComponent();
             SelectedItemChanged += Legend_SelectedItemChanged;
-            ViewModel = new LegendViewModel(this);
+            ViewModel = new LegendViewModel(this,iocManager);
             DataContext = this;
             ItemsSource = LegendItems;
         }

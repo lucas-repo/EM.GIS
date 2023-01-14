@@ -68,16 +68,16 @@ namespace EM.GIS.Gdals
         /// <summary>
         /// WEB墨卡托坐标系
         /// </summary>
-        public static Lazy<ProjectionInfo> WebMercProj { get; }
+        public static Lazy<Projection> WebMercProj { get; }
         /// <summary>
         /// WGS84坐标系
         /// </summary>
-        public static Lazy<ProjectionInfo> Wgs84Proj { get; }
+        public static Lazy<Projection> Wgs84Proj { get; }
         static TileCalculator()
         {
             GdalConfiguration.ConfigureGdal();
-            WebMercProj = new Lazy<ProjectionInfo>(() => new GdalProjectionInfo(3857));
-            Wgs84Proj = new Lazy<ProjectionInfo>(() => new GdalProjectionInfo(4326));
+            WebMercProj = new Lazy<Projection>(() => new GdalProjection(3857));
+            Wgs84Proj = new Lazy<Projection>(() => new GdalProjection(4326));
         }
         #region Methods
 

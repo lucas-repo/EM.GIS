@@ -18,7 +18,7 @@ namespace EM.GIS.Data
         /// <summary>
         /// Gets or sets the projection information for this dataset
         /// </summary>
-        ProjectionInfo Projection { get; set; }
+        Projection Projection { get; set; }
 
         /// <summary>
         /// Reprojects all of the in-ram vertices of vectors, or else this
@@ -28,6 +28,6 @@ namespace EM.GIS.Data
         /// <param name="targetProjection">
         /// The projection information to reproject the coordinates to.
         /// </param>
-        void Reproject(ProjectionInfo targetProjection);
+        void Reproject(Projection targetProjection);
     }
 }

@@ -16,17 +16,49 @@ namespace EM.GIS.Symbology
     [Injectable(ServiceLifetime = ServiceLifetime.Singleton, ServiceType = typeof(IFrame))]
     public class Frame : Group, IFrame
     {
+        bool firstLayerAdded;
         /// <inheritdoc/>
         public IView View { get; }
+        private IProjection projection;
         /// <inheritdoc/>
-        public ProjectionInfo Projection { get; set; }
-        public Frame(int width, int height)
+        public IProjection Projection
         {
-            View = new View(this, width,  height);
+            get { return projection; }
+            set { SetProperty(ref projection, value); }
+        }
+        /// <summary>
+        /// 投影工厂
+        /// </summary>
+        private IProjectionFactory ProjectionFactory { get; }
+
+        /// <inheritdoc/>
+        public event EventHandler? FirstLayerAdded;
+
+        private bool _isDirty;
+        /// <inheritdoc/>
+        public bool IsDirty
+        {
+            get { return _isDirty; }
+            protected set
+            {
+                _isDirty = value;
+            }
+        }
+        /// <inheritdoc/>
+        public string FileName { get; } = string.Empty;
+        /// <summary>
+        /// 实例化<seealso cref="Frame"/>
+        /// </summary>
+        /// <param name="projectionFactory">投影工厂</param>
+        public Frame(IProjectionFactory projectionFactory)
+        {
+            ProjectionFactory = projectionFactory;
+            Text = "地图框";
+            View = new View(this);
             Children.CollectionChanged += Layers_CollectionChanged;
+            projection = projectionFactory.GetProjection(4326);//默认4326
         }
 
-        bool firstLayerAdded;
         private void Layers_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
             switch (e.Action)
@@ -50,7 +82,7 @@ namespace EM.GIS.Symbology
                             #region 设置投影
                             if (e.NewItems.Count > 0 && e.NewItems[0] is ILayer layer)
                             {
-                                Projection = layer.DataSet?.Projection;
+                                Projection = layer.DataSet.Projection;
                             }
                             #endregion
                             FirstLayerAdded?.Invoke(this, EventArgs.Empty);
@@ -71,7 +103,7 @@ namespace EM.GIS.Symbology
             progressAction?.Invoke(string.Empty, 0);
 
             var visibleLayers = GetAllLayers().Where(x => x.GetVisible(mapArgs.DestExtent));
-            var visibleLabelLayers = visibleLayers.Where(x => x is IFeatureLayer featureLayer && featureLayer.LabelLayer?.GetVisible(mapArgs.DestExtent) == true).Select(x => (x as IFeatureLayer).LabelLayer).ToList();
+            var visibleLabelLayers = visibleLayers.Where(x => x is IFeatureLayer featureLayer && featureLayer.LabelLayer.GetVisible(mapArgs.DestExtent) == true).Select(x => (x as IFeatureLayer).LabelLayer).ToList();
             var totalCount = visibleLayers.Count() + visibleLabelLayers.Count;//要素图层需要绘制标注，所以多算一次
             if (totalCount == 0)
             {
@@ -84,7 +116,7 @@ namespace EM.GIS.Symbology
             {
                 if (progressAction != null)
                 {
-                    var destProgress = (int)(progress* layerPercent);
+                    var destProgress = (int)(progress * layerPercent);
                     progressAction.Invoke(txt, destProgress);
                 }
             };
@@ -117,33 +149,37 @@ namespace EM.GIS.Symbology
         public IExtent GetMaxExtent(bool expand = false)
         {
             // to prevent exception when zoom to map with one layer with one point
-            IExtent maxExtent = null;
-            if (Extent == null)
+            if (Extent.IsEmpty())
             {
-                return maxExtent;
+                return new Extent();
             }
             const double Eps = 1e-7;
-            maxExtent = Extent.Width < Eps || Extent.Height < Eps ? new Extent(Extent.MinX - Eps, Extent.MinY - Eps, Extent.MaxX + Eps, Extent.MaxY + Eps) : Extent.Copy();
+            var maxExtent = Extent.Width < Eps || Extent.Height < Eps ? new Extent(Extent.MinX - Eps, Extent.MinY - Eps, Extent.MaxX + Eps, Extent.MaxY + Eps) : Extent.Copy();
             if (expand) maxExtent.ExpandBy(maxExtent.Width / 10, maxExtent.Height / 10);
             return maxExtent;
         }
 
+        /// <inheritdoc/>
         public void New()
         {
-            ClearLayers();
+            Children.Clear();
+            firstLayerAdded = false;
             IsDirty = false;
         }
 
+        /// <inheritdoc/>
         public void Open(string fileName)
         {
             throw new NotImplementedException();
         }
 
+        /// <inheritdoc/>
         public void Save()
         {
             throw new NotImplementedException();
         }
 
+        /// <inheritdoc/>
         public void SaveAs(string fileName)
         {
             throw new NotImplementedException();
@@ -152,21 +188,7 @@ namespace EM.GIS.Symbology
         //public bool ExtentsInitialized { get; set; }
 
         //public SmoothingMode SmoothingMode { get; set; } = SmoothingMode.AntiAlias;
-        private bool _isDirty;
-
-        public event EventHandler FirstLayerAdded;
-
         /// <inheritdoc/>
-        public bool IsDirty
-        {
-            get { return _isDirty; }
-            protected set
-            {
-                _isDirty = value;
-            }
-        }
-
-        public string FileName => throw new NotImplementedException();
         protected override void Dispose(bool disposing)
         {
             if (!IsDisposed)

@@ -14,39 +14,89 @@ namespace EM.GIS.Symbology
     /// </summary>
     public abstract class FeatureLayer : Layer, IFeatureLayer
     {
+        /// <inheritdoc/>
         public new IFeatureCategoryCollection Children
         {
-            get => base.Children as IFeatureCategoryCollection;
+            get
+            {
+                if (base.Children is IFeatureCategoryCollection collection)
+                {
+                    return collection;
+                }
+                else
+                {
+                    throw new Exception($"{nameof(Children)}类型必须为{nameof(IFeatureCategoryCollection)}");
+                }
+            }
             protected set => base.Children = value;
         }
-        public new IFeatureCategory DefaultCategory
+        /// <inheritdoc/>
+        public IFeatureCategory DefaultCategory
         {
-            get => base.DefaultCategory as IFeatureCategory;
-            set => base.DefaultCategory = value;
+            get
+            {
+                if (Children.LastOrDefault() is IFeatureCategory category)
+                {
+                    return category;
+                }
+                else
+                {
+                    throw new Exception($"{nameof(Children)} 必须包含一个 {nameof(IFeatureCategory)}");
+                }
+            }
+            set
+            {
+                if (value != null)
+                {
+                    if (Children.Count > 0)
+                    {
+                        Children[Children.Count - 1] = value;
+                    }
+                    else
+                    {
+                        Children.Add(value);
+                    }
+                }
+            }
         }
+        /// <summary>
+        /// 实例化<seealso cref="FeatureLayer"/>
+        /// </summary>
+        /// <param name="featureSet">要素集</param>
         public FeatureLayer(IFeatureSet featureSet) : base(featureSet)
         {
-            Selection = new FeatureSelection(DataSet);
+            Selection = new FeatureSelection(featureSet);
+            LabelLayer = new LabelLayer(this);
         }
 
-        public ILabelLayer LabelLayer { get; set; }
-        public new IFeatureSet DataSet 
-        { 
-            get => base.DataSet as IFeatureSet;
+        /// <inheritdoc/>
+        public ILabelLayer LabelLayer { get; }
+        /// <inheritdoc/>
+        public new IFeatureSet DataSet
+        {
+            get
+            {
+                if (base.DataSet is IFeatureSet featureSet)
+                {
+                    return featureSet;
+                }
+                else
+                {
+                    throw new Exception($"{nameof(DataSet)}类型必须为{nameof(IFeatureSet)}");
+                }
+            }
             set
             {
                 base.DataSet = value;
-                FidCategoryDic.Clear();
+                DrawnStates.Clear();
             }
         }
+        /// <inheritdoc/>
+        public IFeatureSelection Selection { get; }
 
-        public new IFeatureSelection Selection
-        {
-            get => base.Selection as IFeatureSelection;
-            set => base.Selection = value;
-        }
-       
-        public Dictionary<long, IFeatureCategory> FidCategoryDic { get; } = new Dictionary<long, IFeatureCategory>();
+        /// <inheritdoc/>
+        public Dictionary<long, IFeatureCategory> DrawnStates { get; } = new Dictionary<long, IFeatureCategory>();
+        /// <inheritdoc/>
         protected override void OnDraw(MapArgs mapArgs, bool selected = false, Action<string, int>? progressAction = null, Func<bool>? cancelFunc = null, Action? invalidateMapFrameAction = null)
         {
             if (selected && Selection.Count == 0 || cancelFunc?.Invoke() == true)
@@ -55,7 +105,7 @@ namespace EM.GIS.Symbology
             }
             DataSet.SetSpatialExtentFilter(mapArgs.DestExtent);
             long featureCount = DataSet.FeatureCount;
-            progressAction?.Invoke(ProgressMessage,5 );
+            progressAction?.Invoke(ProgressMessage, 5);
             var features = new List<IFeature>();
             long drawnFeatureCount = 0;
             int threshold = 262144;
@@ -68,7 +118,7 @@ namespace EM.GIS.Symbology
                     if (cancelFunc?.Invoke() != true)
                     {
                         percent = (int)(drawnFeatureCount * 90 / featureCount);
-                        progressAction?.Invoke(ProgressMessage,percent);
+                        progressAction?.Invoke(ProgressMessage, percent);
                         DrawFeatures(mapArgs, mapArgs.Graphics, features, selected, progressAction, cancelFunc);
                         drawnFeatureCount += features.Count;
                         invalidateMapFrameAction?.Invoke();
@@ -128,10 +178,10 @@ namespace EM.GIS.Symbology
         private Dictionary<IFeature, IFeatureCategory> GetFeatureAndCategoryDic(List<IFeature> features)
         {
             Dictionary<IFeature, IFeatureCategory> featureCategoryDic = new Dictionary<IFeature, IFeatureCategory>();
-            var cachedFeatures = features.Where(x => FidCategoryDic.Keys.Contains(x.FId));
+            var cachedFeatures = features.Where(x => DrawnStates.Keys.Contains(x.FId));
             foreach (var item in cachedFeatures)
             {
-                featureCategoryDic[item] = FidCategoryDic[item.FId];
+                featureCategoryDic[item] = DrawnStates[item.FId];
             }
             var otherFeatures = features.Except(cachedFeatures).ToList(); ;
             using (DataTable dataTable = GetAttribute(otherFeatures))
@@ -145,7 +195,7 @@ namespace EM.GIS.Symbology
                         IFeatureCategory featureCategory = Children[j];
                         if (string.IsNullOrEmpty(featureCategory.FilterExpression))
                         {
-                            FidCategoryDic[feature.FId]= featureCategory;
+                            DrawnStates[feature.FId] = featureCategory;
                             featureCategoryDic[feature] = featureCategory;
                         }
                         else
@@ -153,7 +203,7 @@ namespace EM.GIS.Symbology
                             DataRow[] rows = dataTable.Select(featureCategory.FilterExpression);
                             if (rows.Contains(row))
                             {
-                                FidCategoryDic[feature.FId] = featureCategory;
+                                DrawnStates[feature.FId] = featureCategory;
                                 featureCategoryDic[feature] = featureCategory;
                             }
                         }
@@ -170,9 +220,9 @@ namespace EM.GIS.Symbology
         /// <param name="symbolizer">要素符号</param>
         /// <param name="geometry">几何体</param>
         protected abstract void DrawGeometry(IProj proj, Graphics graphics, IFeatureSymbolizer symbolizer, IGeometry geometry);
-        private void DrawFeatures(IProj proj, Graphics graphics,List<IFeature> features, bool selected, Action<string, int> progressAction = null, Func<bool> cancelFunc = null)
+        private void DrawFeatures(IProj proj, Graphics graphics, List<IFeature> features, bool selected, Action<string, int>? progressAction = null, Func<bool>? cancelFunc = null)
         {
-            if (proj == null|| proj.Bound.IsEmpty|| proj.Extent==null|| proj.Extent.IsEmpty() || graphics == null || features == null || cancelFunc?.Invoke() == true)
+            if (proj == null || proj.Bound.IsEmpty || proj.Extent == null || proj.Extent.IsEmpty() || graphics == null || features == null || cancelFunc?.Invoke() == true)
             {
                 return;
             }
@@ -190,7 +240,7 @@ namespace EM.GIS.Symbology
                 }
                 var category = item.Value;
                 var symbolizer = selected ? category.SelectionSymbolizer : category.Symbolizer;
-                if(symbolizer==null)
+                if (symbolizer == null)
                 {
                     continue;
                 }
@@ -208,7 +258,7 @@ namespace EM.GIS.Symbology
 
                 FieldType fieldType = fieldDefn.FieldType;
                 string name = fieldDefn.Name;
-                Type type = null;
+                Type type;
                 switch (fieldType)
                 {
                     case FieldType.Binary:

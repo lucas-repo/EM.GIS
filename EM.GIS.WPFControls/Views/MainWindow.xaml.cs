@@ -7,6 +7,7 @@ using System.Windows.Controls.Primitives;
 using System.Windows.Controls.Ribbon;
 using EM.GIS.WPFControls.ViewModels;
 using EM.WpfBases;
+using System.Windows.Media;
 
 namespace EM.GIS.WPFControls
 {
@@ -20,7 +21,7 @@ namespace EM.GIS.WPFControls
         public MainWindow(IIocManager iocManager)
         {
             InitializeComponent();
-            IocManager= iocManager ?? throw new ArgumentNullException(nameof(iocManager));
+            IocManager = iocManager ?? throw new ArgumentNullException(nameof(iocManager));
             Loaded += MainWindow_Loaded;
         }
 
@@ -31,7 +32,11 @@ namespace EM.GIS.WPFControls
             {
                 throw new Exception($"未注册{nameof(IWpfAppManager)}");
             }
+            var map = IocManager.GetService<IMap, Map>();
+            mapDocument.Content = map;
             appManager.Map = map;
+            var legend = IocManager.GetService<ILegend, Legend>();
+            legendAnchorable.Content = legend;
             appManager.Map.Legend = legend;
             appManager.Legend = legend;
             appManager.Ribbon = ribbon;

@@ -35,7 +35,7 @@ namespace EM.GIS.Gdals
         }
         private void OnDatasetChanged()
         {
-            GdalProjectionInfo projection = null;
+            GdalProjection projection = null;
             Bands.Clear();
             if (Dataset != null)
             {
@@ -49,7 +49,7 @@ namespace EM.GIS.Gdals
                     }
                     Bands.Add(new GdalRasterSet<T>(Filename, Dataset, band));
                 }
-                projection = new GdalProjectionInfo(Dataset.GetProjection());
+                projection = new GdalProjection(Dataset.GetProjection());
             }
             Projection = projection;
             ReadHeader();

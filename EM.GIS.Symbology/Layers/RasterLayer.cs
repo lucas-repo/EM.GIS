@@ -12,20 +12,10 @@ namespace EM.GIS.Symbology
     /// </summary>
     public class RasterLayer : Layer, IRasterLayer
     {
-        /// <inheritdoc/>
-        public new IRasterCategory DefaultCategory
-        {
-            get => base.DefaultCategory as IRasterCategory;
-            set => base.DefaultCategory = value;
-        }
-
-        public RasterLayer()
-        {
-            Children = new RasterCategoryCollection(this);
-        }
-        public RasterLayer(IDataSet rasterSet) : this()
+        public RasterLayer(IDataSet rasterSet):base(rasterSet)
         {
             DataSet = rasterSet ?? throw new ArgumentNullException(nameof(rasterSet));
+            Children = new RasterCategoryCollection(this);
             Text = rasterSet.Name;
             //if (DataSet?.Bands.Count > 0)
             //{

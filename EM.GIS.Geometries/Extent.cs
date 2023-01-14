@@ -13,15 +13,12 @@ namespace EM.GIS.Geometries
     [TypeConverter(typeof(ExpandableObjectConverter))]
     public class Extent : IExtent
     {
+        /// <summary>
+        /// 空范围
+        /// </summary>
+        public static readonly IExtent Empty = new Extent();
         public Extent()
         { }
-        /// <summary>
-        /// Initializes a new instance of the <see cref="Extent"/> class from the specified ordinates.
-        /// </summary>
-        /// <param name="xMin">The minimum X value.</param>
-        /// <param name="yMin">The minimum Y value.</param>
-        /// <param name="xMax">The maximum X value.</param>
-        /// <param name="yMax">The maximum Y value.</param>
         public Extent(double xMin, double yMin, double xMax, double yMax)
         {
             MinX = xMin;
@@ -30,11 +27,6 @@ namespace EM.GIS.Geometries
             MaxY = yMax;
         }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="Extent"/> class based on the given values.
-        /// </summary>
-        /// <param name="values">Values used to initialize XMin, YMin, XMax, YMax in the given order.</param>
-        /// <param name="offset">Offset indicates at which position we can find MinX. The other values follow directly after that.</param>
         public Extent(double[] values, int offset)
         {
             if (values.Length < 4 + offset) throw new IndexOutOfRangeException("The length of the array of double values should be greater than or equal to 4 plus the value of the offset.");
@@ -45,10 +37,6 @@ namespace EM.GIS.Geometries
             MaxY = values[3 + offset];
         }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="Extent"/> class.
-        /// </summary>
-        /// <param name="values">Values used to initialize XMin, YMin, XMax, YMax in the given order.</param>
         public Extent(double[] values)
         {
             if (values.Length < 4) throw new IndexOutOfRangeException("The length of the array of double values should be greater than or equal to 4.");

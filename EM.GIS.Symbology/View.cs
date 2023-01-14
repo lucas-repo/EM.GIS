@@ -172,13 +172,11 @@ namespace EM.GIS.Symbology
         }
         /// <inheritdoc/>
         public Action<string, int> Progress { get; set; }
-        public View(IFrame frame, int width, int height)
+        public View(IFrame frame)
         {
             Frame = frame ?? throw new ArgumentNullException(nameof(frame));
             Frame.FirstLayerAdded += Frame_FirstLayerAdded;
             Frame.Children.CollectionChanged += LegendItems_CollectionChanged;
-            Width = width;
-            Height = height;
             PropertyChanged += View_PropertyChanged;
             bw = new BackgroundWorker
             {

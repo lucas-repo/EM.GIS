@@ -13,12 +13,12 @@ namespace EM.GIS.Gdals
         /// </summary>
         /// <param name="spatialReference"></param>
         /// <returns></returns>
-        public static ProjectionInfo ToProjectionInfo(this SpatialReference spatialReference)
+        public static Projection ToProjectionInfo(this SpatialReference spatialReference)
         {
-            ProjectionInfo projectionInfo = null;
+            Projection projectionInfo = null;
             if (spatialReference != null)
             {
-                projectionInfo = new GdalProjectionInfo(spatialReference);
+                projectionInfo = new GdalProjection(spatialReference);
             }
             return projectionInfo;
         }

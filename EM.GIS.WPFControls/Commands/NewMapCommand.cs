@@ -1,4 +1,5 @@
 ﻿using EM.Bases;
+using EM.GIS.Data;
 using EM.GIS.Symbology;
 using EM.IOC;
 using System;
@@ -16,17 +17,24 @@ namespace EM.GIS.WPFControls
     [Injectable(ServiceLifetime = ServiceLifetime.Singleton, ServiceType = typeof(ICommand))]
     public class NewMapCommand : Command
     {
+        private IFrame? Frame { get; }
+        public NewMapCommand(IFrame? frame)
+        {
+            Frame = frame;
+        }
+
         /// <inheritdoc/>
         protected override void OnExecute(object? parameter)
         {
-            if (parameter is IFrame frame)
+            if (Frame!=null)
             {
-                frame.New();
+                Frame.New();
             }
         }
+        /// <inheritdoc/>
         public override bool CanExecute(object? parameter)
         {
-            return parameter is IFrame;
+            return Frame != null;
         }
     }
 }

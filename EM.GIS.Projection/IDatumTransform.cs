@@ -9,6 +9,6 @@ namespace EM.GIS.Projections
         /// <summary>
         /// Transform function
         /// </summary>
-        void Transform(ProjectionInfo source, ProjectionInfo dest, double[] xy, double[] z, int startIndex, int numPoints);
+        void Transform(Projection source, Projection dest, double[] xy, double[] z, int startIndex, int numPoints);
     }
 }

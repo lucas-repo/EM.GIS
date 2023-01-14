@@ -12,7 +12,7 @@ namespace EM.GIS.Gdals
     /// <summary>
     /// 投影信息
     /// </summary>
-    public class GdalProjectionInfo : ProjectionInfo
+    public class GdalProjection : Projection
     {
         private SpatialReference _spatialReference;
 
@@ -38,15 +38,15 @@ namespace EM.GIS.Gdals
         /// 空间参考是否可释放
         /// </summary>
         public bool SpatialReferenceDisposable { get; set; } = true;
-        public GdalProjectionInfo(SpatialReference spatialReference)
+        public GdalProjection(SpatialReference spatialReference)
         {
             SpatialReference = spatialReference;
         }
-        public GdalProjectionInfo(string wkt)
+        public GdalProjection(string wkt)
         {
             SpatialReference = new SpatialReference(wkt);
         }
-        public GdalProjectionInfo(int epsg)
+        public GdalProjection(int epsg)
         {
             SpatialReference = new SpatialReference(string.Empty);
             SpatialReference.ImportFromEPSG(epsg);
@@ -327,9 +327,9 @@ namespace EM.GIS.Gdals
             return hashCode;
         }
 
-        public override void ReProject(ProjectionInfo destProjection, ICoordinate coordinate)
+        public override void ReProject(IProjection destProjection, ICoordinate coordinate)
         {
-            if (destProjection is GdalProjectionInfo gdalProjectionInfo && coordinate != null)
+            if (destProjection is GdalProjection gdalProjectionInfo && coordinate != null)
             {
                 using (CoordinateTransformation ct = new CoordinateTransformation(SpatialReference, gdalProjectionInfo.SpatialReference))
                 {
@@ -338,9 +338,9 @@ namespace EM.GIS.Gdals
             }
         }
 
-        public override void ReProject(ProjectionInfo destProjection, IGeometry geometry)
+        public override void ReProject(IProjection destProjection, IGeometry geometry)
         {
-            if (destProjection is GdalProjectionInfo gdalProjectionInfo && geometry != null)
+            if (destProjection is GdalProjection gdalProjectionInfo && geometry != null)
             {
                 using (CoordinateTransformation ct = new CoordinateTransformation(SpatialReference, gdalProjectionInfo.SpatialReference))
                 {
@@ -349,9 +349,9 @@ namespace EM.GIS.Gdals
             }
         }
 
-        public override void ReProject(ProjectionInfo destProjection, IList<ICoordinate> coordinates)
+        public override void ReProject(IProjection destProjection, IList<ICoordinate> coordinates)
         {
-            if (destProjection is GdalProjectionInfo gdalProjectionInfo && coordinates != null)
+            if (destProjection is GdalProjection gdalProjectionInfo && coordinates != null)
             {
                 using (CoordinateTransformation ct = new CoordinateTransformation(SpatialReference, gdalProjectionInfo.SpatialReference))
                 {
@@ -360,9 +360,9 @@ namespace EM.GIS.Gdals
             }
         }
 
-        public override void ReProject(ProjectionInfo destProjection, IExtent extent)
+        public override void ReProject(IProjection destProjection, IExtent extent)
         {
-            if (destProjection is GdalProjectionInfo gdalProjectionInfo && extent != null)
+            if (destProjection is GdalProjection gdalProjectionInfo && extent != null)
             {
                 using (CoordinateTransformation ct = new CoordinateTransformation(SpatialReference, gdalProjectionInfo.SpatialReference))
                 {
@@ -372,7 +372,7 @@ namespace EM.GIS.Gdals
         }
         protected override void OnCopy(object copy)
         {
-            if (copy is GdalProjectionInfo gdalProjection)
+            if (copy is GdalProjection gdalProjection)
             {
                 gdalProjection.SpatialReference = new SpatialReference(string.Empty);
                 if (EPSG.HasValue)

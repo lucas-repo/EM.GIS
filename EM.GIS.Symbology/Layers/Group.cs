@@ -1,72 +1,62 @@
-﻿using BruTile.Wms;
-using EM.Bases;
+﻿using EM.Bases;
 using EM.GIS.Data;
 using EM.GIS.Geometries;
-using EM.GIS.Projections;
 using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
-using System.Drawing;
-using System.IO;
 using System.Linq;
-using System.Threading;
-
 
 namespace EM.GIS.Symbology
 {
     /// <summary>
     /// 分组
     /// </summary>
-    public class Group : LegendItem, IGroup
+    public class Group : RenderableItem, IGroup
     {
-        public new IGroup Parent
-        {
-            get => base.Parent as IGroup;
-            set => base.Parent = value;
-        }
-        public new ILayerCollection Children
-        {
-            get => base.Children as ILayerCollection;
-            set => base.Children = value;
-        }
-        public int LayerCount => Children.Count();
-
-        public IExtent Extent
+        /// <inheritdoc/>
+        public new IRenderableItemCollection Children
         {
             get
             {
-                IExtent destExtent = new Extent();
+                if (base.Children is IRenderableItemCollection collection)
+                {
+                    return collection;
+                }
+                else
+                {
+                    throw new Exception($"{nameof(Children)}类型必须为{nameof(IRenderableItemCollection)}");
+                }
+            }
+            set => base.Children = value;
+        }
+        /// <inheritdoc/>
+        public int LayerCount => Children.Count();
+
+        /// <inheritdoc/>
+        public override IExtent Extent
+        {
+            get
+            {
+                IExtent destExtent =new Extent();
                 foreach (var item in Children)
                 {
-                    IExtent extent = null;
-                    switch (item)
+                    if (item is IRenderableItem renderableItem)
                     {
-                        case ILayer layer:
-                            extent = layer.Extent;
-                            break;
-                        case IGroup group:
-                            extent = group.Extent;
-                            break;
+                        destExtent.ExpandToInclude(renderableItem.Extent);
                     }
-                    if (extent == null)
-                    {
-                        continue;
-                    }
-                    destExtent.ExpandToInclude(extent);
                 }
                 return destExtent;
             }
         }
 
-        public bool UseDynamicVisibility { get; set; }
-        public double MaxInverseScale { get; set; }
-        public double MinInverseScale { get; set; }
+        /// <summary>
+        /// 实例化<seealso cref="Group"/>
+        /// </summary>
         public Group()
         {
-            Children = new LayerCollection(this);
+            Children = new RenderableItemCollection();
         }
         /// <inheritdoc/>
-        public virtual void Draw(MapArgs mapArgs, bool selected = false, Action<string, int>? progressAction = null, Func<bool>? cancelFunc = null, Action? invalidateMapFrameAction = null)
+        public override void Draw(MapArgs mapArgs, bool selected = false, Action<string, int>? progressAction = null, Func<bool>? cancelFunc = null, Action? invalidateMapFrameAction = null)
         {
             if (mapArgs == null || mapArgs.Graphics == null || mapArgs.Bound.IsEmpty || mapArgs.Extent == null || mapArgs.Extent.IsEmpty() || mapArgs.DestExtent == null || mapArgs.DestExtent.IsEmpty() || cancelFunc?.Invoke() == true || Children.Count == 0)
             {
@@ -120,48 +110,53 @@ namespace EM.GIS.Symbology
         /// <inheritdoc/>
         public IEnumerable<ILayer> GetLayers()
         {
-            foreach (ILayer item in Children)
+            foreach (var item in Children)
             {
-                yield return item;
+                if (item is ILayer layer)
+                {
+                    yield return layer;
+                }
+            }
+        }
+        /// <inheritdoc/>
+        public IEnumerable<IGroup> GetGroups()
+        {
+            foreach (var item in Children)
+            {
+                if (item is IGroup group)
+                {
+                    yield return group;
+                }
             }
         }
 
         /// <inheritdoc/>
         public IEnumerable<IFeatureLayer> GetAllFeatureLayers()
         {
-            return GetLayers<IFeatureLayer>(GetLayers(), true);
+            return GetItems<IFeatureLayer>(Children, true);
         }
-        /// <summary>
-        /// 从指定图层集合获取指定类型的图层
-        /// </summary>
-        /// <typeparam name="T">图层类型</typeparam>
-        /// <param name="layers">图层集合</param>
-        /// <param name="searchChildren">是否查询子图层</param>
-        /// <returns></returns>
-        private IEnumerable<T> GetLayers<T>(IEnumerable<ILayer> layers, bool searchChildren) where T : ILayer
+       
+        private IEnumerable<T> GetItems<T>(IEnumerable<IBaseItem> items, bool searchChildren) where T : ITreeItem
         {
-            foreach (var layer in layers)
+            foreach (var item in items)
             {
-                if (layer is IGroup group)
-                {
-                    if (searchChildren)
-                    {
-                        foreach (var item in GetLayers<T>(group.GetLayers(), searchChildren))
-                        {
-                            yield return item;
-                        }
-                    }
-                }
-                else if (layer is T t)
+                if (item is T t)
                 {
                     yield return t;
+                }
+                if (searchChildren && item is ITreeItem treeItem)
+                {
+                    foreach (var childItem in GetItems<T>(treeItem.Children, searchChildren))
+                    {
+                        yield return childItem;
+                    }
                 }
             }
         }
         /// <inheritdoc/>
         public IEnumerable<IRasterLayer> GetAllRasterLayers()
         {
-            return GetLayers<IRasterLayer>(GetLayers(), true);
+            return GetItems<IRasterLayer>(Children, true);
         }
 
         /// <inheritdoc/>
@@ -189,100 +184,21 @@ namespace EM.GIS.Symbology
         }
 
         /// <inheritdoc/>
-        public ILayer AddLayer(IDataSet dataSet, int? index = null)
-        {
-            ILayer layer = null;
-            if (dataSet is IFeatureSet featureSet)
-            {
-                layer = AddLayer(featureSet, index);
-            }
-            else if (dataSet is IRasterSet rasterSet)
-            {
-                layer = AddLayer(rasterSet, index);
-            }
-            return layer;
-        }
-
-        /// <inheritdoc/>
-        public IFeatureLayer AddLayer(IFeatureSet featureSet, int? index = null)
-        {
-            IFeatureLayer featureLayer = null;
-            if (featureSet == null) return featureLayer;
-            switch (featureSet.FeatureType)
-            {
-                case FeatureType.Point:
-                case FeatureType.MultiPoint:
-                    featureLayer = new PointLayer(featureSet);
-                    break;
-                case FeatureType.Polyline:
-                    featureLayer = new LineLayer(featureSet);
-                    break;
-                case FeatureType.Polygon:
-                    featureLayer = new PolygonLayer(featureSet);
-                    break;
-                default:
-                    return featureLayer;
-            }
-            featureLayer.Text = featureSet.Name;
-            if (featureLayer != null)
-            {
-                AddLayer(featureLayer, index);
-            }
-            return featureLayer;
-        }
-
-        /// <inheritdoc/>
-        public IRasterLayer AddLayer(IRasterSet rasterSet, int? index = null)
-        {
-            IRasterLayer rasterLayer = null;
-            if (rasterSet != null)
-            {
-                rasterLayer = new RasterLayer(rasterSet)
-                {
-                    Text = rasterSet.Name
-                };
-                AddLayer(rasterLayer, index);
-            }
-            return rasterLayer;
-        }
-
-        /// <inheritdoc/>
         public IEnumerable<ILayer> GetAllLayers()
         {
-            return GetLayers<ILayer>(GetLayers(), true);
-        }
-
-        /// <inheritdoc/>
-        public bool RemoveLayer(ILayer layer)
-        {
-            return Children.Remove(layer);
-        }
-
-        /// <inheritdoc/>
-        public void RemoveLayerAt(int index)
-        {
-            Children.RemoveAt(index);
-        }
-
-        /// <inheritdoc/>
-        public void ClearLayers()
-        {
-            if (Children.Count > 0)
-            {
-                Children.Clear();
-            }
+            return GetItems<ILayer>(Children, true);
         }
 
         /// <inheritdoc/>
         public IEnumerable<IFeatureLayer> GetFeatureLayers()
         {
-            return GetLayers<IFeatureLayer>(GetLayers(), false);
+            return GetItems<IFeatureLayer>(Children, false);
         }
 
         /// <inheritdoc/>
         public IEnumerable<IRasterLayer> GetRasterLayers()
         {
-            return GetLayers<IRasterLayer>(GetLayers(), false);
+            return GetItems<IRasterLayer>(Children, false);
         }
     }
 }

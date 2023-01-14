@@ -150,7 +150,7 @@ namespace EM.GIS.WPFControls.ViewModels
             if (appManager?.Map != null)
             {
                 appManager.Map.GeoMouseMove += Map_GeoMouseMove;
-                appManager.Map.View.Progress = ReportProgress;
+                appManager.Map.Frame.View.Progress = ReportProgress;
             }
 
             LoadTileMaps();

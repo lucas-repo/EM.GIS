@@ -24,7 +24,7 @@ namespace EM.GIS.WPFControls
             Map = map ?? throw new ArgumentNullException(nameof(map));
             var position = e.GetPosition(map);
             Location = new PointD(position.X, position.Y);
-            GeographicLocation = map.View.PixelToProj(position.X, position.Y);
+            GeographicLocation = map.Frame.View.PixelToProj(position.X, position.Y);
         }
 
         #endregion

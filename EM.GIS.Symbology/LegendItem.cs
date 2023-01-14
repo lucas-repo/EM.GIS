@@ -2,6 +2,7 @@
 using EM.GIS.Data;
 using System;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.Drawing;
 
 namespace EM.GIS.Symbology
@@ -12,25 +13,120 @@ namespace EM.GIS.Symbology
     [Serializable]
     public abstract class LegendItem : TreeItem, ILegendItem
     {
+        private IFrame? frame;
+        /// <inheritdoc/>
+        public IFrame? Frame
+        {
+            get { return frame; }
+            set { SetProperty(ref frame, value); }
+        }
+        /// <inheritdoc/>
         public ObservableCollection<IContextCommand> ContextCommands { get; } = new ObservableCollection<IContextCommand>();
 
-        private ProgressDelegate _progress;
         /// <summary>
         /// 是否已释放
         /// </summary>
         protected bool IsDisposed { get; private set; }
-
+        /// <inheritdoc/>
+        public override IItemCollection<IBaseItem> Children
+        {
+            get => base.Children;
+            protected set
+            {
+                if (base.Children != value)
+                {
+                    var oldChildren = base.Children;
+                    base.Children = value;
+                    base.Children.CollectionChanged += Children_CollectionChanged;
+                    if (oldChildren != null)
+                    {
+                        oldChildren.CollectionChanged -= Children_CollectionChanged;
+                    }
+                }
+            }
+        }
+        /// <summary>
+        /// 实例化<seealso cref="LegendItem"/>
+        /// </summary>
         public LegendItem()
         {
             IsVisible = true;
+            PropertyChanged += LegendItem_PropertyChanged;
         }
+        /// <summary>
+        /// 实例化<seealso cref="LegendItem"/>
+        /// </summary>
+        /// <param name="parent">父元素</param>
         public LegendItem(ILegendItem parent) : this()
         {
             Parent = parent;
         }
 
-        public virtual void DrawLegend(Graphics g, Rectangle rectangle) { }
+        private void Children_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            Action setOldItemsAction = new Action(() =>
+            {
+                foreach (var item in e.OldItems)
+                {
+                    if (item is ILegendItem t)
+                    {
+                        t.Parent = default;
+                        t.Frame = default;
+                    }
+                }
+            });
+            Action setNewItemsAction = new Action(() =>
+            {
+                foreach (var item in e.NewItems)
+                {
+                    if (item is ILegendItem t)
+                    {
+                        t.Parent = this;
+                        t.Frame = Frame;
+                    }
+                }
+            });
+            switch (e.Action)
+            {
+                case NotifyCollectionChangedAction.Add:
+                    setNewItemsAction.Invoke();
+                    break;
+                case NotifyCollectionChangedAction.Remove:
+                    setOldItemsAction.Invoke();
+                    break;
+                case NotifyCollectionChangedAction.Replace:
+                    setOldItemsAction.Invoke();
+                    setNewItemsAction.Invoke();
+                    break;
+                case NotifyCollectionChangedAction.Move:
+                    break;
+                case NotifyCollectionChangedAction.Reset:
+                    setOldItemsAction.Invoke();
+                    break;
+            }
+        }
 
+        private void LegendItem_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            switch (e.PropertyName)
+            {
+                case nameof(Frame):
+                    foreach (var item in Children)
+                    {
+                        if (item is ILegendItem legendItem)
+                        {
+                            legendItem.Frame = Frame;
+                        }
+                    }
+                    break;
+            }
+        }
+        /// <inheritdoc/>
+        public virtual void DrawLegend(Graphics g, Rectangle rectangle) { }
+        /// <summary>
+        /// 释放
+        /// </summary>
+        /// <param name="disposing">释放托管资源</param>
         protected virtual void Dispose(bool disposing)
         {
             if (!IsDisposed)
@@ -38,16 +134,11 @@ namespace EM.GIS.Symbology
                 if (disposing)
                 {
                     // TODO: 释放托管状态(托管对象)
-                    if (Children.Count > 0)
+                    PropertyChanged -= LegendItem_PropertyChanged;
+                    Children.CollectionChanged -= Children_CollectionChanged;
+                    if (Children is IDisposable disposable)
                     {
-                        foreach (var item in Children)
-                        {
-                            if (item is IDisposable disposable)
-                            {
-                                disposable.Dispose();
-                            }
-                        }
-                        Children.Clear();
+                        disposable.Dispose();
                     }
                 }
 
@@ -64,6 +155,7 @@ namespace EM.GIS.Symbology
         //     Dispose(disposing: false);
         // }
 
+        /// <inheritdoc/>
         public void Dispose()
         {
             // 不要更改此代码。请将清理代码放入“Dispose(bool disposing)”方法中

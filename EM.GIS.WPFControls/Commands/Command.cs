@@ -14,12 +14,12 @@ namespace EM.GIS.WPFControls
         /// <summary>
         /// 执行方法
         /// </summary>
-        public Action<object?> ExcuteAction { get; set; }
+        public Action<object?> ExcuteAction { get;protected set; }
         /// <summary>
         /// 判断可以执行的方法
         /// </summary>
-        public Func<object?,bool> CanExecuteFunc { get; set; }
-        public Command()
+        public Func<object?,bool> CanExecuteFunc { get; protected set; }
+        protected Command()
         { }
 
         public Command(Action<object?> excute)

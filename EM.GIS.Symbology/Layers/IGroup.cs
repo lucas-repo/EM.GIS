@@ -11,21 +11,13 @@ namespace EM.GIS.Symbology
     /// <summary>
     /// 分组
     /// </summary>
-    public interface IGroup : ILegendItem, IDynamicVisibility, IDrawableLayer
+    public interface IGroup : IRenderableItem
     {
-        /// <summary>
-        /// 父图层组
-        /// </summary>
-        new IGroup Parent { get; set; }
         /// <summary>
         /// 图层集合
         /// </summary>
-        new ILayerCollection Children { get; }
+        new IRenderableItemCollection Children { get; }
 
-        /// <summary>
-        /// 范围
-        /// </summary>
-        IExtent Extent { get; }
         /// <summary>
         /// 图层个数
         /// </summary>
@@ -39,12 +31,17 @@ namespace EM.GIS.Symbology
         /// <summary>
         /// 获取图层集合
         /// </summary>
-        /// <returns></returns>
+        /// <returns>图层集合</returns>
         IEnumerable<ILayer> GetLayers();
+        /// <summary>
+        /// 获取图层组集合
+        /// </summary>
+        /// <returns>图层组集合</returns>
+        IEnumerable<IGroup> GetGroups();
         /// <summary>
         /// 获取所有图层集合（包含子分组）
         /// </summary>
-        /// <returns></returns>
+        /// <returns>所有图层集合</returns>
         IEnumerable<ILayer> GetAllLayers();
         /// <summary>
         /// 获取要素图层集合
@@ -66,49 +63,5 @@ namespace EM.GIS.Symbology
         /// </summary>
         /// <returns></returns>
         IEnumerable<IRasterLayer> GetAllRasterLayers();
-        /// <summary>
-        /// 添加图层
-        /// </summary>
-        /// <param name="layer"></param>
-        /// <param name="index"></param>
-        /// <returns></returns>
-        bool AddLayer(ILayer layer, int? index = null);
-        /// <summary>
-        /// 添加图层
-        /// </summary>
-        /// <param name="dataSet"></param>
-        /// <param name="index"></param>
-        /// <returns></returns>
-        ILayer AddLayer(IDataSet dataSet, int? index = null);
-        /// <summary>
-        /// 添加图层
-        /// </summary>
-        /// <param name="featureSet"></param>
-        /// <param name="index"></param>
-        /// <returns></returns>
-        IFeatureLayer AddLayer(IFeatureSet featureSet, int? index = null);
-        /// <summary>
-        /// 添加图层
-        /// </summary>
-        /// <param name="rasterSet"></param>
-        /// <param name="index"></param>
-        /// <returns></returns>
-        IRasterLayer AddLayer(IRasterSet rasterSet, int? index = null);
-        /// <summary>
-        /// 移除图层
-        /// </summary>
-        /// <param name="layer"></param>
-        /// <returns></returns>
-        bool RemoveLayer(ILayer layer);
-        /// <summary>
-        /// 移除图层
-        /// </summary>
-        /// <param name="index"></param>
-        void RemoveLayerAt(int index);
-        /// <summary>
-        /// 清空图层
-        /// </summary>
-        void ClearLayers();
-
     }
 }

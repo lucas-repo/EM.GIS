@@ -14,9 +14,9 @@ namespace EM.GIS.Symbology
         /// </summary>
         IView View { get; }
         /// <summary>
-        /// 投影信息
+        /// 投影
         /// </summary>
-        ProjectionInfo Projection { get; set; }
+        IProjection Projection { get; set; }
         /// <summary>
         /// 文件名
         /// </summary>
@@ -28,7 +28,7 @@ namespace EM.GIS.Symbology
         /// <summary>
         /// 第一个图层添加事件
         /// </summary>
-        event EventHandler FirstLayerAdded;
+        event EventHandler? FirstLayerAdded;
         /// <summary>
         /// 计算最大范围
         /// </summary>

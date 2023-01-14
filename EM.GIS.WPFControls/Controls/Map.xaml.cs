@@ -33,7 +33,19 @@ namespace EM.GIS.WPFControls
         public IFrame Frame
         {
             get { return frame; }
-            set { SetProperty(ref frame, value); }
+            set
+            {
+                if (frame != value)
+                {
+                    var oldFrame = frame;
+                    frame = value;
+                    if (oldFrame != null)
+                    {
+                        oldFrame.Dispose();
+                    }
+                    OnPropertyChanged(nameof(Frame));
+                }
+            }
         }
 
         /// <inheritdoc/>
@@ -52,7 +64,7 @@ namespace EM.GIS.WPFControls
         }
 
         /// <inheritdoc/>
-        public ILayerCollection Layers => Frame.Children;
+        public IRenderableItemCollection Layers => Frame.Children;
 
         /// <inheritdoc/>
         public List<ITool> MapTools { get; }
@@ -62,15 +74,12 @@ namespace EM.GIS.WPFControls
         /// <inheritdoc/>
         public event PropertyChangedEventHandler? PropertyChanged;
 
-        public Map()
+        public Map(IFrame frame)
         {
             InitializeComponent();
             PropertyChanged += Map_PropertyChanged;
-            Frame = new Symbology.Frame((int)ActualWidth, (int)ActualHeight)
-            {
-                Text = "地图框"
-            };
-           Frame.View.PropertyChanged += View_PropertyChanged;
+            Frame = frame;
+            Frame.View.PropertyChanged += View_PropertyChanged;
             var pan = new MapToolPan(this);
             var zoom = new MapToolZoom(this);
             ITool[] mapTools = { pan, zoom };
@@ -97,7 +106,7 @@ namespace EM.GIS.WPFControls
             switch (e.PropertyName)
             {
                 case nameof(View.Background):
-                    Background =Frame.View.Background.ToBrush();
+                    Background = Frame.View.Background.ToBrush();
                     break;
                 case nameof(View.BackImage):
                     Invalidate();

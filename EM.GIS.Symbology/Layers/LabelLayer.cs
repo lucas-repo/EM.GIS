@@ -19,25 +19,21 @@ namespace EM.GIS.Symbology
         }
         public void ClearSelection()
         {
-            throw new NotImplementedException();
         }
 
         public void CreateLabels()
         {
-            throw new NotImplementedException();
         }
         protected override void OnDraw(MapArgs mapArgs, bool selected = false, Action<string, int>? progressAction = null, Func<bool>? cancelFunc = null, Action? invalidateMapFrameAction = null)
         {
-            throw new NotImplementedException();
         }
         public bool Select(IExtent region)
         {
-            throw new NotImplementedException();
+            return true;
         }
 
         public void Invalidate()
         {
-            throw new NotImplementedException();
         }
     }
 }

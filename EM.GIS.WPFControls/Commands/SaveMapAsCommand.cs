@@ -18,20 +18,25 @@ namespace EM.GIS.WPFControls
     [Injectable(ServiceLifetime = ServiceLifetime.Singleton, ServiceType = typeof(ICommand))]
     public class SaveMapAsCommand : Command
     {
+        private IFrame? Frame { get; }
+        public SaveMapAsCommand(IFrame? frame)
+        {
+            Frame = frame;
+        }
         protected override void OnExecute(object? parameter)
         {
-            if (parameter is IFrame frame)
+            if (Frame!=null)
             {
                 SaveFileDialog dg = new SaveFileDialog();
                 if (dg.ShowDialog(Application.Current.MainWindow) == true)
                 {
-                    frame.SaveAs(dg.FileName);
+                    Frame.SaveAs(dg.FileName);
                 }
             }
         }
         public override bool CanExecute(object? parameter)
         {
-            return parameter is IFrame;
+            return Frame != null;
         }
     }
 }

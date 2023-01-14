@@ -20,20 +20,26 @@ namespace EM.GIS.WPFControls
     [Injectable(ServiceLifetime = ServiceLifetime.Singleton, ServiceType = typeof(ICommand))]
     public class PanCommand : Command
     {
+        private IMap? Map { get; }
+        public PanCommand(IMap? map)
+        {
+            Map = map;
+        }
+
         protected override void OnExecute(object? parameter)
         {
-            if (parameter is IMap map)
+            if (Map != null)
             {
-                var panTool = map.MapTools.FirstOrDefault(x => x is MapToolPan);
+                var panTool = Map.MapTools.FirstOrDefault(x => x is MapToolPan);
                 if (panTool != null)
                 {
-                    map.ActivateMapToolWithZoom(panTool);
+                    Map.ActivateMapToolWithZoom(panTool);
                 }
             }
         }
         public override bool CanExecute(object? parameter)
         {
-            return parameter is IMap;
+            return Map != null;
         }
     }
 }

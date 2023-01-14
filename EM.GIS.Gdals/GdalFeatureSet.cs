@@ -42,13 +42,13 @@ namespace EM.GIS.Gdals
         {
             FeatureType featureType = FeatureType.Unknown;
             IExtent extent = null;
-            GdalProjectionInfo projection = null;
+            GdalProjection projection = null;
             if (Layer != null)
             {
                 featureType = Layer.GetGeomType().ToFeatureType();
                 extent = Layer.GetExtent();
                 SpatialReference spatialReference = Layer.GetSpatialRef();
-                projection = new GdalProjectionInfo(spatialReference)
+                projection = new GdalProjection(spatialReference)
                 {
                     SpatialReferenceDisposable = false
                 };

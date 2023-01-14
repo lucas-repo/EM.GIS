@@ -9,15 +9,15 @@ namespace EM.GIS.Projections
     /// <summary>
     /// 投影信息
     /// </summary>
-    public abstract class ProjectionInfo : BaseCopy,IDisposable
+    public abstract class Projection : BaseCopy,IDisposable,IProjection
     {
         /// <summary>
         /// 是否已释放
         /// </summary>
-        public bool IsDisposed { get; private set; }
+        protected bool IsDisposed { get; private set; }
 
         /// <summary>
-        ///  权威机构（如EPSG）
+        ///  认证机构（如EPSG）
         /// </summary>
         public virtual string Authority { get; set; }
 
@@ -344,37 +344,41 @@ namespace EM.GIS.Projections
         /// </summary>
         /// <param name="destProjection">目标投影</param>
         /// <param name="coordinate">坐标</param>
-        public abstract void ReProject(ProjectionInfo destProjection, ICoordinate coordinate);
+        public abstract void ReProject(IProjection destProjection, ICoordinate coordinate);
         /// <summary>
         /// 重投影坐标
         /// </summary>
         /// <param name="destProjection">目标投影</param>
         /// <param name="coordinates">坐标</param>
-        public abstract void ReProject(ProjectionInfo destProjection, IList<ICoordinate> coordinates);
+        public abstract void ReProject(IProjection destProjection, IList<ICoordinate> coordinates);
         /// <summary>
         /// 重投影多个坐标
         /// </summary>
         /// <param name="destProjection">目标投影</param>
         /// <param name="extent">范围</param>
         /// <returns>范围</returns>
-        public abstract void ReProject(ProjectionInfo destProjection, IExtent extent);
+        public abstract void ReProject(IProjection destProjection, IExtent extent);
         /// <summary>
         /// 重投影几何体
         /// </summary>
         /// <param name="destProjection">目标投影</param>
         /// <param name="geometry">几何体</param>
-        public abstract void ReProject(ProjectionInfo destProjection, IGeometry geometry);
+        public abstract void ReProject(IProjection destProjection, IGeometry geometry);
         public override bool Equals(object obj)
         {
             bool ret = base.Equals(obj);
             if (!ret)
             {
-                if (EPSG.HasValue && obj is ProjectionInfo projection && projection.EPSG.HasValue)
+                if (EPSG.HasValue && obj is Projection projection && projection.EPSG.HasValue)
                 {
                     ret=EPSG==projection.EPSG.Value;
                 }
             }
             return ret;
+        }
+        public override int GetHashCode()
+        {
+            return EPSG.GetHashCode();
         }
     }
 }

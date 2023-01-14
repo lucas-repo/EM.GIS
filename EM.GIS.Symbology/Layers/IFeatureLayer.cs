@@ -20,18 +20,18 @@ namespace EM.GIS.Symbology
         /// <summary>
         /// 选择器
         /// </summary>
-        new IFeatureSelection Selection { get; }
+        IFeatureSelection Selection { get; }
         /// <summary>
         /// 标注图层
         /// </summary>
-        ILabelLayer LabelLayer { get; set; }
+        ILabelLayer LabelLayer { get; }
         /// <summary>
         /// 默认分类
         /// </summary>
-        new IFeatureCategory DefaultCategory { get; set; }
+        IFeatureCategory DefaultCategory { get; set; }
         /// <summary>
-        /// 要素Id和分类缓存字典
+        /// 绘制缓存（要素Id和要素分类）集合
         /// </summary>
-        Dictionary<long, IFeatureCategory> FidCategoryDic { get; }
+        Dictionary<long, IFeatureCategory> DrawnStates { get; }
     }
 }

@@ -12,11 +12,11 @@ namespace EM.GIS.Projections
         /// <summary>
         /// 源投影
         /// </summary>
-        ProjectionInfo SrcProjection { get; set; }
+        Projection SrcProjection { get; set; }
         /// <summary>
         /// 目标投影
         /// </summary>
-        ProjectionInfo DestProjection { get; set; }
+        Projection DestProjection { get; set; }
         /// <summary>
         /// 转换点
         /// </summary>

@@ -1,14 +1,18 @@
 ﻿using EM.Bases;
+using EM.GIS.Resources;
 using EM.GIS.Symbology;
 using EM.IOC;
 using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection.PortableExecutable;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Input;
+using System.Xml.Linq;
 
 namespace EM.GIS.WPFControls
 {
@@ -16,12 +20,17 @@ namespace EM.GIS.WPFControls
     /// 打开地图命令
     /// </summary>
     [Injectable(ServiceLifetime = ServiceLifetime.Singleton, ServiceType = typeof(ICommand))]
-    public class OpenMapCommand : Command
+    public class ZoomToItemCommand : ContextCommand
     {
         private IFrame? Frame { get; }
-        public OpenMapCommand(IFrame? frame)
+        public ZoomToItemCommand(IFrame? frame)
         {
             Frame = frame;
+            Name = nameof(ZoomToItemCommand);
+            Header = "居中";
+            ToolTip = "居中至选择的元素";
+            Image = ResourcesHelper.GetBitmapImage("Global16.png");
+            LargeImage = ResourcesHelper.GetBitmapImage("Global32.png");
         }
 
         /// <inheritdoc/>
@@ -29,11 +38,7 @@ namespace EM.GIS.WPFControls
         {
             if (Frame != null)
             {
-                OpenFileDialog dg = new OpenFileDialog();
-                if (dg.ShowDialog(Application.Current.MainWindow) == true)
-                {
-                    Frame.Open(dg.FileName);
-                }
+                Frame.ZoomToSelectedItems();
             }
         }
         /// <inheritdoc/>

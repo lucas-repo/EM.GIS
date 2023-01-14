@@ -32,7 +32,7 @@ namespace EM.GIS.Data
         /// <summary>
         /// 投影
         /// </summary>
-        ProjectionInfo Projection { get; set; }
+        Projection Projection { get; set; }
         /// <summary>
         /// 保存
         /// </summary>
