@@ -30,9 +30,9 @@ namespace EM.GIS.Symbology
             protected set => base.Children = value;
         }
 
-        private IDataSet _dataSet;
+        private IDataSet? _dataSet;
         /// <inheritdoc/>
-        public IDataSet DataSet
+        public IDataSet? DataSet
         {
             get { return _dataSet; }
             set { SetProperty(ref _dataSet, value); }
@@ -54,6 +54,12 @@ namespace EM.GIS.Symbology
             }
         }
 
+        /// <summary>
+        /// 实例化<seealso cref="Layer"/>
+        /// </summary>
+        public Layer()
+        {
+        }
         /// <summary>
         /// 实例化<seealso cref="Layer"/>
         /// </summary>

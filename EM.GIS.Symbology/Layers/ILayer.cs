@@ -20,6 +20,6 @@ namespace EM.GIS.Symbology
         /// <summary>
         /// 数据集
         /// </summary>
-        IDataSet DataSet { get; set; }
+        IDataSet? DataSet { get; set; }
     }
 }

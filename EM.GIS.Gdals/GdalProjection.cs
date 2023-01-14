@@ -1,4 +1,5 @@
-﻿using EM.GIS.Geometries;
+﻿using EM.GIS.GdalExtensions;
+using EM.GIS.Geometries;
 using EM.GIS.Projections;
 using OSGeo.GDAL;
 using OSGeo.OGR;
@@ -38,6 +39,10 @@ namespace EM.GIS.Gdals
         /// 空间参考是否可释放
         /// </summary>
         public bool SpatialReferenceDisposable { get; set; } = true;
+        static GdalProjection()
+        {
+            GdalConfiguration.ConfigureGdal();
+        }
         public GdalProjection(SpatialReference spatialReference)
         {
             SpatialReference = spatialReference;

@@ -16,7 +16,7 @@ namespace EM.GIS.Symbology
         /// <summary>
         /// 数据集
         /// </summary>
-        new IFeatureSet DataSet { get; set; }
+        new IFeatureSet? DataSet { get; set; }
         /// <summary>
         /// 选择器
         /// </summary>

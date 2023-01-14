@@ -72,7 +72,7 @@ namespace EM.GIS.Symbology
         /// <inheritdoc/>
         public ILabelLayer LabelLayer { get; }
         /// <inheritdoc/>
-        public new IFeatureSet DataSet
+        public new IFeatureSet? DataSet
         {
             get
             {

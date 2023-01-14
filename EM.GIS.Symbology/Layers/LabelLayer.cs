@@ -9,10 +9,9 @@ namespace EM.GIS.Symbology
     public class LabelLayer : Layer, ILabelLayer
     {
         public IFeatureLayer FeatureLayer { get; }
-        public new ILabelCategory DefaultCategory { get => base.DefaultCategory as ILabelCategory; set => base.DefaultCategory = value; }
 
         public new ILabelCategoryCollection Children { get =>base.Children as ILabelCategoryCollection; protected set=> base.Children = value; }
-        public LabelLayer(IFeatureLayer featureLayer)
+        public LabelLayer( IFeatureLayer featureLayer)
         {
             FeatureLayer = featureLayer;
             Children = new LabelCategoryCollection(this);
