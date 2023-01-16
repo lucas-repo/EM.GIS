@@ -9,7 +9,7 @@ namespace EM.GIS.Projections
     /// <summary>
     /// 投影信息
     /// </summary>
-    public abstract class Projection : BaseCopy,IDisposable,IProjection
+    public abstract class Projection : BaseCopy, IDisposable, IProjection
     {
         /// <summary>
         /// 是否已释放
@@ -79,10 +79,7 @@ namespace EM.GIS.Projections
         ///   projection is geocentric.
         /// </summary>
         public virtual bool IsGeocentric { get; set; }
-
-        /// <summary>
-        ///   True if this coordinate system is expressed only using geographic coordinates
-        /// </summary>
+        /// <inheritdoc/>
         public virtual bool IsLatLon { get; }
 
         /// <summary>
@@ -371,14 +368,49 @@ namespace EM.GIS.Projections
             {
                 if (EPSG.HasValue && obj is Projection projection && projection.EPSG.HasValue)
                 {
-                    ret=EPSG==projection.EPSG.Value;
+                    ret = EPSG == projection.EPSG.Value;
                 }
             }
             return ret;
         }
+        /// <inheritdoc/>
         public override int GetHashCode()
         {
             return EPSG.GetHashCode();
+        }
+
+        /// <inheritdoc/>
+        public double GetLengthOfMeters(ICoordinate coord1, ICoordinate coord2)
+        {
+            double ret = 0;
+            if (coord1.IsEmpty() || coord2.IsEmpty())
+            {
+                return ret;
+            }
+            ret = GetLengthOfMeters(coord1.X, coord1.Y, coord2.X, coord2.Y);
+            return ret;
+        }
+
+        /// <inheritdoc/>
+        public double GetLengthOfMeters(double lon1, double lat1, double lon2, double lat2)
+        {
+            double ret = 0;
+            if (double.IsNaN(lon1) || double.IsNaN(lat1) || double.IsNaN(lon2) || double.IsNaN(lat2) || (lon1 == lon2 && lat1 == lat2))
+            {
+                return ret;
+            }
+             double circumference = GeographicInfo.Datum.Spheroid.Semimajor * 2 * Math.PI;//周长
+            const double DMetersPerLatDd = 111113.519;
+
+            double dxInDegrees = Math.Abs(lon1 - lon2);
+            double dyInDegrees = Math.Abs(lat1 - lat2);
+            double dCenterY = (lat1 + lat2) / 2.0;
+            double dMetersPerLongDd = (Math.Cos(dCenterY * (Math.PI / 180.0)) * circumference) / 360.0;
+            double dDeltaXmeters = dMetersPerLongDd * dxInDegrees;
+            double dDeltaYmeters = DMetersPerLatDd * dyInDegrees;
+
+            ret= Math.Sqrt(Math.Pow(dDeltaXmeters, 2.0) + Math.Pow(dDeltaYmeters, 2.0));
+            return ret;
         }
     }
 }

@@ -5,7 +5,7 @@ using System.Globalization;
 namespace EM.GIS.Projections
 {
     /// <summary>
-    /// 线性角度
+    /// 线性单位
     /// </summary>
     public class LinearUnit : BaseCopy
     {

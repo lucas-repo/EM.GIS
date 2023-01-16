@@ -1,6 +1,7 @@
 ﻿using EM.Bases;
 using EM.GIS.Data;
 using EM.GIS.Geometries;
+using EM.GIS.Projections;
 using System;
 using System.Collections;
 using System.Collections.Specialized;
@@ -394,9 +395,80 @@ namespace EM.GIS.Symbology
                 case nameof(Background):
                     ResetBuffer(Bound, ViewExtent, ViewExtent);
                     break;
+                case nameof(ViewExtent):
+
+                    break;
             }
         }
+        private double GetScale()
+        {
+            double ret = double.NaN;
+            try
+            {
+                const double metersPerInche = 0.0254;
+                const double degreesPerRadian = 180 / Math.PI;//1弧度对应的角度
+                double widthInMeters;
 
+                if (Frame.Projection.IsLatLon)
+                {
+                    var widthInRadians = ViewExtent.Width * Frame.Projection.GeographicInfo.Unit.Radians;//视图范围宽度（弧度）
+                    var widthInDegrees = widthInRadians * degreesPerRadian;//视图范围宽度（角度）
+                    var latInRadians = ViewExtent.Center.Y * Frame.Projection.GeographicInfo.Unit.Radians;//中心点纬度（弧度）
+                    var latInDegrees = latInRadians * degreesPerRadian;//中心点纬度（角度）
+                    widthInMeters = MetersFromDecimalDegreesPoints(0.0, latInDegrees, widthInDegrees, latInDegrees);
+                }
+                else
+                {
+                    widthInMeters = ViewExtent.Width * Frame.Projection.Unit.Meters;
+                }
+
+                // Get the number of pixels in one screen inch.
+                // get resolution, most screens are 96 dpi, but you never know...
+                double dpi = 96;
+                using (Graphics g = Graphics.FromHwnd(IntPtr.Zero))
+                {
+                    dpi = g.DpiX;
+                }
+                double dScreenWidthInMeters = (Convert.ToDouble(Width) / dpi) * metersPerInche;
+                return widthInMeters / dScreenWidthInMeters;
+            }
+            catch (Exception e)
+            {
+                Debug.WriteLine(e);
+                return double.NaN;
+            }
+            return ret;
+        }
+        /// <summary>
+        /// 使用球面近似方法返回两个十进制点之间的距离，单位为米
+        /// </summary>
+        /// <param name="lon1">第一个点经度</param>
+        /// <param name="lat1">第一个点纬度</param>
+        /// <param name="lon2">第二个点经度</param>
+        /// <param name="lat2">第二个点纬度</param>
+        /// <returns>距离（m）</returns>
+        public static double MetersFromDecimalDegreesPoints(double lon1, double lat1, double lon2, double lat2)
+        {
+            try
+            {
+                const double DRadius = 6378007; // radius of Earth in meters
+                const double DCircumference = DRadius * 2 * Math.PI;
+                const double DMetersPerLatDd = 111113.519;
+
+                double dDeltaXdd = Math.Abs(lon1 - lon2);
+                double dDeltaYdd = Math.Abs(lat1 - lat2);
+                double dCenterY = (lat1 + lat2) / 2.0;
+                double dMetersPerLongDd = (Math.Cos(dCenterY * (Math.PI / 180.0)) * DCircumference) / 360.0;
+                double dDeltaXmeters = dMetersPerLongDd * dDeltaXdd;
+                double dDeltaYmeters = DMetersPerLatDd * dDeltaYdd;
+
+                return Math.Sqrt(Math.Pow(dDeltaXmeters, 2.0) + Math.Pow(dDeltaYmeters, 2.0));
+            }
+            catch
+            {
+                return 0.0;
+            }
+        }
         /// <inheritdoc/>
         public void Draw(Graphics g, RectangleF rectangle)
         {
@@ -464,6 +536,16 @@ namespace EM.GIS.Symbology
                 ViewExtent = maxExtent;
             }
         }
+        private double scaleFactor;
+        /// <summary>
+        /// 比例尺因子
+        /// </summary>
+        public double ScaleFactor
+        {
+            get { return scaleFactor; }
+            set { SetProperty(ref scaleFactor, value); }
+        }
+
         protected virtual void Dispose(bool disposing)
         {
             if (!disposedValue)

@@ -23,6 +23,18 @@ namespace EM.GIS.Projections
         /// </summary>
         int? EPSG { get; }
         /// <summary>
+        /// 是否为地理坐标系
+        /// </summary>
+        bool IsLatLon { get; }
+        /// <summary>
+        /// 地理坐标系信息
+        /// </summary>
+        GeographicInfo GeographicInfo { get; set; }
+        /// <summary>
+        /// 线性单位
+        /// </summary>
+        LinearUnit Unit { get; set; }
+        /// <summary>
         /// 重投影坐标
         /// </summary>
         /// <param name="destProjection">目标投影</param>
@@ -47,5 +59,21 @@ namespace EM.GIS.Projections
         /// <param name="destProjection">目标投影</param>
         /// <param name="geometry">几何体</param>
         void ReProject(IProjection destProjection, IGeometry geometry);
+        /// <summary>
+        /// 计算两点的距离（米）
+        /// </summary>
+        /// <param name="coord1">第一个坐标</param>
+        /// <param name="coord2">第二个坐标</param>
+        /// <returns>距离（米）</returns>
+        double GetLengthOfMeters(ICoordinate coord1,ICoordinate coord2);
+        /// <summary>
+        /// 计算两点的距离（米）
+        /// </summary>
+        /// <param name="lon1">第一个点经度</param>
+        /// <param name="lat1">第一个点纬度</param>
+        /// <param name="lon2">第二个点经度</param>
+        /// <param name="lat2">第二个点纬度</param>
+        /// <returns>距离（米）</returns>
+        double GetLengthOfMeters(double lon1, double lat1, double lon2, double lat2);
     }
 }

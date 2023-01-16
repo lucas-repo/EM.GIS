@@ -20,7 +20,7 @@ namespace EM.GIS.Gdals
                 }
             }
         }
-        public override double EquatorialRadius
+        public override double Semimajor
         {
             get
             {
@@ -32,7 +32,7 @@ namespace EM.GIS.Gdals
                 return value;
             }
         }
-        public override double PolarRadius
+        public override double Semiminor
         {
             get
             {

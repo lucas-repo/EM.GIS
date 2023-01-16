@@ -22,20 +22,14 @@ namespace EM.GIS.Projections
         public virtual string Name { get; set; }
 
         /// <summary>
-        /// A spheroid is a pole flattened (oblate) sphere, with the radii of two axes being equal and longer
-        /// than the third.  This is the radial measure of one of these major axes in meters.
-        /// e.g. 6, 378, 137 for WGS 84
+        /// 长半轴
         /// </summary>
-        public virtual double EquatorialRadius { get;  }
+        public virtual double Semimajor { get;  }
 
         /// <summary>
-        /// A spheroid is a pole flattened (oblate) sphere, with the radii of two axes being equal and longer
-        /// than the third.  This is the radial measure of the smaller polar axis in meters.  One option is
-        /// to specify this directly, but it can also be calculated using the major axis and the flattening factor.
+        /// 短半轴
         /// </summary>
-        public virtual double PolarRadius { get; }
-
-
+        public virtual double Semiminor { get; }
         #endregion Properties
     }
 }

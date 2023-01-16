@@ -44,6 +44,10 @@ namespace EM.GIS.Symbology
         /// </summary>
         IExtent ViewExtent { get; set; }
         /// <summary>
+        /// 比例尺因子
+        /// </summary>
+         double ScaleFactor { get; set; }
+        /// <summary>
         /// 进度委托
         /// </summary>
         Action<string, int> Progress { get; set; }

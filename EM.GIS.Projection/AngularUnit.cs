@@ -6,12 +6,12 @@
     public class AngularUnit
     {
         /// <summary>
-        /// Gets or sets the name of this
+        /// 名称
         /// </summary>
         public virtual string Name { get; set; }
 
         /// <summary>
-        /// Gets or sets the constant to multiply against this unit to get radians.
+        /// 获取或设置与此单位相乘的常数以获得弧度
         /// </summary>
         public virtual double Radians { get; set; }
     }

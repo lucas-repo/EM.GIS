@@ -11,24 +11,22 @@ namespace EM.GIS.Projections
         #region Properties
 
         /// <summary>
-        /// Gets or sets the datum
-        /// eg: D_WGS_1984
+        /// 基准面
         /// </summary>
         public virtual Datum Datum { get; set; }
 
         /// <summary>
-        /// Gets or sets the prime meridian longitude of the 0 mark, relative to Greenwitch
+        /// 子午线
         /// </summary>
         public virtual Meridian Meridian { get; set; }
 
         /// <summary>
-        /// Gets or sets the geographic coordinate system name
-        /// eg: GCS_WGS_1984
+        /// 名称
         /// </summary>
         public virtual string Name { get; set; }
 
         /// <summary>
-        /// Gets or sets the units
+        /// 角度单位
         /// </summary>
         public virtual AngularUnit Unit { get; set; }
 

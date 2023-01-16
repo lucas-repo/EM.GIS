@@ -10,17 +10,16 @@ namespace EM.GIS.Projections
         #region Properties
 
         /// <summary>
-        /// Gets or sets the name of the datum defining the spherical characteristics of the model of the earth
+        /// 名称
         /// </summary>
         public virtual string Name { get; set; }
         /// <summary>
-        /// The spheroid of the earth, defining the maximal radius and the flattening factor
+        /// 椭球体
         /// </summary>
         public virtual Spheroid Spheroid { get; set; }
 
         /// <summary>
-        /// Gets or sets the set of double parameters, (this can either be 3 or 7 parameters)
-        /// used to transform this
+        /// 设置转换参数（三参或七参）
         /// </summary>
         public virtual double[] ToWGS84 { get; set; }
 

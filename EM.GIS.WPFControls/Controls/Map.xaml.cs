@@ -73,7 +73,7 @@ namespace EM.GIS.WPFControls
         public event EventHandler<IGeoMouseEventArgs> GeoMouseMove;
         /// <inheritdoc/>
         public event PropertyChangedEventHandler? PropertyChanged;
-
+    
         public Map(IFrame frame)
         {
             InitializeComponent();
