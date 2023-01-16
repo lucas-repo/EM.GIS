@@ -1,5 +1,7 @@
 ﻿using EM.GIS.Resources;
 using EM.GIS.Symbology;
+using System.Windows;
+using System.Windows.Threading;
 
 namespace EM.GIS.WPFControls
 {
@@ -17,14 +19,13 @@ namespace EM.GIS.WPFControls
             LargeImage = ResourcesHelper.GetBitmapImage("Global32.png");
             ExcuteAction = (obj =>
             {
-                InputWindow window = new InputWindow(value: "图层组");
+                InputWindow window = new InputWindow(value: "图层组")
+                {
+                    Owner= Application.Current.MainWindow
+                };
                 if (window.ShowDialog() == true)
                 {
-                    var newGroup = new Group()
-                    {
-                        Text = window.Value
-                    };
-                    group.Children.Add(newGroup);
+                    group.Children.AddGroup(window.Value);
                 }
             });
         }

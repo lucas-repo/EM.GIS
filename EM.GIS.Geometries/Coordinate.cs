@@ -12,10 +12,10 @@ namespace EM.GIS.Geometries
     public class Coordinate : ICoordinate
     {
         /// <inheritdoc/>
-        public double X { get; set; }
+        public double X { get; set; } = double.NaN;
 
         /// <inheritdoc/>
-        public double Y { get; set; }
+        public double Y { get; set; } = double.NaN;
 
         /// <inheritdoc/>
         public double Z { get; set; } = double.NaN;

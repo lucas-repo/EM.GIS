@@ -9,6 +9,7 @@
 	  <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
 	  <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
 	  <GenerateDocumentationFile>True</GenerateDocumentationFile>
+	  <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>

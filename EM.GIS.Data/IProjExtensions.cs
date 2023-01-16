@@ -40,7 +40,7 @@ namespace EM.GIS.Data
         {
             if (rectangle.Width == 0 || rectangle.Height == 0 || extent == null || extent.IsEmpty())
             {
-                return null;
+                return new Coordinate();
             }
             return PixelToProj(point.X, point.Y, rectangle, extent);
         }
@@ -55,7 +55,7 @@ namespace EM.GIS.Data
         {
             if (rectangle.Width == 0 || rectangle.Height == 0 || extent == null || extent.IsEmpty())
             {
-                return null;
+                return new Coordinate();
             }
             return PixelToProj(point.X, point.Y, rectangle, extent);
         }
@@ -71,11 +71,11 @@ namespace EM.GIS.Data
         {
             if (rectangle.Width == 0 || rectangle.Height == 0 || extent == null || extent.IsEmpty())
             {
-                return null;
+                return new Coordinate();
             }
             var destX = (x - rectangle.X) * extent.Width / rectangle.Width + extent.MinX;
             var destY = extent.MaxY - (y - rectangle.Y) * extent.Height / rectangle.Height;
-            return new Coordinate(destX, destY);
+            return new Coordinate(destX, destY); 
         }
 
         /// <summary>
@@ -89,7 +89,7 @@ namespace EM.GIS.Data
         {
             if (rectangle.Width == 0 || rectangle.Height == 0 || extent == null || extent.IsEmpty())
             {
-                return null;
+                return new Coordinate();
             }
             return PixelToProj(point.X, point.Y, rectangle, extent);
         }
@@ -104,7 +104,7 @@ namespace EM.GIS.Data
         {
             if (self == null)
             {
-                return null;
+                return new Coordinate();
             }
             return position.PixelToProj(self.Bound, self.Extent);
         }
@@ -120,7 +120,7 @@ namespace EM.GIS.Data
         {
             if (self == null)
             {
-                return null;
+                return new Coordinate();
             }
             return PixelToProj(x, y, self.Bound, self.Extent);
         }
@@ -134,7 +134,7 @@ namespace EM.GIS.Data
         {
             if (self == null)
             {
-                return null;
+                return new Coordinate();
             }
             return position.PixelToProj(self.Bound, self.Extent);
         }
@@ -146,11 +146,11 @@ namespace EM.GIS.Data
         /// <param name="srcRectangle">原像素范围</param>
         /// <param name="srcExtent">原世界范围</param>
         /// <returns>世界范围</returns>
-        public static Extent PixelToProj(this Rectangle destRect, Rectangle srcRectangle, IExtent srcExtent)
+        public static IExtent PixelToProj(this Rectangle destRect, Rectangle srcRectangle, IExtent srcExtent)
         {
             if (srcRectangle.Width == 0 || srcRectangle.Height == 0 || srcExtent == null || srcExtent.IsEmpty())
             {
-                return null;
+                return new Extent();
             }
             var tl = new Point(destRect.X, destRect.Y);
             var br = new Point(destRect.Right, destRect.Bottom);
@@ -170,7 +170,7 @@ namespace EM.GIS.Data
         {
             if (srcRectangle.Width == 0 || srcRectangle.Height == 0 || srcExtent == null || srcExtent.IsEmpty())
             {
-                return null;
+                return new Extent();
             }
             var tl = new PointF(destRect.X, destRect.Y);
             var br = new PointF(destRect.Right, destRect.Bottom);
@@ -189,7 +189,7 @@ namespace EM.GIS.Data
         {
             if (self == null)
             {
-                return null;
+                return new Extent();
             }
             return rect.PixelToProj(self.Bound, self.Extent);
         }
@@ -203,7 +203,7 @@ namespace EM.GIS.Data
         {
             if (self == null)
             {
-                return null;
+                return new Extent();
             }
             return rect.PixelToProj(self.Bound, self.Extent);
         }

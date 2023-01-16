@@ -13,6 +13,10 @@ namespace EM.GIS.WPFControls
     public class LegendItemTemplateSelector: DataTemplateSelector
     {
         /// <summary>
+        /// 框架模板
+        /// </summary>
+        public DataTemplate FrameTemplate { get; set; }
+        /// <summary>
         /// 分组模板
         /// </summary>
         public DataTemplate GroupTemplate { get; set; }
@@ -28,11 +32,13 @@ namespace EM.GIS.WPFControls
         {
             switch (item)
             {
-                case IGroup grou:
+                case IFrame:
+                    return FrameTemplate;
+                case IGroup :
                     return GroupTemplate;
-                case ILayer layer:
+                case ILayer :
                     return LayerTemplate;
-                case ICategory category:
+                case ICategory :
                     return CategoryTemplate;
             }
             return base.SelectTemplate(item, container);

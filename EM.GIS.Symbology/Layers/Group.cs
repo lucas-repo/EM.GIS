@@ -63,7 +63,7 @@ namespace EM.GIS.Symbology
                 return;
             }
 
-            var allVisibleLayers = GetAllLayers().Where(x => x.GetVisible(mapArgs.DestExtent));
+            var allVisibleLayers = Children.GetAllLayers().Where(x => x.GetVisible(mapArgs.DestExtent));
             string progressStr = this.GetProgressString();
             progressAction?.Invoke(progressStr, 0);
             double increment = 100.0 / allVisibleLayers.Count();
@@ -95,110 +95,6 @@ namespace EM.GIS.Symbology
                 invalidateMapFrameAction?.Invoke();
             }
             progressAction?.Invoke(progressStr, 100);
-        }
-        /// <inheritdoc/>
-        public ILayer? GetLayer(int index)
-        {
-            ILayer? layer = null;
-            if (index >= 0 && index < LayerCount)
-            {
-                layer = GetLayers().ElementAt(index);
-            }
-            return layer;
-        }
-
-        /// <inheritdoc/>
-        public IEnumerable<ILayer> GetLayers()
-        {
-            foreach (var item in Children)
-            {
-                if (item is ILayer layer)
-                {
-                    yield return layer;
-                }
-            }
-        }
-        /// <inheritdoc/>
-        public IEnumerable<IGroup> GetGroups()
-        {
-            foreach (var item in Children)
-            {
-                if (item is IGroup group)
-                {
-                    yield return group;
-                }
-            }
-        }
-
-        /// <inheritdoc/>
-        public IEnumerable<IFeatureLayer> GetAllFeatureLayers()
-        {
-            return GetItems<IFeatureLayer>(Children, true);
-        }
-       
-        private IEnumerable<T> GetItems<T>(IEnumerable<IBaseItem> items, bool searchChildren) where T : ITreeItem
-        {
-            foreach (var item in items)
-            {
-                if (item is T t)
-                {
-                    yield return t;
-                }
-                if (searchChildren && item is ITreeItem treeItem)
-                {
-                    foreach (var childItem in GetItems<T>(treeItem.Children, searchChildren))
-                    {
-                        yield return childItem;
-                    }
-                }
-            }
-        }
-        /// <inheritdoc/>
-        public IEnumerable<IRasterLayer> GetAllRasterLayers()
-        {
-            return GetItems<IRasterLayer>(Children, true);
-        }
-
-        /// <inheritdoc/>
-        public bool AddLayer(ILayer layer, int? index = null)
-        {
-            bool ret = false;
-            if (layer == null)
-            {
-                return ret;
-            }
-            if (index.HasValue)
-            {
-                if (index.Value < 0 || index.Value > Children.Count)
-                {
-                    return ret;
-                }
-                Children.Insert(index.Value, layer);
-            }
-            else
-            {
-                Children.Add(layer);
-            }
-            ret = true;
-            return ret;
-        }
-
-        /// <inheritdoc/>
-        public IEnumerable<ILayer> GetAllLayers()
-        {
-            return GetItems<ILayer>(Children, true);
-        }
-
-        /// <inheritdoc/>
-        public IEnumerable<IFeatureLayer> GetFeatureLayers()
-        {
-            return GetItems<IFeatureLayer>(Children, false);
-        }
-
-        /// <inheritdoc/>
-        public IEnumerable<IRasterLayer> GetRasterLayers()
-        {
-            return GetItems<IRasterLayer>(Children, false);
         }
     }
 }

@@ -36,6 +36,11 @@ namespace EM.GIS.Symbology
         /// <returns>最大范围</returns>
         IExtent GetMaxExtent(bool expand = false);
         /// <summary>
+        /// 扩展范围
+        /// </summary>
+        /// <param name="extent">范围</param>
+        void ExpandExtent(IExtent extent);
+        /// <summary>
         /// 清空数据和状态
         /// </summary>
         void New();

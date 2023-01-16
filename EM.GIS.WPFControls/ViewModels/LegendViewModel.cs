@@ -84,11 +84,19 @@ namespace EM.GIS.WPFControls
                         }
                         legendItem.PropertyChanged += Item_PropertyChanged;
                         InitializedItems[legendItem] = new List<IContextCommand>();
-                        AddAddGroupCommand(legendItem);
-                        AddAddLayersCommand(legendItem);
-                        AddZoomCommand(legendItem);
-                        AddRemoveCommand(legendItem);
-                        AddPropertiesCommand(legendItem);
+                        if (item is IGroup group)
+                        {
+                            group.Children.CollectionChanged -= LegendItems_CollectionChanged;
+                            group.Children.CollectionChanged += LegendItems_CollectionChanged;
+                            AddAddGroupCommand(group);
+                            AddAddLayersCommand(group);
+                        }
+                        if (item is IRenderableItem renderableItem)
+                        {
+                            AddZoomCommand(renderableItem);
+                            AddRemoveCommand(renderableItem);
+                            AddPropertiesCommand(renderableItem);
+                        }
                     }
                 }
             }
@@ -110,81 +118,49 @@ namespace EM.GIS.WPFControls
         /// <summary>
         /// 添加新建图层组命令
         /// </summary>
-        /// <param name="legendItem">图例元素</param>
-        private void AddAddGroupCommand(ILegendItem legendItem)
+        /// <param name="group">分组</param>
+        private void AddAddGroupCommand(IGroup group)
         {
-            IContextCommand? cmd = null;
-            switch (legendItem)
-            {
-                case IGroup group:
-                    cmd = new AddNewGroupCommand(group);
-                    break;
-            }
-            if (cmd != null)
-            {
-                legendItem.ContextCommands.Add(cmd);
-                InitializedItems[legendItem].Add(cmd);
-            }
+            IContextCommand cmd = new AddNewGroupCommand(group);
+            group.ContextCommands.Add(cmd);
+            InitializedItems[group].Add(cmd);
         }
         /// <summary>
         /// 添加新建图层组命令
         /// </summary>
-        /// <param name="legendItem">图例元素</param>
-        private void AddAddLayersCommand(ILegendItem legendItem)
+        /// <param name="group">分组</param>
+        private void AddAddLayersCommand(IGroup group)
         {
-            IContextCommand? cmd = null;
-            switch (legendItem)
-            {
-                case IGroup group:
-                    cmd = IocManager.GetService<ICommand, AddLayersCommand>();
-                    break;
-            }
-            if (cmd != null)
-            {
-                legendItem.ContextCommands.Add(cmd);
-                InitializedItems[legendItem].Add(cmd);
-            }
+            IContextCommand cmd = IocManager.GetService<ICommand, AddLayersCommand>();
+            group.ContextCommands.Add(cmd);
+            InitializedItems[group].Add(cmd);
         }
         /// <summary>
         /// 添加居中命令
         /// </summary>
-        /// <param name="legendItem">图例元素</param>
-        private void AddZoomCommand(ILegendItem legendItem)
+        /// <param name="renderableItem">图例元素</param>
+        private void AddZoomCommand(IRenderableItem renderableItem)
         {
-            IContextCommand? cmd = null;
-            switch (legendItem)
-            {
-                case ILayer:
-                case IGroup:
-                    cmd = IocManager.GetService<ICommand, ZoomToItemCommand>();
-                    break;
-            }
-            if (cmd != null)
-            {
-                legendItem.ContextCommands.Add(cmd);
-                InitializedItems[legendItem].Add(cmd);
-            }
+            IContextCommand cmd = IocManager.GetService<ICommand, ZoomToItemCommand>();
+            renderableItem.ContextCommands.Add(cmd);
+            InitializedItems[renderableItem].Add(cmd);
         }
         /// <summary>
         /// 添加移除命令
         /// </summary>
-        /// <param name="legendItem">图例元素</param>
-        private void AddRemoveCommand(ILegendItem legendItem)
+        /// <param name="renderableItem">图例元素</param>
+        private void AddRemoveCommand(IRenderableItem renderableItem)
         {
-            IContextCommand? cmd = null;
-            switch (legendItem)
+            switch (renderableItem)
             {
                 case IFrame:
                     break;
                 case ILayer:
                 case IGroup:
-                    cmd = IocManager.GetService<ICommand, RemoveSelectedLayersCommand>();
+                    var cmd = IocManager.GetService<ICommand, RemoveSelectedLayersCommand>();
+                    renderableItem.ContextCommands.Add(cmd);
+                    InitializedItems[renderableItem].Add(cmd);
                     break;
-            }
-            if (cmd != null)
-            {
-                legendItem.ContextCommands.Add(cmd);
-                InitializedItems[legendItem].Add(cmd);
             }
         }
         private void HandleOldItems(NotifyCollectionChangedEventArgs e)
@@ -197,6 +173,10 @@ namespace EM.GIS.WPFControls
                     {
                         if (InitializedItems.ContainsKey(legendItem))
                         {
+                            if (item is IGroup group)
+                            {
+                                group.Children.CollectionChanged -= LegendItems_CollectionChanged;
+                            }
                             legendItem.PropertyChanged -= Item_PropertyChanged;
                             foreach (var contextCommand in InitializedItems[legendItem])
                             {

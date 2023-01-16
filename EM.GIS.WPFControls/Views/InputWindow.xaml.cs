@@ -39,7 +39,7 @@ namespace EM.GIS.WPFControls
         {
             if (string.IsNullOrEmpty(Value))
             {
-                MessageBox.Show(this, "输入不能为空！");
+                MessageBox.Show(this, "输入不能为空！","错误",MessageBoxButton.OK,MessageBoxImage.Information);
                 return;
             }
             DialogResult = true;

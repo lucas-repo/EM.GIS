@@ -4,6 +4,7 @@ using EM.GIS.Geometries;
 using EM.GIS.Projections;
 using EM.IOC;
 using System;
+using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
@@ -102,8 +103,15 @@ namespace EM.GIS.Symbology
             }
             progressAction?.Invoke(string.Empty, 0);
 
-            var visibleLayers = GetAllLayers().Where(x => x.GetVisible(mapArgs.DestExtent));
-            var visibleLabelLayers = visibleLayers.Where(x => x is IFeatureLayer featureLayer && featureLayer.LabelLayer.GetVisible(mapArgs.DestExtent) == true).Select(x => (x as IFeatureLayer).LabelLayer).ToList();
+            var visibleLayers = Children.GetAllLayers().Where(x => x.GetVisible(mapArgs.DestExtent));
+            List<ILabelLayer> visibleLabelLayers = new List<ILabelLayer>();
+            foreach (var item in visibleLayers)
+            {
+                if (item is IFeatureLayer featureLayer && featureLayer.LabelLayer.GetVisible(mapArgs.DestExtent))
+                {
+                    visibleLabelLayers.Add(featureLayer.LabelLayer);
+                }
+            }
             var totalCount = visibleLayers.Count() + visibleLabelLayers.Count;//要素图层需要绘制标注，所以多算一次
             if (totalCount == 0)
             {
@@ -157,6 +165,15 @@ namespace EM.GIS.Symbology
             var maxExtent = Extent.Width < Eps || Extent.Height < Eps ? new Extent(Extent.MinX - Eps, Extent.MinY - Eps, Extent.MaxX + Eps, Extent.MaxY + Eps) : Extent.Copy();
             if (expand) maxExtent.ExpandBy(maxExtent.Width / 10, maxExtent.Height / 10);
             return maxExtent;
+        }
+
+        /// <inheritdoc/>
+        public void ExpandExtent(IExtent extent)
+        {
+            if (!extent.IsEmpty())
+            {
+                extent.ExpandBy(extent.Width / 10, extent.Height / 10);
+            }
         }
 
         /// <inheritdoc/>

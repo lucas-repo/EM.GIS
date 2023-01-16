@@ -12,10 +12,19 @@
     <TreeView.Resources>
         <local:CategoryToImage x:Key="categoryToImage"/>
         <local:LegendItemTemplateSelector x:Key="legendItemTemplateSelector">
-            <local:LegendItemTemplateSelector.GroupTemplate>
+            <local:LegendItemTemplateSelector.FrameTemplate>
                 <HierarchicalDataTemplate ItemsSource="{Binding Children}">
                     <WrapPanel Margin="2">
                         <Image Source="/EM.GIS.Resources;Component/Images/Layers16.png" />
+                        <TextBlock Text="{Binding Text}" FontWeight="Bold" Margin="5,0,0,0"/>
+                    </WrapPanel>
+                </HierarchicalDataTemplate>
+            </local:LegendItemTemplateSelector.FrameTemplate>
+            <local:LegendItemTemplateSelector.GroupTemplate>
+                <HierarchicalDataTemplate ItemsSource="{Binding Children}">
+                    <WrapPanel Margin="2">
+                        <!--<Image Source="/EM.GIS.Resources;Component/Images/Layers16.png" />-->
+                        <CheckBox IsChecked="{Binding IsVisible,Mode=TwoWay}"/>
                         <TextBlock Text="{Binding Text}" FontWeight="Bold" Margin="5,0,0,0"/>
                     </WrapPanel>
                 </HierarchicalDataTemplate>
@@ -44,11 +53,11 @@
         </Style>
         <Style x:Key="menuItemStyle" TargetType="{x:Type MenuItem}">
             <Setter Property="Header" Value="{Binding Header}"/>
-            <Setter Property="ToolTip" Value="{Binding ToolTip}"/>
+            <!--<Setter Property="ToolTip" Value="{Binding ToolTip}"/>-->
             <Setter Property="Command" Value="{Binding}"/>
             <Setter Property="Icon">
                 <Setter.Value>
-                    <Image Source="{Binding Icon}"/>
+                    <Image Source="{Binding Image}"/>
                 </Setter.Value>
             </Setter>
         </Style>

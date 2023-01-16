@@ -206,9 +206,13 @@ namespace EM.GIS.WPFControls
                 var dataSets = driverFactory.OpenFiles(owner);
                 if (dataSets.Count>0)
                 {
-                    var groups = frame.GetGroups();
-                    IGroup? destGroup = groups.FirstOrDefault();
-                    if (destGroup==null)
+                   var selectedItem=  frame.GetSelectedItems().FirstOrDefault();
+                    IGroup destGroup;
+                    if (selectedItem is IGroup group)
+                    {
+                        destGroup = group;
+                    }
+                    else
                     {
                         destGroup = frame;
                     }
