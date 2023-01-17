@@ -30,7 +30,7 @@ namespace EM.GIS.Tools
         /// <summary>
         /// 列集合
         /// </summary>
-        public ObservableCollection<KeyValueClass<int,string>> Columns { get; } = new ObservableCollection<KeyValueClass<int, string>>();
+        public ObservableCollection<KeyValueClass<int, string>> Columns { get; } = new ObservableCollection<KeyValueClass<int, string>>();
 
         private KeyValueClass<int, string> _xCol;
         /// <summary>
@@ -147,7 +147,7 @@ namespace EM.GIS.Tools
                 MessageBox.Show(Window.GetWindow(View), "请选择文件路径");
                 return;
             }
-            if (XCol==null || YCol==null || NewXCol==null || NewYCol==null)
+            if (XCol == null || YCol == null || NewXCol == null || NewYCol == null)
             {
                 MessageBox.Show(Window.GetWindow(View), "请选择列");
                 return;
@@ -156,7 +156,7 @@ namespace EM.GIS.Tools
             for (int i = 1; i <= sheet.LastRowNum; i++)
             {
                 var row = sheet.GetRow(i);
-                var xStr= row.GetCell(XCol.Key).ToString();
+                var xStr = row.GetCell(XCol.Key).ToString();
                 var destX = GetDoubleValue(xStr);
                 if (destX.HasValue)
                 {
@@ -172,7 +172,7 @@ namespace EM.GIS.Tools
             string directory = System.IO.Path.GetDirectoryName(Path);
             string name = System.IO.Path.GetFileNameWithoutExtension(Path);
             string extension = System.IO.Path.GetExtension(Path);
-            string newPath = System.IO.Path.Combine(directory,$"{name}1{extension}");
+            string newPath = System.IO.Path.Combine(directory, $"{name}1{extension}");
             using (FileStream fs = File.OpenWrite(newPath))
             {
                 Sheets.Write(fs);
@@ -192,8 +192,8 @@ namespace EM.GIS.Tools
             }
             else
             {
-                char[] sparator = { '°', '′','\'' , '’' };
-                var strs= str.Split(sparator, StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries); 
+                char[] sparator = { '°', '′', '\'', '’' };
+                var strs = str.Split(sparator, StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
                 string pattern = "[0-9]+([.]{1}[0-9]+){0,1}";
                 Regex regex = new Regex(pattern);
                 ret = 0;

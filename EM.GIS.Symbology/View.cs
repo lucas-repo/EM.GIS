@@ -172,7 +172,12 @@ namespace EM.GIS.Symbology
             }
         }
         /// <inheritdoc/>
-        public Action<string, int> Progress { get; set; }
+        public Action<string, int>? Progress { get; set; }
+        /// <summary>
+        /// 实例化<see cref="View"/>
+        /// </summary>
+        /// <param name="frame">地图框架</param>
+        /// <exception cref="ArgumentNullException">地图框架为空的异常</exception>
         public View(IFrame frame)
         {
             Frame = frame ?? throw new ArgumentNullException(nameof(frame));
@@ -181,10 +186,8 @@ namespace EM.GIS.Symbology
             PropertyChanged += View_PropertyChanged;
             bw = new BackgroundWorker
             {
-                WorkerSupportsCancellation = true,
-                WorkerReportsProgress = true
+                WorkerSupportsCancellation = true
             };
-            bw.ProgressChanged += BwProgressChanged;
             bw.DoWork += BwDoWork;
             bw.RunWorkerCompleted += BwRunWorkerCompleted;
         }
@@ -264,18 +267,6 @@ namespace EM.GIS.Symbology
                 layer.Children.CollectionChanged -= LegendItems_CollectionChanged;
             }
         }
-        private void BwProgressChanged(object sender, ProgressChangedEventArgs e)
-        {
-            if (Progress != null)
-            {
-                string msg = string.Empty;
-                if (e.UserState is string str)
-                {
-                    msg = str;
-                }
-                Progress.Invoke(msg, e.ProgressPercentage);
-            }
-        }
         private void BwRunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
             if (sender is BackgroundWorker bw)
@@ -285,23 +276,26 @@ namespace EM.GIS.Symbology
                 {
                     bw.RunWorkerAsync(drawingViewCache);
                 }
-                else if (e.Result is ViewCache viewCache)
+                else
                 {
-                    bool viewExtentChanged = false;
-                    bool viewBoundChanged = false;
-                    if (viewExtent != viewCache.Extent)
+                    if (!e.Cancelled && e.Result is ViewCache viewCache)
                     {
-                        viewExtent = viewCache.Extent;
-                        viewExtentChanged = true;
+                        bool viewExtentChanged = false;
+                        bool viewBoundChanged = false;
+                        if (viewExtent != viewCache.Extent)
+                        {
+                            viewExtent = viewCache.Extent;
+                            viewExtentChanged = true;
+                        }
+                        if (viewBound != viewCache.Bound)
+                        {
+                            viewBound = viewCache.Bound;
+                            viewBoundChanged = true;
+                        }
+                        BackImage = viewCache;
+                        if (viewExtentChanged) OnPropertyChanged(nameof(ViewExtent));
+                        if (viewBoundChanged) OnPropertyChanged(nameof(ViewBound));
                     }
-                    if (viewBound != viewCache.Bound)
-                    {
-                        viewBound = viewCache.Bound;
-                        viewBoundChanged = true;
-                    }
-                    BackImage = viewCache;
-                    if (viewExtentChanged) OnPropertyChanged(nameof(ViewExtent));
-                    if (viewBoundChanged) OnPropertyChanged(nameof(ViewBound));
                 }
             }
         }
@@ -337,10 +331,6 @@ namespace EM.GIS.Symbology
                     #endregion
 
                     g.Clear(Background); //填充背景色
-                    Action<string, int> progressAction = (txt, progress) =>
-                    {
-                        worker.ReportProgress(progress, txt);
-                    };
                     int count = 2;
                     for (int i = 0; i < count; i++)
                     {
@@ -349,7 +339,7 @@ namespace EM.GIS.Symbology
                             break;
                         }
                         bool selected = i == 1;
-                        Action<string, int>? destProgressAction = selected ? null : progressAction;//不更新绘制选择要素的进度
+                        Action<string, int>? destProgressAction = selected ? null : Progress;//不更新绘制选择要素的进度
                         Frame.Draw(mapArgs, selected, destProgressAction, cancelFunc);
                     }
                 }
@@ -396,11 +386,11 @@ namespace EM.GIS.Symbology
                     ResetBuffer(Bound, ViewExtent, ViewExtent);
                     break;
                 case nameof(ViewExtent):
-
+                    ScaleFactor = GetScaleFactor();
                     break;
             }
         }
-        private double GetScale()
+        private double GetScaleFactor()
         {
             double ret = double.NaN;
             try
@@ -415,21 +405,17 @@ namespace EM.GIS.Symbology
                 {
                     widthInMeters = ViewExtent.Width * Frame.Projection.Unit.Meters;
                 }
-
-                // Get the number of pixels in one screen inch.
-                // get resolution, most screens are 96 dpi, but you never know...
                 double dpi = 96;
                 using (Graphics g = Graphics.FromHwnd(IntPtr.Zero))
                 {
                     dpi = g.DpiX;
                 }
-                double dScreenWidthInMeters = (Convert.ToDouble(Width) / dpi) * metersPerInche;
-                ret= widthInMeters / dScreenWidthInMeters;
+                double dScreenWidthInMeters = Width / dpi * metersPerInche;
+                ret = widthInMeters / dScreenWidthInMeters;
             }
             catch (Exception e)
             {
                 Debug.WriteLine(e);
-                return double.NaN;
             }
             return ret;
         }
@@ -509,7 +495,10 @@ namespace EM.GIS.Symbology
             get { return scaleFactor; }
             set { SetProperty(ref scaleFactor, value); }
         }
-
+        /// <summary>
+        /// 释放资源
+        /// </summary>
+        /// <param name="disposing">释放托管资源</param>
         protected virtual void Dispose(bool disposing)
         {
             if (!disposedValue)
@@ -518,16 +507,8 @@ namespace EM.GIS.Symbology
                 {
                     // TODO: 释放托管状态(托管对象)
                     PropertyChanged -= View_PropertyChanged;
-                    if (bw != null)
-                    {
-                        bw.Dispose();
-                        bw = null;
-                    }
-                    if (BackImage != null)
-                    {
-                        BackImage.Dispose();
-                        BackImage = null;
-                    }
+                    bw?.Dispose();
+                    BackImage?.Dispose();
                     if (Frame != null)
                     {
                         Frame.FirstLayerAdded -= Frame_FirstLayerAdded;

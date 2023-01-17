@@ -24,8 +24,14 @@ namespace EM.GIS.WPFControls.ViewModels
     /// </summary>
     public class MainWindowViewModel : ViewModel<MainWindow>
     {
-        private IMap? Map => AppManager?.Map;
-        private IFrame? Frame => Map?.Frame;
+        /// <summary>
+        /// 地图
+        /// </summary>
+        public IMap? Map => AppManager?.Map;
+        /// <summary>
+        /// 地图框架
+        /// </summary>
+        public IFrame? Frame => Map?.Frame;
         private IDriverFactory? DriverFactory
         {
             get
@@ -156,6 +162,7 @@ namespace EM.GIS.WPFControls.ViewModels
             LoadTileMaps();
             PropertyChanged += MainWindowViewModel_PropertyChanged;
         }
+
         /// <summary>
         /// 更新进度
         /// </summary>

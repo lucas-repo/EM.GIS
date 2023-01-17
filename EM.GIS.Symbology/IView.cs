@@ -50,7 +50,7 @@ namespace EM.GIS.Symbology
         /// <summary>
         /// 进度委托
         /// </summary>
-        Action<string, int> Progress { get; set; }
+        Action<string, int>? Progress { get; set; }
         /// <summary>
         /// 重绘缓存
         /// </summary>

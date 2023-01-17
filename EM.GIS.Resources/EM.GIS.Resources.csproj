@@ -200,4 +200,10 @@
 	  </Resource>
 	</ItemGroup>
 
+	<ItemGroup>
+	  <Page Update="Generic.xaml">
+	    <SubType>Designer</SubType>
+	  </Page>
+	</ItemGroup>
+
 </Project>

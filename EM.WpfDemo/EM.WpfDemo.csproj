@@ -18,11 +18,13 @@
 
 	<ItemGroup>
 		<PackageReference Include="Fluent.Ribbon" Version="10.0.0-alpha0197" />
+		<PackageReference Include="MaterialDesignThemes" Version="4.7.0" />
 		<PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="7.0.0" />
 	</ItemGroup>
 
 	<ItemGroup>
 		<ProjectReference Include="..\..\..\EM.IOC\EM.IOC.DependencyInjection\EM.IOC.DependencyInjection.csproj" />
+		<ProjectReference Include="..\EM.GIS.Resources\EM.GIS.Resources.csproj" />
 		<ProjectReference Include="..\EM.GIS.WPFControls\EM.GIS.WPFControls.csproj">
 		  <Private>False</Private>
 		  <CopyLocalSatelliteAssemblies>False</CopyLocalSatelliteAssemblies>
