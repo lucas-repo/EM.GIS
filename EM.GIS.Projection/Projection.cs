@@ -392,25 +392,36 @@ namespace EM.GIS.Projections
         }
 
         /// <inheritdoc/>
-        public double GetLengthOfMeters(double lon1, double lat1, double lon2, double lat2)
+        public double GetLengthOfMeters(double x1, double y1, double x2, double y2)
         {
             double ret = 0;
-            if (double.IsNaN(lon1) || double.IsNaN(lat1) || double.IsNaN(lon2) || double.IsNaN(lat2) || (lon1 == lon2 && lat1 == lat2))
+            if (double.IsNaN(x1) || double.IsNaN(y1) || double.IsNaN(x2) || double.IsNaN(y2) || (x1 == x2 && y1 == y2))
             {
                 return ret;
             }
-             double circumference = GeographicInfo.Datum.Spheroid.Semimajor * 2 * Math.PI;//周长
-            const double DMetersPerLatDd = 111113.519;
-
-            double dxInDegrees = Math.Abs(lon1 - lon2);
-            double dyInDegrees = Math.Abs(lat1 - lat2);
-            double dCenterY = (lat1 + lat2) / 2.0;
-            double dMetersPerLongDd = (Math.Cos(dCenterY * (Math.PI / 180.0)) * circumference) / 360.0;
-            double dDeltaXmeters = dMetersPerLongDd * dxInDegrees;
-            double dDeltaYmeters = DMetersPerLatDd * dyInDegrees;
-
-            ret= Math.Sqrt(Math.Pow(dDeltaXmeters, 2.0) + Math.Pow(dDeltaYmeters, 2.0));
+            if (IsLatLon)
+            {
+                //googlemap的计算长度算法
+                double radLat1 = DegreeToRad(y1);
+                double radLat2 = DegreeToRad(y2);
+                double a = radLat1 - radLat2;
+                double b = DegreeToRad(x1) - DegreeToRad(x2);
+                ret = 2 * Math.Asin(Math.Sqrt(Math.Pow(Math.Sin(a / 2), 2) + Math.Cos(radLat1) * Math.Cos(radLat2) * Math.Pow(Math.Sin(b / 2), 2))) * GeographicInfo.Datum.Spheroid.Semimajor;
+            }
+            else
+            {
+                ret = Math.Sqrt(Math.Pow(x2 - x1, 2) + Math.Pow(y2 - y1, 2));
+            }
             return ret;
+        }
+        /// <summary>
+        /// 角度转弧度
+        /// </summary>
+        /// <param name="degrees">角度</param>
+        /// <returns>弧度</returns>
+        private static double DegreeToRad(double degrees) 
+        { 
+            return degrees * Math.PI / 180.0;
         }
     }
 }

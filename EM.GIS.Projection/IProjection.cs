@@ -69,11 +69,11 @@ namespace EM.GIS.Projections
         /// <summary>
         /// 计算两点的距离（米）
         /// </summary>
-        /// <param name="lon1">第一个点经度</param>
-        /// <param name="lat1">第一个点纬度</param>
-        /// <param name="lon2">第二个点经度</param>
-        /// <param name="lat2">第二个点纬度</param>
+        /// <param name="x1">第一个点x</param>
+        /// <param name="y1">第一个点y</param>
+        /// <param name="x2">第二个点x</param>
+        /// <param name="y2">第二个点y</param>
         /// <returns>距离（米）</returns>
-        double GetLengthOfMeters(double lon1, double lat1, double lon2, double lat2);
+        double GetLengthOfMeters(double x1, double y1, double x2, double y2);
     }
 }
