@@ -16,6 +16,7 @@ using System.Windows.Controls.Primitives;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Threading;
+using EM.GIS.Gdals;
 
 namespace EM.GIS.WPFControls.ViewModels
 {
@@ -181,14 +182,13 @@ namespace EM.GIS.WPFControls.ViewModels
             switch (e.PropertyName)
             {
                 case nameof(TileMap):
-                    if (Map?.Frame!=null&& !Map.Frame.Children.Any(x => x.Text == TileMap.Name))
+                    if (Map!=null&& DriverFactory!=null&&!Map.Frame.Children.Any(x => x.Text == TileMap.Name))
                     {
-                        var driver = DriverFactory?.Drivers.FirstOrDefault(x => x is IWebMapDriver) as IWebMapDriver;
+                        var driver = DriverFactory.Drivers.FirstOrDefault(x => x is IWebMapDriver) as IWebMapDriver;
                         if (driver != null)
                         {
                             var tileSet= driver.OpenXYZ(TileMap.Name, TileMap.Url, TileMap.Servers, TileMap.MinLevel, TileMap.MaxLevel);
-                            RasterLayer rasterLayer=new RasterLayer(tileSet);
-                            Map.Frame.Children.Add(rasterLayer);
+                            Map.Frame.Children.AddLayer(tileSet);
                         }
                     }
                     break;

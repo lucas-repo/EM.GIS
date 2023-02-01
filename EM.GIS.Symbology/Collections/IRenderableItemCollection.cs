@@ -29,17 +29,24 @@ namespace EM.GIS.Symbology
         /// <summary>
         /// 添加要素图层
         /// </summary>
-        /// <param name="featureSet">要素数据集</param>
+        /// <param name="dataset">要素数据集</param>
         /// <param name="isVisible">是否可见</param>
         /// <returns>要素图层</returns>
-        IFeatureLayer? AddLayer(IFeatureSet featureSet, bool isVisible = true);
+        IFeatureLayer? AddLayer(IFeatureSet dataset, bool isVisible = true);
         /// <summary>
         /// 添加栅格图层
         /// </summary>
-        /// <param name="raster">栅格数据集</param>
+        /// <param name="dataset">栅格数据集</param>
         /// <param name="isVisible">是否可见</param>
-        /// <returns></returns>
-        IRasterLayer? AddLayer(IRasterSet raster, bool isVisible = true);
+        /// <returns>栅格图层</returns>
+        IRasterLayer? AddLayer(IRasterSet dataset, bool isVisible = true);
+        /// <summary>
+        /// 添加瓦片图层
+        /// </summary>
+        /// <param name="tileSet">瓦片数据集</param>
+        /// <param name="isVisible">是否可见</param>
+        /// <returns>瓦片图层</returns>
+        ITileLayer? AddLayer(ITileSet tileSet, bool isVisible = true);
         /// <summary>
         /// 添加分组
         /// </summary>

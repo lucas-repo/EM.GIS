@@ -21,14 +21,14 @@ namespace EM.GIS.Data
         public abstract List<string> GetWritableFileExtensions();
 
         /// <inheritdoc/>
-        public abstract IDataSet Open(string fileName, bool update);
+        public abstract IDataSet? GetDataSet(string fileName, bool update);
 
         /// <inheritdoc/>
         public abstract bool Rename(string srcFileName, string destFileName);
         /// <inheritdoc/>
-        public override IDataSet Open(string path)
+        public override IDataSet? GetDataSet(string path)
         {
-            return Open(path, false);
+            return GetDataSet(path, false);
         }
     }
 }

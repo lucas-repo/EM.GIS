@@ -54,8 +54,8 @@ namespace EM.GIS.Data
         /// <summary>
         /// 设置空间过滤
         /// </summary>
-        /// <param name="geometry"></param>
-        void SetSpatialFilter(IGeometry geometry);
+        /// <param name="geometry">几何体</param>
+        void SetSpatialFilter(IGeometry? geometry);
         /// <summary>
         /// 设置空间范围过滤
         /// </summary>

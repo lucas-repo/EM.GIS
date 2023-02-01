@@ -55,7 +55,7 @@ namespace EM.GIS.Gdals
             }
             return featureSet;
         }
-        public override IDataSet Open(string fileName, bool update)
+        public override IDataSet GetDataSet(string fileName, bool update)
         {
             return (this as IVectorDriver).Open(fileName, update);
         }

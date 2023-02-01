@@ -179,7 +179,7 @@ namespace EM.GIS.WPFControls
                             {
                                 continue;
                             }
-                            var ds = fileDriver.Open(fileName,true);
+                            var ds = fileDriver.GetDataSet(fileName,true);
                             if (ds != null)
                             {
                                 ret.Add(ds);

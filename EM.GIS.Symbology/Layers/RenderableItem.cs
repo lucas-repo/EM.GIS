@@ -3,6 +3,7 @@ using EM.GIS.Data;
 using EM.GIS.Geometries;
 using System;
 using System.Drawing;
+using System.Threading.Tasks;
 
 namespace EM.GIS.Symbology
 {
@@ -68,6 +69,10 @@ namespace EM.GIS.Symbology
             return ret;
         }
         /// <inheritdoc/>
-        public abstract void Draw(MapArgs mapArgs, bool selected = false, Action<string, int>? progressAction = null, Func<bool>? cancelFunc = null, Action? invalidateMapFrameAction = null);
+        public abstract RectangleF Draw(MapArgs mapArgs, bool onlyInitialized = false, bool selected = false, Action<string, int>? progressAction = null, Func<bool>? cancelFunc = null, Action<RectangleF>? invalidateMapFrameAction = null);
+        /// <inheritdoc/>
+        public virtual bool IsDrawingInitialized(MapArgs mapArgs) => true;
+        /// <inheritdoc/>
+        public virtual void InitializeDrawing(MapArgs mapArgs, Func<bool>? cancelFunc = null) { }
     }
 }

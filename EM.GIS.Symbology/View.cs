@@ -4,6 +4,7 @@ using EM.GIS.Geometries;
 using EM.GIS.Projections;
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -11,6 +12,8 @@ using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Linq;
 using System.Security.Cryptography.X509Certificates;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace EM.GIS.Symbology
 {
@@ -173,6 +176,8 @@ namespace EM.GIS.Symbology
         }
         /// <inheritdoc/>
         public Action<string, int>? Progress { get; set; }
+        /// <inheritdoc/>
+        public Action<RectangleF>? UpdateMapAction { get; set; }
         /// <summary>
         /// 实例化<see cref="View"/>
         /// </summary>
@@ -246,7 +251,10 @@ namespace EM.GIS.Symbology
             if (layer != null)
             {
                 layer.PropertyChanged += Layer_PropertyChanged;
-                layer.Children.CollectionChanged += LegendItems_CollectionChanged;
+                if (layer is IGroup group)
+                {
+                    group.Children.CollectionChanged += LegendItems_CollectionChanged;
+                }
             }
         }
         private void RemoveLayerEvent(IList? list)
@@ -276,28 +284,118 @@ namespace EM.GIS.Symbology
                 {
                     bw.RunWorkerAsync(drawingViewCache);
                 }
-                else
+            }
+        }
+
+        private void DrawFrame(MapArgs mapArgs, bool onlyInitialized, Func<bool> cancelFunc, Action<RectangleF> updateMapAction)
+        {
+            mapArgs.Graphics.Clear(Background); //填充背景色
+
+            #region 获取进度委托
+            IEnumerable<ILayer> allVisibleLayers = Frame.Children.GetAllLayers().Where(x => x.GetVisible(mapArgs.DestExtent));
+            if (onlyInitialized)
+            {
+                allVisibleLayers = allVisibleLayers.Where(x => x.IsDrawingInitialized(mapArgs));
+            }
+            List<ILabelLayer> visibleLabelLayers = new List<ILabelLayer>();
+            foreach (var item in allVisibleLayers)
+            {
+                if (item is IFeatureLayer featureLayer && featureLayer.LabelLayer.GetVisible(mapArgs.DestExtent))
                 {
-                    if (!e.Cancelled && e.Result is ViewCache viewCache)
-                    {
-                        bool viewExtentChanged = false;
-                        bool viewBoundChanged = false;
-                        if (viewExtent != viewCache.Extent)
-                        {
-                            viewExtent = viewCache.Extent;
-                            viewExtentChanged = true;
-                        }
-                        if (viewBound != viewCache.Bound)
-                        {
-                            viewBound = viewCache.Bound;
-                            viewBoundChanged = true;
-                        }
-                        BackImage = viewCache;
-                        if (viewExtentChanged) OnPropertyChanged(nameof(ViewExtent));
-                        if (viewBoundChanged) OnPropertyChanged(nameof(ViewBound));
-                    }
+                    visibleLabelLayers.Add(featureLayer.LabelLayer);
                 }
             }
+            var totalCount = allVisibleLayers.Count() + visibleLabelLayers.Count;
+            if (totalCount == 0)
+            {
+                return;
+            }
+            double layerRatio = allVisibleLayers.Count() / totalCount;//可见图层占比
+            double labelLayerRatio = visibleLabelLayers.Count / totalCount;//标注图层占比
+            Action<string, int> drawLayerProgressAction = (txt, progress) =>
+            {
+                if (Progress != null)
+                {
+                    var destProgress = (int)(progress / 100 * layerRatio);
+                    Progress.Invoke(txt, destProgress);
+                }
+            };
+            Action<string, int> drawLabelProgressAction = (txt, progress) =>
+            {
+                if (Progress != null)
+                {
+                    var destProgress = (int)(100.0 * layerRatio + progress / 100 * labelLayerRatio);
+                    Progress.Invoke(txt, destProgress);
+                }
+            };
+            #endregion
+            RectangleF destRect = RectangleF.Empty;
+            #region 绘制图层
+            int count = 2;
+            for (int i = 0; i < count; i++)
+            {
+                if (cancelFunc?.Invoke() == true)
+                {
+                    break;
+                }
+                bool selected = i == 1;
+                Action<string, int>? destProgressAction = selected ? null : drawLayerProgressAction;//不更新绘制选择要素的进度
+                var rect = Frame.Draw(mapArgs, onlyInitialized, selected, destProgressAction, cancelFunc, updateMapAction);
+                if (!rect.IsEmpty)
+                {
+                    destRect = destRect.ExpandToInclude(rect);
+                }
+            }
+            #endregion
+
+            #region 绘制标注
+            for (int i = visibleLabelLayers.Count - 1; i >= 0; i--)
+            {
+                if (cancelFunc?.Invoke() == true)
+                {
+                    break;
+                }
+                var rect = visibleLabelLayers[i].Draw(mapArgs, onlyInitialized, false, drawLabelProgressAction, cancelFunc, updateMapAction);
+                if (!rect.IsEmpty)
+                {
+                    destRect = destRect.ExpandToInclude(rect);
+                }
+            }
+            #endregion
+
+            //if (cancelFunc?.Invoke() != true)
+            //{
+            //    updateMapAction.Invoke(destRect);//更新地图控件
+            //}
+        }
+        private void ResetViewCacheAndUpdateMap(ViewCache viewCache, RectangleF rect, bool copyView = true)
+        {
+            #region 设置缓存图片、视图矩形、试图范围
+            ViewCache destViewCache = copyView ? viewCache.Copy() : viewCache;
+
+            bool viewExtentChanged = false;
+            bool viewBoundChanged = false;
+            if (viewExtent != viewCache.Extent)
+            {
+                viewExtent = viewCache.Extent;
+                viewExtentChanged = true;
+            }
+            if (viewBound != viewCache.Bound)
+            {
+                viewBound = viewCache.Bound;
+                viewBoundChanged = true;
+            }
+            BackImage = destViewCache;
+            if (viewExtentChanged) OnPropertyChanged(nameof(ViewExtent));
+            if (viewBoundChanged) OnPropertyChanged(nameof(ViewBound));
+            #endregion
+
+            UpdateMapAction?.Invoke(rect);//更新地图控件
+        }
+        private Action<RectangleF> GetNewUpdateMapAction(ViewCache viewCache)
+        {
+            Action<RectangleF> newUpdateMapAction = (rect) => ResetViewCacheAndUpdateMap(viewCache, rect);
+            return newUpdateMapAction;
         }
         private void BwDoWork(object sender, DoWorkEventArgs e)
         {
@@ -305,53 +403,83 @@ namespace EM.GIS.Symbology
             {
                 return;
             }
+
+            using Graphics g = Graphics.FromImage(viewCache.Image);
+            MapArgs mapArgs = new MapArgs(viewCache.Bound, viewCache.Extent, g, Frame.Projection, viewCache.DrawingExtent);
+            using GraphicsPath gp = new GraphicsPath();
+
+            #region 设置绘制裁剪区域
+            if (!Equals(mapArgs.Extent, mapArgs.DestExtent))
+            {
+                var rect = mapArgs.ProjToPixelF(mapArgs.DestExtent);
+                gp.StartFigure();
+                gp.AddRectangle(rect);
+                g.Clip = new Region(gp);
+            }
+            #endregion
+
+            Action<RectangleF> newUpdateMapAction = GetNewUpdateMapAction(viewCache);//先设置缓存图片，再更新地图控件
+
+            #region 初始化绘制图层
+            using var parallelCts = new CancellationTokenSource();
             Func<bool> cancelFunc = () =>
             {
-                bool ret = worker.CancellationPending;
-                if (ret && !e.Cancel)
+                bool isCancel = worker.CancellationPending;
+                if (isCancel && !e.Cancel)
                 {
                     e.Cancel = true;
                 }
-                return ret;
-            };
-            #region 绘制BackBuffer
-            using (Graphics g = Graphics.FromImage(viewCache.Image))
-            {
-                MapArgs mapArgs = new MapArgs(viewCache.Bound, viewCache.Extent, g, Frame.Projection, viewCache.DrawingExtent);
-                using (GraphicsPath gp = new GraphicsPath())
+                if (isCancel && !parallelCts.IsCancellationRequested)
                 {
-                    #region 设置绘制裁剪区域
-                    if (!Equals(mapArgs.Extent, mapArgs.DestExtent))
+                    parallelCts.Cancel();
+                }
+                return isCancel;
+            };
+            var layers = Frame.Children.GetAllLayers().Where(x => !x.IsDrawingInitialized(mapArgs));
+            Task? initializeLayerTask = null;//初始化图层任务
+            if (layers.Count() > 0)
+            {
+                //异步线程完成图层的初始化
+                initializeLayerTask = Task.Run(() =>
+                {
+                    #region 初始化图层绘制
+                    ParallelOptions parallelOptions = new ParallelOptions()
                     {
-                        var rect = mapArgs.ProjToPixelF(mapArgs.DestExtent);
-                        gp.StartFigure();
-                        gp.AddRectangle(rect);
-                        g.Clip = new Region(gp);
+                        CancellationToken = parallelCts.Token
+                    };
+                    Parallel.ForEach(layers, parallelOptions, (layer) =>
+                    {
+                        layer.InitializeDrawing(mapArgs);
+                    });
+                    #endregion
+                }).ContinueWith((task) =>
+                {
+                    #region 重新绘制所有图层
+                    if (!cancelFunc())
+                    {
+                        var viewCacheCopy = viewCache.Copy();
+                        var ret = viewCacheCopy.Image == viewCache.Image;
+                        DrawFrame(mapArgs, false, cancelFunc, newUpdateMapAction);
                     }
                     #endregion
-
-                    g.Clear(Background); //填充背景色
-                    int count = 2;
-                    for (int i = 0; i < count; i++)
-                    {
-                        if (cancelFunc())
-                        {
-                            break;
-                        }
-                        bool selected = i == 1;
-                        Action<string, int>? destProgressAction = selected ? null : Progress;//不更新绘制选择要素的进度
-                        Frame.Draw(mapArgs, selected, destProgressAction, cancelFunc);
-                    }
-                }
+                });
+                initializeLayerTask.ConfigureAwait(false);
             }
             #endregion
+            DrawFrame(mapArgs, true, cancelFunc, newUpdateMapAction);
             if (cancelFunc())//若取消绘制则释放图片
             {
                 viewCache.Dispose();
             }
             else
             {
-                e.Result = viewCache;
+                if (initializeLayerTask != null)
+                {
+                    initializeLayerTask.Wait(); //等待初始化线程及重绘完成
+                }
+                //TODO 待测试，后台绘制完成后，重设缓存以及刷新地图控件
+                //var rect = mapArgs.ProjToPixelF(mapArgs.DestExtent);
+                //ResetViewCacheAndUpdateMap(viewCache, rect, false);
             }
         }
 

@@ -342,11 +342,7 @@ namespace EM.GIS.Projections
         /// <param name="destProjection">目标投影</param>
         /// <param name="coordinate">坐标</param>
         public abstract void ReProject(IProjection destProjection, ICoordinate coordinate);
-        /// <summary>
-        /// 重投影坐标
-        /// </summary>
-        /// <param name="destProjection">目标投影</param>
-        /// <param name="coordinates">坐标</param>
+        /// <inheritdoc/>
         public abstract void ReProject(IProjection destProjection, IList<ICoordinate> coordinates);
         /// <summary>
         /// 重投影多个坐标
@@ -419,9 +415,11 @@ namespace EM.GIS.Projections
         /// </summary>
         /// <param name="degrees">角度</param>
         /// <returns>弧度</returns>
-        private static double DegreeToRad(double degrees) 
-        { 
+        private static double DegreeToRad(double degrees)
+        {
             return degrees * Math.PI / 180.0;
         }
+        /// <inheritdoc/>
+        public abstract void ReProject(int destProjectionEpsg, IExtent extent);
     }
 }

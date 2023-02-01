@@ -5,6 +5,7 @@ using OSGeo.GDAL;
 using OSGeo.OGR;
 using OSGeo.OSR;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Text;
 
@@ -15,23 +16,27 @@ namespace EM.GIS.Gdals
     /// </summary>
     public class GdalProjection : Projection
     {
-        private SpatialReference _spatialReference;
+        /// <summary>
+        /// 缓存的投影
+        /// </summary>
+        private ConcurrentDictionary<int, IProjection> projections = new ConcurrentDictionary<int, IProjection>();
+        private SpatialReference spatialReference;
 
         /// <summary>
         /// 空间参考
         /// </summary>
         public SpatialReference SpatialReference
         {
-            get { return _spatialReference; }
+            get { return spatialReference; }
             set
             {
                 if (SpatialReferenceDisposable)
                 {
-                    SetProperty(ref _spatialReference, value);
+                    SetProperty(ref spatialReference, value);
                 }
                 else
                 {
-                    SetProperty(ref _spatialReference, value);
+                    SetProperty(ref spatialReference, value);
                 }
             }
         }
@@ -62,11 +67,22 @@ namespace EM.GIS.Gdals
             {
                 if (disposing)
                 {
+                    if (projections.Count > 0)
+                    {
+                        foreach (var item in projections)
+                        {
+                            if (item.Value is IDisposable disposable)
+                            {
+                                disposable.Dispose();
+                            }
+                        }
+                        projections.Clear();
+                    }
                 }
-                if (SpatialReferenceDisposable && _spatialReference != null)
+                if (SpatialReferenceDisposable && spatialReference != null)
                 {
-                    _spatialReference.Dispose();
-                    _spatialReference = null;
+                    spatialReference.Dispose();
+                    spatialReference = null;
                 }
             }
             base.Dispose(disposing);
@@ -385,6 +401,16 @@ namespace EM.GIS.Gdals
                     gdalProjection.SpatialReference.ImportFromEPSG(EPSG.Value);
                 }
             }
+        }
+        /// <inheritdoc/>
+        public override void ReProject(int destProjectionEpsg, IExtent extent)
+        {
+            if (!projections.TryGetValue(destProjectionEpsg, out var projection))
+            {
+                projection = new GdalProjection(destProjectionEpsg);
+                projections.TryAdd(destProjectionEpsg, projection);
+            }
+            ReProject(projection, extent);
         }
     }
 }

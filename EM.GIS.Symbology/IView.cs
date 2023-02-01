@@ -32,7 +32,7 @@ namespace EM.GIS.Symbology
         /// </summary>
         bool IsWorking { get; }
         /// <summary>
-        /// 后台缓存图片
+        /// 视图缓存
         /// </summary>
         ViewCache BackImage { get; }
         /// <summary>
@@ -46,11 +46,15 @@ namespace EM.GIS.Symbology
         /// <summary>
         /// 比例尺因子
         /// </summary>
-         double ScaleFactor { get; set; }
+        double ScaleFactor { get; set; }
         /// <summary>
         /// 进度委托
         /// </summary>
         Action<string, int>? Progress { get; set; }
+        /// <summary>
+        /// 重绘地图控件委托
+        /// </summary>
+        Action<RectangleF>? UpdateMapAction { get; set; }
         /// <summary>
         /// 重绘缓存
         /// </summary>

@@ -13,9 +13,9 @@ namespace EM.GIS.Data
         /// </summary>
         RasterType RasterType { get; }
         /// <summary>
-        /// 波段
+        /// 子栅格集
         /// </summary>
-        IList<IRasterSet> Bands { get; }
+        IEnumerable<IRasterSet> Rasters { get; }
         /// <summary>
         /// 波段数
         /// </summary>
@@ -24,19 +24,19 @@ namespace EM.GIS.Data
         /// <summary>
         /// 高度
         /// </summary>
-        int NumRows { get; }
+        int Height { get; }
         /// <summary>
         /// 长度
         /// </summary>
-        int NumColumns { get; }
+        int Width { get; }
         /// <summary>
         /// 无数据值
         /// </summary>
         double? NoDataValue { get; set; }
         /// <summary>
-        /// 获取统计
+        /// 获取统计值
         /// </summary>
-        /// <returns></returns>
+        /// <returns>统计值</returns>
         Statistics GetStatistics();
     }
 }

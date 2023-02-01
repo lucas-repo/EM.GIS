@@ -114,7 +114,12 @@ namespace EM.GIS.WPFControls
             }
             return source;
         }
-        public static Rect ToRect(this Rectangle rectangle)
+        /// <summary>
+        /// 将<see cref="RectangleF"/>转为<see cref="Rect"/>
+        /// </summary>
+        /// <param name="rectangle"><see cref="Rect"/></param>
+        /// <returns><see cref="Rect"/></returns>
+        public static Rect ToRect(this RectangleF rectangle)
         {
             return new Rect(rectangle.X, rectangle.Y, rectangle.Width, rectangle.Height);
         }

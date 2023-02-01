@@ -18,10 +18,10 @@
         /// </summary>
         string Discription { get; set; }
         /// <summary>
-        /// 打开数据集
+        /// 获取数据集
         /// </summary>
         /// <param name="path">路径</param>
         /// <returns>数据集</returns>
-        IDataSet Open(string path);
+        IDataSet? GetDataSet(string path);
     }
 }

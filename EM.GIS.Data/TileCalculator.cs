@@ -1,18 +1,14 @@
-﻿using EM.GIS.Data;
-using EM.GIS.Geometries;
-using OSGeo.OGR;
-using System;
-using System.Collections.Generic;
-using System.Drawing.Imaging;
-using System.Drawing;
-using System.Text;
-using System.Linq;
+﻿using EM.GIS.Geometries;
 using EM.GIS.Projections;
-using EM.GIS.GdalExtensions;
+using System;
+using System.Drawing;
 
-namespace EM.GIS.Gdals
+namespace EM.GIS.Data
 {
-    internal static class TileCalculator
+    /// <summary>
+    /// 瓦片计算辅助类
+    /// </summary>
+    public static class TileCalculator
     {
         #region Fields
 
@@ -65,20 +61,6 @@ namespace EM.GIS.Gdals
 
         #endregion
 
-        /// <summary>
-        /// WEB墨卡托坐标系
-        /// </summary>
-        public static Lazy<Projection> WebMercProj { get; }
-        /// <summary>
-        /// WGS84坐标系
-        /// </summary>
-        public static Lazy<Projection> Wgs84Proj { get; }
-        static TileCalculator()
-        {
-            GdalConfiguration.ConfigureGdal();
-            WebMercProj = new Lazy<Projection>(() => new GdalProjection(3857));
-            Wgs84Proj = new Lazy<Projection>(() => new GdalProjection(4326));
-        }
         #region Methods
 
         /// <summary>

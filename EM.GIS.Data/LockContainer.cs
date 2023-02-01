@@ -1,6 +1,6 @@
 ﻿using System.Collections.Concurrent;
 
-namespace EM.GIS.Gdals
+namespace EM.GIS.Data
 {
     /// <summary>
     /// 多个对象的容器字典

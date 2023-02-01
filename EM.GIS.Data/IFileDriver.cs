@@ -13,7 +13,7 @@ namespace EM.GIS.Data
         /// <param name="fileName">文件名</param>
         /// <param name="update">是否更新</param>
         /// <returns>数据集</returns>
-        IDataSet Open(string fileName, bool update);
+        IDataSet? GetDataSet(string fileName, bool update);
         /// <summary>
         /// 删除数据集
         /// </summary>

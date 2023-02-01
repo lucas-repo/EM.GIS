@@ -66,23 +66,20 @@ namespace EM.GIS.Symbology
         /// <inheritdoc/>
         public ILayer? AddLayer(IDataSet dataSet, bool isVisible = true)
         {
-            ILayer? layer = null;
-            //var ss = dataSet as ISelfLoadSet;
-            //if (ss != null) return Add(ss);
+            ILayer? layer;
             switch (dataSet)
             {
                 case IFeatureSet featureSet:
                     layer = AddLayer(featureSet, isVisible);
                     break;
+                case ITileSet tileSet:
+                    layer = AddLayer(tileSet, isVisible);
+                    break;
                 case IRasterSet rasterSet:
                     layer = AddLayer(rasterSet, isVisible);
                     break;
                 default:
-                    return layer;
-            }
-            if (layer != null)
-            {
-                layer.Text = dataSet.Name;
+                    throw new NotImplementedException();
             }
             return layer;
         }
@@ -128,6 +125,20 @@ namespace EM.GIS.Symbology
                 Insert(0, rasterLayer);
             }
             return rasterLayer;
+        }
+        /// <inheritdoc/>
+        public ITileLayer? AddLayer(ITileSet tileSet, bool isVisible = true)
+        {
+            ITileLayer? ret = null;
+            if (tileSet != null)
+            {
+                ret = new TileLayer(tileSet)
+                {
+                    IsVisible = isVisible
+                };
+                Insert(0, ret);
+            }
+            return ret;
         }
         /// <inheritdoc/>
         public override void Add(IBaseItem item)

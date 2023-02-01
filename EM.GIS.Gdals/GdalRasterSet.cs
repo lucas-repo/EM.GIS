@@ -2,6 +2,7 @@
 using EM.GIS.Geometries;
 using OSGeo.GDAL;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Drawing2D;
@@ -33,10 +34,13 @@ namespace EM.GIS.Gdals
                 }
             }
         }
+        private List<IRasterSet> rasters = new List<IRasterSet>();
+        /// <inheritdoc/>
+        public override IEnumerable<IRasterSet> Rasters => rasters;
         private void OnDatasetChanged()
         {
             GdalProjection projection = null;
-            Bands.Clear();
+            rasters.Clear();
             if (Dataset != null)
             {
                 int numBands = Dataset.RasterCount;
@@ -47,7 +51,7 @@ namespace EM.GIS.Gdals
                     {
                         _band = band;
                     }
-                    Bands.Add(new GdalRasterSet<T>(Filename, Dataset, band));
+                    rasters.Add(new GdalRasterSet<T>(Filename, Dataset, band));
                 }
                 projection = new GdalProjection(Dataset.GetProjection());
             }
@@ -84,9 +88,9 @@ namespace EM.GIS.Gdals
             }
         }
         /// <inheritdoc/>
-        public override int NumRows => _dataset.RasterYSize;
+        public override int Height => _dataset.RasterYSize;
         /// <inheritdoc/>
-        public override int NumColumns => _dataset.RasterXSize;
+        public override int Width => _dataset.RasterXSize;
         #region Fields
 
         private Band _band;
@@ -153,7 +157,7 @@ namespace EM.GIS.Gdals
                 }
                 else
                 {
-                    foreach (var raster in Bands)
+                    foreach (var raster in Rasters)
                     {
                         raster.NoDataValue = value;
                     }
@@ -166,7 +170,7 @@ namespace EM.GIS.Gdals
         #region Methods
 
         /// <inheritdoc/>
-        public override void Draw(MapArgs mapArgs, Action<int> progressAction = null, Func<bool> cancelFunc = null)
+        public override void Draw(MapArgs mapArgs, Action<int>? progressAction = null, Func<bool>? cancelFunc = null)
         {
             if (mapArgs == null || mapArgs.Graphics == null || mapArgs.Bound.IsEmpty || mapArgs.Extent == null || mapArgs.Extent.IsEmpty() || mapArgs.DestExtent == null || mapArgs.DestExtent.IsEmpty() || cancelFunc?.Invoke() == true)
             {
@@ -382,9 +386,9 @@ namespace EM.GIS.Gdals
         private Bitmap ReadRgb(int xOffset, int yOffset, int xSize, int ySize)
         {
             Bitmap result = null;
-            if (Bands.Count < 3)
+            if (rasters.Count < 3)
             {
-                throw new Exception("RGB Format was indicated but there are only " + Bands.Count + " bands!");
+                throw new Exception("RGB Format was indicated but there are only " + rasters.Count + " bands!");
             }
             Band rBand;
             Band gBand;
@@ -392,16 +396,16 @@ namespace EM.GIS.Gdals
             var disposeBand = false;
             if (_overview >= 0 && _overviewCount > 0)
             {
-                rBand = (Bands[0] as GdalRasterSet<T>)._band.GetOverview(_overview);
-                gBand = (Bands[1] as GdalRasterSet<T>)._band.GetOverview(_overview);
-                bBand = (Bands[2] as GdalRasterSet<T>)._band.GetOverview(_overview);
+                rBand = (rasters[0] as GdalRasterSet<T>)._band.GetOverview(_overview);
+                gBand = (rasters[1] as GdalRasterSet<T>)._band.GetOverview(_overview);
+                bBand = (rasters[2] as GdalRasterSet<T>)._band.GetOverview(_overview);
                 disposeBand = true;
             }
             else
             {
-                rBand = (Bands[0] as GdalRasterSet<T>)._band;
-                gBand = (Bands[1] as GdalRasterSet<T>)._band;
-                bBand = (Bands[2] as GdalRasterSet<T>)._band;
+                rBand = (rasters[0] as GdalRasterSet<T>)._band;
+                gBand = (rasters[1] as GdalRasterSet<T>)._band;
+                bBand = (rasters[2] as GdalRasterSet<T>)._band;
             }
 
             int width, height;
@@ -424,9 +428,9 @@ namespace EM.GIS.Gdals
         private Bitmap ReadRgba(int xOffset, int yOffset, int xSize, int ySize)
         {
             Bitmap result = null;
-            if (Bands.Count < 4)
+            if (rasters.Count < 4)
             {
-                throw new Exception("ARGB Format was indicated but there are only " + Bands.Count + " bands!");
+                throw new Exception("ARGB Format was indicated but there are only " + rasters.Count + " bands!");
             }
             Band aBand;
             Band rBand;
@@ -435,18 +439,18 @@ namespace EM.GIS.Gdals
             var disposeBand = false;
             if (_overview >= 0 && _overviewCount > 0)
             {
-                rBand = (Bands[0] as GdalRasterSet<T>)._band.GetOverview(_overview);
-                gBand = (Bands[1] as GdalRasterSet<T>)._band.GetOverview(_overview);
-                bBand = (Bands[2] as GdalRasterSet<T>)._band.GetOverview(_overview);
-                aBand = (Bands[3] as GdalRasterSet<T>)._band.GetOverview(_overview);
+                rBand = (rasters[0] as GdalRasterSet<T>)._band.GetOverview(_overview);
+                gBand = (rasters[1] as GdalRasterSet<T>)._band.GetOverview(_overview);
+                bBand = (rasters[2] as GdalRasterSet<T>)._band.GetOverview(_overview);
+                aBand = (rasters[3] as GdalRasterSet<T>)._band.GetOverview(_overview);
                 disposeBand = true;
             }
             else
             {
-                rBand = (Bands[0] as GdalRasterSet<T>)._band;
-                gBand = (Bands[1] as GdalRasterSet<T>)._band;
-                bBand = (Bands[2] as GdalRasterSet<T>)._band;
-                aBand = (Bands[3] as GdalRasterSet<T>)._band;
+                rBand = (rasters[0] as GdalRasterSet<T>)._band;
+                gBand = (rasters[1] as GdalRasterSet<T>)._band;
+                bBand = (rasters[2] as GdalRasterSet<T>)._band;
+                aBand = (rasters[3] as GdalRasterSet<T>)._band;
             }
 
             rBand.NormalizeSizeToBand(xOffset, yOffset, xSize, ySize, out int width, out int height);
@@ -471,9 +475,9 @@ namespace EM.GIS.Gdals
         private Bitmap ReadArgb(int xOffset, int yOffset, int xSize, int ySize)
         {
             Bitmap result = null;
-            if (Bands.Count < 4)
+            if (rasters.Count < 4)
             {
-                throw new Exception("ARGB Format was indicated but there are only " + Bands.Count + " bands!");
+                throw new Exception("ARGB Format was indicated but there are only " + rasters.Count + " bands!");
             }
             Band aBand;
             Band rBand;
@@ -482,18 +486,18 @@ namespace EM.GIS.Gdals
             var disposeBand = false;
             if (_overview >= 0 && _overviewCount > 0)
             {
-                aBand = (Bands[0] as GdalRasterSet<T>)._band.GetOverview(_overview);
-                rBand = (Bands[1] as GdalRasterSet<T>)._band.GetOverview(_overview);
-                gBand = (Bands[2] as GdalRasterSet<T>)._band.GetOverview(_overview);
-                bBand = (Bands[3] as GdalRasterSet<T>)._band.GetOverview(_overview);
+                aBand = (rasters[0] as GdalRasterSet<T>)._band.GetOverview(_overview);
+                rBand = (rasters[1] as GdalRasterSet<T>)._band.GetOverview(_overview);
+                gBand = (rasters[2] as GdalRasterSet<T>)._band.GetOverview(_overview);
+                bBand = (rasters[3] as GdalRasterSet<T>)._band.GetOverview(_overview);
                 disposeBand = true;
             }
             else
             {
-                aBand = (Bands[0] as GdalRasterSet<T>)._band;
-                rBand = (Bands[1] as GdalRasterSet<T>)._band;
-                gBand = (Bands[2] as GdalRasterSet<T>)._band;
-                bBand = (Bands[3] as GdalRasterSet<T>)._band;
+                aBand = (rasters[0] as GdalRasterSet<T>)._band;
+                rBand = (rasters[1] as GdalRasterSet<T>)._band;
+                gBand = (rasters[2] as GdalRasterSet<T>)._band;
+                bBand = (rasters[3] as GdalRasterSet<T>)._band;
             }
 
             rBand.NormalizeSizeToBand(xOffset, yOffset, xSize, ySize, out int width, out int height);
@@ -670,7 +674,7 @@ namespace EM.GIS.Gdals
                 return _band.GetCategoryNames();
             }
 
-            foreach (GdalRasterSet<T> raster in Bands)
+            foreach (GdalRasterSet<T> raster in Rasters)
             {
                 return raster._band.GetCategoryNames();
             }
@@ -712,7 +716,7 @@ namespace EM.GIS.Gdals
             else
             {
                 // ?? doesn't this mean the stats get overwritten several times.
-                foreach (IRasterSet raster in Bands)
+                foreach (IRasterSet raster in Rasters)
                 {
                     statistics = raster.GetStatistics();
                 }
@@ -728,13 +732,13 @@ namespace EM.GIS.Gdals
                 if (disposing)
                 {
                     // 释放托管状态(托管对象)。
-                    if (Bands.Count > 0)
+                    if (rasters.Count > 0)
                     {
-                        foreach (IRasterSet raster in Bands)
+                        foreach (IRasterSet raster in Rasters)
                         {
                             raster.Dispose();
                         }
-                        Bands.Clear();
+                        rasters.Clear();
                     }
                 }
                 // 释放未托管的资源(未托管的对象)并在以下内容中替代终结器。
@@ -756,7 +760,7 @@ namespace EM.GIS.Gdals
                 return _band.GetColorTable();
             }
 
-            foreach (GdalRasterSet<T> raster in Bands)
+            foreach (GdalRasterSet<T> raster in Rasters)
             {
                 return raster._band.GetColorTable();
             }
@@ -780,7 +784,7 @@ namespace EM.GIS.Gdals
                 _overviewCount = _band.GetOverviewCount();
                 _colorInterp = _band.GetColorInterpretation();
                 int maxPixels = 2048 * 2048;
-                if (_overviewCount <= 0 && NumColumns * NumRows > maxPixels)
+                if (_overviewCount <= 0 && Width * Height > maxPixels)
                 {
                     int ret = _dataset.CreateOverview();
                     _overviewCount = _band.GetOverviewCount();
@@ -793,7 +797,7 @@ namespace EM.GIS.Gdals
             // in gdal (row,col) coordinates are defined relative to the top-left corner of the top-left cell
             // shift them by half a cell to give coordinates relative to the center of the top-left cell
             affine = new AffineTransform(affine).TransfromToCorner(0.5, 0.5);
-            Bounds = new RasterBounds(NumRows, NumColumns, affine);
+            Bounds = new RasterBounds(Height, Width, affine);
             PixelSpace = Marshal.SizeOf(typeof(T));
         }
 

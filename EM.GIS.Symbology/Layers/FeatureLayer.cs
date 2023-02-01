@@ -97,11 +97,12 @@ namespace EM.GIS.Symbology
         /// <inheritdoc/>
         public Dictionary<long, IFeatureCategory> DrawnStates { get; } = new Dictionary<long, IFeatureCategory>();
         /// <inheritdoc/>
-        protected override void OnDraw(MapArgs mapArgs, bool selected = false, Action<string, int>? progressAction = null, Func<bool>? cancelFunc = null, Action? invalidateMapFrameAction = null)
+        protected override RectangleF OnDraw(MapArgs mapArgs, bool selected = false, Action<string, int>? progressAction = null, Func<bool>? cancelFunc = null, Action<RectangleF>? invalidateMapFrameAction = null)
         {
-            if (selected && Selection.Count == 0 || cancelFunc?.Invoke() == true)
+            RectangleF ret = RectangleF.Empty;
+            if (selected && Selection.Count == 0 || cancelFunc?.Invoke() == true || DataSet == null)
             {
-                return;
+                return ret;
             }
             DataSet.SetSpatialExtentFilter(mapArgs.DestExtent);
             long featureCount = DataSet.FeatureCount;
@@ -121,7 +122,7 @@ namespace EM.GIS.Symbology
                         progressAction?.Invoke(ProgressMessage, percent);
                         DrawFeatures(mapArgs, mapArgs.Graphics, features, selected, progressAction, cancelFunc);
                         drawnFeatureCount += features.Count;
-                        invalidateMapFrameAction?.Invoke();
+                        invalidateMapFrameAction?.Invoke(mapArgs.ProjToPixelF(mapArgs.DestExtent));
                     }
                     foreach (var item in features)
                     {
@@ -174,6 +175,7 @@ namespace EM.GIS.Symbology
                 item.Dispose();
             }
             DataSet.SetSpatialFilter(null);
+            return ret;
         }
         private Dictionary<IFeature, IFeatureCategory> GetFeatureAndCategoryDic(List<IFeature> features)
         {

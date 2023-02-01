@@ -27,7 +27,7 @@ namespace EM.GIS.Data
         #region Properties
 
         /// <inheritdoc/>
-        public override int ByteSize => GetByteSize(default(T));
+        public override int ByteSize => GetByteSize<T>();
 
         #endregion
 

@@ -23,8 +23,9 @@ namespace EM.GIS.Symbology
         public void CreateLabels()
         {
         }
-        protected override void OnDraw(MapArgs mapArgs, bool selected = false, Action<string, int>? progressAction = null, Func<bool>? cancelFunc = null, Action? invalidateMapFrameAction = null)
+        protected override RectangleF OnDraw(MapArgs mapArgs, bool selected = false, Action<string, int>? progressAction = null, Func<bool>? cancelFunc = null, Action<RectangleF>? invalidateMapFrameAction = null)
         {
+            return RectangleF.Empty;//TODO 待完善标注绘制
         }
         public bool Select(IExtent region)
         {

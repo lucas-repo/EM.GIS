@@ -13,19 +13,19 @@ namespace EM.GIS.Symbology
     /// </summary>
     public class ViewCache : BaseCopy, IProj,IDisposable
     {
+        private bool isDisposed;
         /// <summary>
         /// 图片
         /// </summary>
-        public Image Image { get; private set; }
+        public Image Image { get; }
         /// <inheritdoc/>
         public IExtent Extent { get; }
         /// <inheritdoc/>
-        public Rectangle Bound { get; }
+        public Rectangle Bound { get;  }
         /// <summary>
         /// 绘制的范围
         /// </summary>
         public IExtent DrawingExtent { get; }
-
         public ViewCache(Image image,Rectangle rectangle,IExtent extent,IExtent drawingExtent)
         {
             Image = image??throw new NullReferenceException(nameof(image));
@@ -44,14 +44,13 @@ namespace EM.GIS.Symbology
             Extent = extent;
             DrawingExtent = drawingExtent;
         }
-
         /// <inheritdoc/>
         public void Dispose()
         {
-            if (Image != null)
+            if (!isDisposed)
             {
-                Image.Dispose();
-                Image = null;
+                Image?.Dispose();
+                isDisposed = true;
             }
         }
     }

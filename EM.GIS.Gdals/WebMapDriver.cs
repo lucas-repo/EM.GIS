@@ -51,7 +51,7 @@ namespace EM.GIS.Gdals
         {
         }
 
-        public override IDataSet Open(string path)
+        public override IDataSet GetDataSet(string path)
         {
             return OpenWmts(path).FirstOrDefault();
         }
@@ -62,11 +62,9 @@ namespace EM.GIS.Gdals
             var tileSources = WmtsParser.Parse(stream);
             foreach (var tileSource in tileSources)
             {
-                var tileSet = new TileSet()
+                var tileSet = new TileSet(tileSource)
                 {
-                    TileSource = tileSource,
-                    Name = tileSource.Name,
-                    Projection = TileCalculator.WebMercProj.Value,
+                    Projection = new GdalProjection(3857),
                     Extent=new Geometries.Extent(TileCalculator.MinWebMercX, TileCalculator.MinWebMercY, TileCalculator.MaxWebMercX, TileCalculator.MaxWebMercY)
                 };
                 tileSource.PersistentCache = GetTileCache(tileSource.Name);
@@ -78,7 +76,7 @@ namespace EM.GIS.Gdals
             return new FileCache(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "TileCache", name), "jpg", new TimeSpan(30, 0, 0, 0));
         }
         /// <inheritdoc/>
-        public ITileSet OpenXYZ(string name, string urlFormatter, IEnumerable<string> serverNodes = null, int minLevel = 0, int maxLevel = 18, PixelFormat pixelFormat = PixelFormat.Format24bppRgb)
+        public ITileSet OpenXYZ(string name, string urlFormatter, IEnumerable<string>? serverNodes = null, int minLevel = 0, int maxLevel = 18, PixelFormat pixelFormat = PixelFormat.Format24bppRgb)
         {
             if (string.IsNullOrEmpty(name))
             {
@@ -105,11 +103,9 @@ namespace EM.GIS.Gdals
             {
                 Name= name
             };
-            var tileSet = new TileSet()
+            var tileSet = new TileSet(tileSource)
             {
-                TileSource = tileSource,
-                Name = tileSource.Name,
-                Projection = TileCalculator.WebMercProj.Value,
+                Projection = new GdalProjection(3857),
                 Extent = new Geometries.Extent(TileCalculator.MinWebMercX, TileCalculator.MinWebMercY, TileCalculator.MaxWebMercX, TileCalculator.MaxWebMercY)
             };
             tileSource.PersistentCache = GetTileCache(tileSource.Name);

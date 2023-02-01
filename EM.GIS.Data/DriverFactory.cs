@@ -126,7 +126,7 @@ namespace EM.GIS.Data
                 {
                     try
                     {
-                        dataSet = driver.Open(path);
+                        dataSet = driver.GetDataSet(path);
                     }
                     catch (Exception e)
                     {

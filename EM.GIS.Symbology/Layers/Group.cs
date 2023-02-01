@@ -1,8 +1,8 @@
-﻿using EM.Bases;
-using EM.GIS.Data;
+﻿using EM.GIS.Data;
 using EM.GIS.Geometries;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 
 namespace EM.GIS.Symbology
@@ -36,7 +36,7 @@ namespace EM.GIS.Symbology
         {
             get
             {
-                IExtent destExtent =new Extent();
+                IExtent destExtent = new Extent();
                 foreach (var item in Children)
                 {
                     if (item is IRenderableItem renderableItem)
@@ -55,46 +55,92 @@ namespace EM.GIS.Symbology
         {
             Children = new RenderableItemCollection();
         }
+
         /// <inheritdoc/>
-        public override void Draw(MapArgs mapArgs, bool selected = false, Action<string, int>? progressAction = null, Func<bool>? cancelFunc = null, Action? invalidateMapFrameAction = null)
+        public override RectangleF Draw(MapArgs mapArgs, bool onlyInitialized = false, bool selected = false, Action<string, int>? progressAction = null, Func<bool>? cancelFunc = null, Action<RectangleF>? invalidateMapFrameAction = null)
         {
+            RectangleF ret = RectangleF.Empty;
             if (mapArgs == null || mapArgs.Graphics == null || mapArgs.Bound.IsEmpty || mapArgs.Extent == null || mapArgs.Extent.IsEmpty() || mapArgs.DestExtent == null || mapArgs.DestExtent.IsEmpty() || cancelFunc?.Invoke() == true || Children.Count == 0)
             {
-                return;
+                return ret;
             }
 
-            var allVisibleLayers = Children.GetAllLayers().Where(x => x.GetVisible(mapArgs.DestExtent));
+            List<IRenderableItem> visibleItems = new List<IRenderableItem>();
+            foreach (var item in Children)
+            {
+                if (item is IRenderableItem renderableItem && renderableItem.IsVisible)
+                {
+                    if (item is IGroup group)
+                    {
+                        visibleItems.Add(group);
+                    }
+                    else
+                    {
+                        if (onlyInitialized)
+                        {
+                            if (renderableItem.IsDrawingInitialized(mapArgs))
+                            {
+                                visibleItems.Add(renderableItem);
+                            }
+                        }
+                        else
+                        {
+                            visibleItems.Add(renderableItem);
+                        }
+                    }
+                }
+            }
+            if (visibleItems.Count == 0)
+            {
+                return ret;
+            }
             string progressStr = this.GetProgressString();
             progressAction?.Invoke(progressStr, 0);
-            double increment = 100.0 / allVisibleLayers.Count();
+            double increment = 100.0 / visibleItems.Count;
             double totalProgress = 0;
             Action<string, int> newProgressAction = (txt, progress) =>
             {
                 if (progressAction != null)
                 {
-                    var destProgress = (int)((double)progress / allVisibleLayers.Count() + totalProgress);
+                    var destProgress = (int)((double)progress / visibleItems.Count + totalProgress);
                     progressAction.Invoke(txt, destProgress);
                 }
             };
-            var visibleChildren = Children.Where(x => x is LegendItem legendItem && legendItem.IsVisible).ToList();
-            for (int i = visibleChildren.Count-1; i >=0; i--)
+            for (int i = visibleItems.Count - 1; i >= 0; i--)
             {
-                var item = visibleChildren[i];
-                if (item is ILegendItem legendItem && legendItem.IsVisible)
+                RectangleF rect = RectangleF.Empty;
+                switch (visibleItems[i])
                 {
-                    if (item is ILayer layer)
-                    {
-                        layer.Draw(mapArgs, selected, newProgressAction, cancelFunc, invalidateMapFrameAction);
-                    }
-                    else if (item is IGroup group)
-                    {
-                        group.Draw(mapArgs, selected, newProgressAction, cancelFunc, invalidateMapFrameAction);
-                    }
+                    case ILayer layer:
+                        rect = layer.Draw(mapArgs, onlyInitialized, selected, newProgressAction, cancelFunc, invalidateMapFrameAction);
+                        break;
+                    case IGroup group:
+                        rect = group.Draw(mapArgs, onlyInitialized, selected, newProgressAction, cancelFunc, invalidateMapFrameAction);
+                        break;
+                }
+                if (!rect.IsEmpty)
+                {
+                    ret.ExpandToInclude(rect);
+                    //invalidateMapFrameAction?.Invoke(rect);
                 }
                 totalProgress += increment;
-                invalidateMapFrameAction?.Invoke();
             }
             progressAction?.Invoke(progressStr, 100);
+            return ret;
+        }
+        /// <inheritdoc/>
+        public override bool IsDrawingInitialized(MapArgs mapArgs)
+        {
+            bool ret = true;
+            foreach (var item in Children)
+            {
+                if (item is IRenderableItem renderableItem && !renderableItem.IsDrawingInitialized(mapArgs))
+                {
+                    ret = false;
+                    break;
+                }
+            }
+            return ret;
         }
     }
 }

@@ -26,6 +26,6 @@ namespace EM.GIS.Data
         /// <param name="maxLevel">最大级别</param>
         /// <param name="pixelFormat">像素格式</param>
         /// <returns>数据集</returns>
-        ITileSet OpenXYZ(string name, string urlFormatter, IEnumerable<string> serverNodes = null, int minLevel = 0, int maxLevel = 18, PixelFormat pixelFormat = PixelFormat.Format24bppRgb);
+        ITileSet OpenXYZ(string name, string urlFormatter, IEnumerable<string>? serverNodes = null, int minLevel = 0, int maxLevel = 18, PixelFormat pixelFormat = PixelFormat.Format24bppRgb);
     }
 }

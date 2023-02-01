@@ -27,15 +27,6 @@ namespace EM.GIS.Controls
         /// </summary>
         ILegend Legend { get; set; }
         /// <summary>
-        /// 重绘指定区域
-        /// </summary>
-        /// <param name="rectangle">矩形范围</param>
-        void Invalidate(RectangleF rectangle);
-        /// <summary>
-        /// 重绘整个地图
-        /// </summary>
-        void Invalidate();
-        /// <summary>
         /// 地图方法
         /// </summary>
         List<ITool> MapTools { get; }

@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.Drawing;
 using System.Linq;
 
 namespace EM.GIS.Symbology
@@ -92,65 +93,6 @@ namespace EM.GIS.Symbology
                     }
                     break;
             }
-        }
-
-        /// <inheritdoc/>
-        public override void Draw(MapArgs mapArgs, bool selected = false, Action<string, int>? progressAction = null, Func<bool>? cancelFunc = null, Action? invalidateMapFrameAction = null)
-        {
-            if (mapArgs == null || mapArgs.Graphics == null || mapArgs.Bound.IsEmpty || mapArgs.Extent == null || mapArgs.Extent.IsEmpty() || mapArgs.DestExtent == null || mapArgs.DestExtent.IsEmpty() || cancelFunc?.Invoke() == true || Children.Count == 0)
-            {
-                return;
-            }
-            progressAction?.Invoke(string.Empty, 0);
-
-            var visibleLayers = Children.GetAllLayers().Where(x => x.GetVisible(mapArgs.DestExtent));
-            List<ILabelLayer> visibleLabelLayers = new List<ILabelLayer>();
-            foreach (var item in visibleLayers)
-            {
-                if (item is IFeatureLayer featureLayer && featureLayer.LabelLayer.GetVisible(mapArgs.DestExtent))
-                {
-                    visibleLabelLayers.Add(featureLayer.LabelLayer);
-                }
-            }
-            var totalCount = visibleLayers.Count() + visibleLabelLayers.Count;//要素图层需要绘制标注，所以多算一次
-            if (totalCount == 0)
-            {
-                return;
-            }
-            double layerPercent = visibleLayers.Count() / totalCount;//可见图层占比
-            double labelLayerPercent = visibleLabelLayers.Count / totalCount;//标注图层占比
-            #region 绘制图层
-            Action<string, int> drawLayerProgressAction = (txt, progress) =>
-            {
-                if (progressAction != null)
-                {
-                    var destProgress = (int)(progress * layerPercent);
-                    progressAction.Invoke(txt, destProgress);
-                }
-            };
-            base.Draw(mapArgs, selected, drawLayerProgressAction, cancelFunc, invalidateMapFrameAction);//绘制图层
-            #endregion
-
-            #region 绘制标注
-            Action<string, int> drawLabelProgressAction = (txt, progress) =>
-            {
-                if (progressAction != null)
-                {
-                    var destProgress = (int)(100.0 * layerPercent + progress / 100 * labelLayerPercent);
-                    progressAction.Invoke(txt, destProgress);
-                }
-            };
-            for (int i = visibleLabelLayers.Count - 1; i >= 0; i--)
-            {
-                if (cancelFunc?.Invoke() == true)
-                {
-                    break;
-                }
-                visibleLabelLayers[i].Draw(mapArgs, selected, drawLabelProgressAction, cancelFunc, invalidateMapFrameAction);
-            }
-            #endregion
-
-            progressAction?.Invoke(string.Empty, 0);
         }
 
         /// <inheritdoc/>

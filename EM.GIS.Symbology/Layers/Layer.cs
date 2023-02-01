@@ -64,16 +64,18 @@ namespace EM.GIS.Symbology
         /// 实例化<seealso cref="Layer"/>
         /// </summary>
         /// <param name="dataSet">数据集</param>
-        public Layer(IDataSet dataSet) 
+        public Layer(IDataSet dataSet)
         {
-            _dataSet = dataSet;
+            _dataSet = dataSet ?? throw new ArgumentNullException(nameof(dataSet));
+            Text = dataSet.Name;
         }
         /// <inheritdoc/>
-        public override void Draw(MapArgs mapArgs, bool selected = false, Action<string, int>? progressAction = null, Func<bool>? cancelFunc = null, Action? invalidateMapFrameAction = null)
+        public override RectangleF Draw(MapArgs mapArgs, bool onlyInitialized = false, bool selected = false, Action<string, int>? progressAction = null, Func<bool>? cancelFunc = null, Action<RectangleF>? invalidateMapFrameAction = null)
         {
-            if (mapArgs == null || mapArgs.Graphics == null || mapArgs.Bound.IsEmpty || mapArgs.Extent == null || mapArgs.Extent.IsEmpty() || mapArgs.DestExtent == null || mapArgs.DestExtent.IsEmpty() || !GetVisible(mapArgs.DestExtent) || cancelFunc?.Invoke() == true)
+            RectangleF ret=RectangleF.Empty;
+            if (mapArgs == null || mapArgs.Graphics == null || mapArgs.Bound.IsEmpty || mapArgs.Extent == null || mapArgs.Extent.IsEmpty() || mapArgs.DestExtent == null || mapArgs.DestExtent.IsEmpty() || !GetVisible(mapArgs.DestExtent) || (onlyInitialized && !IsDrawingInitialized(mapArgs)) || cancelFunc?.Invoke() == true)
             {
-                return;
+                return ret;
             }
             progressAction?.Invoke(ProgressMessage, 0);
             MapArgs destMapArgs = mapArgs.Copy();
@@ -84,8 +86,9 @@ namespace EM.GIS.Symbology
                 destMapArgs.DestExtent = mapArgs.DestExtent.Copy();
                 mapArgs.Projection.ReProject(DataSet.Projection, destMapArgs.DestExtent);
             }
-            OnDraw(destMapArgs, selected, progressAction, cancelFunc, invalidateMapFrameAction);
+            ret = OnDraw(destMapArgs, selected, progressAction, cancelFunc, invalidateMapFrameAction);
             progressAction?.Invoke(ProgressMessage, 100);
+            return ret;
         }
         /// <summary>
         /// 绘制图层到画布
@@ -95,7 +98,8 @@ namespace EM.GIS.Symbology
         /// <param name="progressAction">进度委托</param>
         /// <param name="cancelFunc">取消匿名方法</param>
         /// <param name="invalidateMapFrameAction">使地图无效匿名方法</param>
-        protected abstract void OnDraw(MapArgs mapArgs, bool selected = false, Action<string, int>? progressAction = null, Func<bool>? cancelFunc = null, Action? invalidateMapFrameAction = null);
+        /// <returns>返回绘制的区域，未绘制则返回空矩形</returns>
+        protected abstract RectangleF OnDraw(MapArgs mapArgs, bool selected = false, Action<string, int>? progressAction = null, Func<bool>? cancelFunc = null, Action<RectangleF>? invalidateMapFrameAction = null);
         /// <inheritdoc/>
         protected override void Dispose(bool disposing)
         {

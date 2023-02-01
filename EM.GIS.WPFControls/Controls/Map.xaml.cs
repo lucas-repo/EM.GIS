@@ -73,13 +73,14 @@ namespace EM.GIS.WPFControls
         public event EventHandler<IGeoMouseEventArgs> GeoMouseMove;
         /// <inheritdoc/>
         public event PropertyChangedEventHandler? PropertyChanged;
-    
+
         public Map(IFrame frame)
         {
             InitializeComponent();
             PropertyChanged += Map_PropertyChanged;
             Frame = frame;
             Frame.View.PropertyChanged += View_PropertyChanged;
+            Frame.View.UpdateMapAction = Invalidate;
             var pan = new MapToolPan(this);
             var zoom = new MapToolZoom(this);
             ITool[] mapTools = { pan, zoom };
@@ -91,7 +92,26 @@ namespace EM.GIS.WPFControls
             }
             ActivateMapToolWithZoom(pan);
         }
-
+        /// <summary>
+        /// 需要刷新的范围
+        /// </summary>
+        private RectangleF updateRectangle;
+        /// <summary>
+        /// 使地图控件无效，以重新绘制
+        /// </summary>
+        /// <param name="rectangle">范围</param>
+        private void Invalidate(RectangleF rectangle)
+        {
+            updateRectangle = rectangle;
+            Dispatcher.BeginInvoke(() => InvalidateVisual());
+        }
+        /// <summary>
+        /// 使地图控件无效，以重新绘制
+        /// </summary>
+        private void Invalidate()
+        {
+            Invalidate(Frame.View.Bound);
+        }
         private void Map_PropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
             switch (e.PropertyName)
@@ -140,41 +160,29 @@ namespace EM.GIS.WPFControls
         }
 
         /// <inheritdoc/>
-        public void Invalidate(RectangleF rectangle)
-        {
-            Invalidate();
-        }
-        /// <inheritdoc/>
-        public void Invalidate()
-        {
-            Action action = () => InvalidateVisual();
-            Dispatcher.BeginInvoke(action);
-        }
-        /// <inheritdoc/>
         protected override void OnRender(DrawingContext drawingContext)
         {
             if (drawingContext != null && Frame.View.Width > 0 && Frame.View.Height > 0)
             {
                 BitmapSource bitmapSource;
-                Rectangle bound = new Rectangle(0, 0, Frame.View.Width, Frame.View.Height);
                 using (Bitmap bmp = new(Frame.View.Width, Frame.View.Height))
                 {
                     using (Graphics g = Graphics.FromImage(bmp))
                     {
-                        Frame.View.Draw(g, bound);
+                        Frame.View.Draw(g, updateRectangle);
                     }
                     bitmapSource = bmp.ToBitmapImage();
                 }
-                var rect = bound.ToRect();
-                double offsetX = (ActualWidth - bound.Width) / 2.0;
-                double offsetY = (ActualHeight - bound.Height) / 2.0;
+                var rect = updateRectangle.ToRect();
+                double offsetX = (ActualWidth - updateRectangle.Width) / 2.0;
+                double offsetY = (ActualHeight - updateRectangle.Height) / 2.0;
                 Transform transform = new TranslateTransform(offsetX, offsetY);
                 drawingContext.PushTransform(transform);
                 drawingContext.DrawImage(bitmapSource, rect);
             }
             base.OnRender(drawingContext);
         }
-
+        /// <inheritdoc/>
         public void ActivateMapToolWithZoom(ITool tool)
         {
             if (tool == null)
@@ -191,6 +199,7 @@ namespace EM.GIS.WPFControls
             }
             ActivateMapTool(tool);
         }
+        /// <inheritdoc/>
         public void ActivateMapTool(ITool tool)
         {
             if (tool == null)
@@ -333,7 +342,10 @@ namespace EM.GIS.WPFControls
             }
             base.OnKeyDown(e);
         }
-
+        /// <summary>
+        /// 释放资源
+        /// </summary>
+        /// <param name="disposing">释放托管资源</param>
         protected virtual void Dispose(bool disposing)
         {
             if (!disposedValue)

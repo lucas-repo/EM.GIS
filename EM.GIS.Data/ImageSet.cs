@@ -16,17 +16,28 @@ namespace EM.GIS.Data
         /// 位图
         /// </summary>
         public Image Bitmap { get; protected set; }
-        public override int ByteSize => GetByteSize(default(byte));
-        public override int NumRows => Bitmap == null ? 0 : Bitmap.Height;
-        public override int NumColumns => Bitmap == null ? 0 : Bitmap.Width;
+        /// <inheritdoc/>
+        public override int Height => Bitmap == null ? 0 : Bitmap.Height;
+        /// <inheritdoc/>
+        public override int Width => Bitmap == null ? 0 : Bitmap.Width;
+        private List<IRasterSet> rasters = new List<IRasterSet>();
+        /// <inheritdoc/>
+        public override IEnumerable<IRasterSet> Rasters => rasters;
+        /// <summary>
+        /// 位图数据集
+        /// </summary>
+        /// <param name="bitmap">位图</param>
+        /// <param name="extent">范围</param>
+        /// <exception cref="ArgumentNullException">空参数异常</exception>
         public ImageSet(Image bitmap, IExtent extent)
         {
             Bitmap = bitmap ?? throw new ArgumentNullException(nameof(bitmap));
             Bounds = new RasterBounds(Bitmap.Height, Bitmap.Width, extent);
-            Bands.Add(this);
+            rasters.Add(this);
             RasterType = RasterType.Byte;
         }
-        public override void Draw(MapArgs mapArgs, Action<int> progressAction = null, Func<bool> cancelFunc = null)
+        /// <inheritdoc/>
+        public override void Draw(MapArgs mapArgs, Action<int>? progressAction = null, Func<bool>? cancelFunc = null)
         {
             if (mapArgs == null || mapArgs.Graphics == null || mapArgs.Bound.IsEmpty || mapArgs.Extent == null || mapArgs.Extent.IsEmpty() || mapArgs.DestExtent == null || mapArgs.DestExtent.IsEmpty() || cancelFunc?.Invoke() == true|| Bitmap == null || Bounds == null || Bounds.Extent == null || Bounds.Extent.IsEmpty())
             {

@@ -1,6 +1,7 @@
 ﻿using EM.GIS.Geometries;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Text;
 
 namespace EM.GIS.Data
@@ -11,6 +12,17 @@ namespace EM.GIS.Data
     public static class ExtentExtensions
     {
         /// <summary>
+        /// 扩展矩形
+        /// </summary>
+        /// <param name="rect0">矩形0</param>
+        /// <param name="rect1">矩形1</param>
+        /// <returns>扩展后的矩形</returns>
+        public static RectangleF ExpandToInclude(this RectangleF rect0, RectangleF rect1)
+        {
+            RectangleF ret = RectangleF.FromLTRB(Math.Min(rect0.Left, rect1.Left), Math.Min(rect0.Top, rect1.Top), Math.Min(rect0.Right, rect1.Right), Math.Min(rect0.Bottom, rect1.Bottom));
+            return ret;
+        }
+        /// <summary>
         /// 将范围转几何体
         /// </summary>
         /// <param name="geometryFactory">几何工厂</param>
@@ -18,17 +30,13 @@ namespace EM.GIS.Data
         /// <returns>几何体</returns>
         public static IGeometry ToPolygon(this IGeometryFactory geometryFactory, IExtent extent)
         {
-            IGeometry polygon = null;
-            if (geometryFactory!=null&& extent != null)
-            {
-                ICoordinate[] coordinates = { new Coordinate(extent.MinX, extent.MinY),
-                    new Coordinate(extent.MinX, extent.MaxY),
-                    new Coordinate(extent.MaxX, extent.MaxY),
-                    new Coordinate(extent.MaxX, extent.MinY),
-                    new Coordinate(extent.MinX, extent.MinY)
-                };
-                polygon = geometryFactory.GetPolygon(coordinates);
-            }
+            ICoordinate[] coordinates = { new Coordinate(extent.MinX, extent.MinY),
+                new Coordinate(extent.MinX, extent.MaxY),
+                new Coordinate(extent.MaxX, extent.MaxY),
+                new Coordinate(extent.MaxX, extent.MinY),
+                new Coordinate(extent.MinX, extent.MinY)
+            };
+            var polygon = geometryFactory.GetPolygon(coordinates);
             return polygon;
         }
 
@@ -66,7 +74,15 @@ namespace EM.GIS.Data
                 // If the envelope is proportionately taller than the control, "reveal" more height without changing width
                 extent.SetCenter(center, extent.Width, extent.Width / controlAspect);
             }
-
+        }
+        /// <summary>
+        /// 将<see cref="BruTile.Extent"/>转为<see cref="IExtent"/>
+        /// </summary>
+        /// <param name="extent"><see cref="BruTile.Extent"/></param>
+        /// <returns><see cref="IExtent"/></returns>
+        public static IExtent ToExtent(this BruTile.Extent extent)
+        {
+            return new Extent(extent.MinX, extent.MinY, extent.MaxX, extent.MaxY);
         }
     }
 }

@@ -47,12 +47,19 @@ namespace EM.GIS.Projections
         /// <param name="coordinates">坐标</param>
         void ReProject(IProjection destProjection, IList<ICoordinate> coordinates);
         /// <summary>
-        /// 重投影多个坐标
+        /// 重投影范围
         /// </summary>
         /// <param name="destProjection">目标投影</param>
         /// <param name="extent">范围</param>
         /// <returns>范围</returns>
         void ReProject(IProjection destProjection, IExtent extent);
+        /// <summary>
+        /// 重投影范围
+        /// </summary>
+        /// <param name="destProjectionEpsg">目标投影</param>
+        /// <param name="extent">范围</param>
+        /// <returns>范围</returns>
+        void ReProject(int destProjectionEpsg, IExtent extent);
         /// <summary>
         /// 重投影几何体
         /// </summary>
