@@ -88,6 +88,7 @@ namespace EM.GIS.Symbology
             }
             ret = OnDraw(destMapArgs, selected, progressAction, cancelFunc, invalidateMapFrameAction);
             progressAction?.Invoke(ProgressMessage, 100);
+            invalidateMapFrameAction?.Invoke(destMapArgs.ProjToPixelF(destMapArgs.DestExtent));
             return ret;
         }
         /// <summary>
