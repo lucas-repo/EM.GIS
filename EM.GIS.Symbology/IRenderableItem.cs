@@ -37,15 +37,17 @@ namespace EM.GIS.Symbology
         /// <summary>
         /// 是否已初始化绘制
         /// </summary>
-        /// <param name="mapArgs">绘制参数</param>
+        /// <param name="proj">画布大小及范围</param>
+        /// <param name="extent">要初始化的范围</param>
         /// <returns>已初始化为true反之false</returns>
-        bool IsDrawingInitialized(MapArgs mapArgs);
+        bool IsDrawingInitialized(IProj proj, IExtent extent);
         /// <summary>
         /// 初始化绘制
         /// </summary>
-        /// <param name="mapArgs">绘制参数</param>
+        /// <param name="proj">画布大小及范围</param>
+        /// <param name="extent">要初始化的范围</param>
         /// <param name="cancelFunc">取消委托</param>
-        void InitializeDrawing(MapArgs mapArgs, Func<bool>? cancelFunc = null);
+        void InitializeDrawing(IProj proj, IExtent extent, Func<bool>? cancelFunc = null);
         /// <summary>
         /// 绘制到画布
         /// </summary>

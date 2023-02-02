@@ -128,12 +128,6 @@ namespace EM.GIS.WPFControls
                 case nameof(View.Background):
                     Background = Frame.View.Background.ToBrush();
                     break;
-                case nameof(View.BackImage):
-                    Invalidate();
-                    break;
-                case nameof(View.ViewBound):
-                    Invalidate();
-                    break;
             }
         }
 

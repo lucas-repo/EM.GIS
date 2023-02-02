@@ -1,7 +1,6 @@
 ﻿using EM.Bases;
 using EM.GIS.Data;
 using EM.GIS.Geometries;
-using EM.GIS.Projections;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -11,7 +10,6 @@ using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Linq;
-using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -113,14 +111,27 @@ namespace EM.GIS.Symbology
             {
                 if (viewBound.IsEmpty)
                 {
-                    return Bound;
+                    if (viewBound != Bound)
+                    {
+                        viewBound = Bound;
+                    }
                 }
-                else
-                {
-                    return viewBound;
-                }
+                return viewBound;
             }
-            set { SetProperty(ref viewBound, value); }
+            set => SetViewBound(value, true);
+        }
+        /// <summary>
+        /// 设置视图矩形
+        /// </summary>
+        /// <param name="rect">矩形</param>
+        /// <param name="updateMap">是否更新地图</param>
+        private void SetViewBound(RectangleF rect,bool updateMap) 
+        {
+            SetProperty(ref viewBound, rect,nameof(ViewBound));
+            if (updateMap && UpdateMapAction != null)
+            {
+                UpdateMapAction(Bound);//TODO需要调试范围
+            }
         }
         private IExtent viewExtent;
         /// <inheritdoc/>
@@ -295,7 +306,7 @@ namespace EM.GIS.Symbology
             IEnumerable<ILayer> allVisibleLayers = Frame.Children.GetAllLayers().Where(x => x.GetVisible(mapArgs.DestExtent));
             if (onlyInitialized)
             {
-                allVisibleLayers = allVisibleLayers.Where(x => x.IsDrawingInitialized(mapArgs));
+                allVisibleLayers = allVisibleLayers.Where(x => x.IsDrawingInitialized(mapArgs, mapArgs.DestExtent));
             }
             List<ILabelLayer> visibleLabelLayers = new List<ILabelLayer>();
             foreach (var item in allVisibleLayers)
@@ -374,28 +385,38 @@ namespace EM.GIS.Symbology
             ViewCache destViewCache = copyView ? viewCache.Copy() : viewCache;
 
             bool viewExtentChanged = false;
-            bool viewBoundChanged = false;
             if (viewExtent != viewCache.Extent)
             {
                 viewExtent = viewCache.Extent;
                 viewExtentChanged = true;
             }
-            if (viewBound != viewCache.Bound)
-            {
-                viewBound = viewCache.Bound;
-                viewBoundChanged = true;
-            }
+            SetViewBound(viewCache.Bound, false);
             BackImage = destViewCache;
             if (viewExtentChanged) OnPropertyChanged(nameof(ViewExtent));
-            if (viewBoundChanged) OnPropertyChanged(nameof(ViewBound));
             #endregion
 
             UpdateMapAction?.Invoke(rect);//更新地图控件
         }
+         
         private Action<RectangleF> GetNewUpdateMapAction(ViewCache viewCache)
         {
             Action<RectangleF> newUpdateMapAction = (rect) => ResetViewCacheAndUpdateMap(viewCache, rect);
             return newUpdateMapAction;
+        }
+        /// <summary>
+        /// 设置绘制裁剪区域
+        /// </summary>
+        /// <param name="mapArgs">参数</param>
+        private void SetClip(MapArgs mapArgs)
+        {
+            using GraphicsPath gp = new GraphicsPath();
+            if (!Equals(mapArgs.Extent, mapArgs.DestExtent))
+            {
+                var rect = mapArgs.ProjToPixelF(mapArgs.DestExtent);
+                gp.StartFigure();
+                gp.AddRectangle(rect);
+                mapArgs.Graphics.Clip = new Region(gp);
+            }
         }
         private void BwDoWork(object sender, DoWorkEventArgs e)
         {
@@ -403,22 +424,6 @@ namespace EM.GIS.Symbology
             {
                 return;
             }
-
-            using Graphics g = Graphics.FromImage(viewCache.Image);
-            MapArgs mapArgs = new MapArgs(viewCache.Bound, viewCache.Extent, g, Frame.Projection, viewCache.DrawingExtent);
-            using GraphicsPath gp = new GraphicsPath();
-
-            #region 设置绘制裁剪区域
-            if (!Equals(mapArgs.Extent, mapArgs.DestExtent))
-            {
-                var rect = mapArgs.ProjToPixelF(mapArgs.DestExtent);
-                gp.StartFigure();
-                gp.AddRectangle(rect);
-                g.Clip = new Region(gp);
-            }
-            #endregion
-
-            Action<RectangleF> newUpdateMapAction = GetNewUpdateMapAction(viewCache);//先设置缓存图片，再更新地图控件
 
             #region 初始化绘制图层
             using var parallelCts = new CancellationTokenSource();
@@ -435,7 +440,12 @@ namespace EM.GIS.Symbology
                 }
                 return isCancel;
             };
-            var layers = Frame.Children.GetAllLayers().Where(x => !x.IsDrawingInitialized(mapArgs));
+            bool cancelDrawingInitializedLayers = false;//取消绘制已初始化图层的标记
+            Func<bool> drawingInitializedLayersCancelFunc = () =>
+            {
+                return cancelFunc() || cancelDrawingInitializedLayers;
+            };
+           var layers = Frame.Children.GetAllLayers().Where(x => !x.IsDrawingInitialized(viewCache,viewCache.DrawingExtent));
             Task? initializeLayerTask = null;//初始化图层任务
             if (layers.Count() > 0)
             {
@@ -451,7 +461,7 @@ namespace EM.GIS.Symbology
                         };
                         Parallel.ForEach(layers, parallelOptions, (layer) =>
                         {
-                            layer.InitializeDrawing(mapArgs);
+                            layer.InitializeDrawing(viewCache, viewCache.DrawingExtent);
                         });
                     }
                     catch (OperationCanceledException)
@@ -465,20 +475,20 @@ namespace EM.GIS.Symbology
                     #endregion
                 }).ContinueWith((task) =>
                 {
-                    #region 重新绘制所有图层
+                    #region 再重新绘制所有图层
                     if (!cancelFunc())
                     {
                         var viewCacheCopy = viewCache.Copy();
-                        var ret = viewCacheCopy.Image == viewCache.Image;
-                        DrawFrame(mapArgs, false, cancelFunc, newUpdateMapAction);
+                        cancelDrawingInitializedLayers = true;//先取消绘制已准备好的图层
+                        DrawToViewCache(viewCacheCopy, cancelFunc);
                     }
                     #endregion
                 });
                 initializeLayerTask.ConfigureAwait(false);
             }
             #endregion
-            DrawFrame(mapArgs, true, cancelFunc, newUpdateMapAction);
-            if (cancelFunc())//若取消绘制则释放图片
+            DrawToViewCache( viewCache,  drawingInitializedLayersCancelFunc);
+            if (drawingInitializedLayersCancelFunc())//若取消绘制则释放图片
             {
                 viewCache.Dispose();
             }
@@ -493,7 +503,14 @@ namespace EM.GIS.Symbology
                 //ResetViewCacheAndUpdateMap(viewCache, rect, false);
             }
         }
-
+        private void DrawToViewCache(ViewCache viewCache,Func<bool> drawingInitializedLayersCancelFunc)
+        {
+            using Graphics g = Graphics.FromImage(viewCache.Image);
+            MapArgs mapArgs = new MapArgs(viewCache.Bound, viewCache.Extent, g, Frame.Projection, viewCache.DrawingExtent);
+            SetClip(mapArgs);
+            Action<RectangleF> newUpdateMapAction = GetNewUpdateMapAction(viewCache);//先设置缓存图片，再更新地图控件
+            DrawFrame(mapArgs, true, drawingInitializedLayersCancelFunc, newUpdateMapAction);//mapargs绘制冲突
+        }
         /// <inheritdoc/>
         public void ResetBuffer(Rectangle rectangle, IExtent extent, IExtent drawingExtent)
         {
@@ -563,7 +580,7 @@ namespace EM.GIS.Symbology
         {
             if (BackImage?.Image != null && g != null)
             {
-                var srcRectangle = GetRectangleToView(rectangle);
+                var srcRectangle = GetSrcRectangleToView(rectangle);
                 try
                 {
                     lock (_lockObj)
@@ -582,7 +599,7 @@ namespace EM.GIS.Symbology
         /// </summary>
         /// <param name="rectangle">矩形范围</param>
         /// <returns>相对于背景图像的矩形范围</returns>
-        public RectangleF GetRectangleToView(RectangleF rectangle)
+        public RectangleF GetSrcRectangleToView(RectangleF rectangle)
         {
             var result = new RectangleF
             {

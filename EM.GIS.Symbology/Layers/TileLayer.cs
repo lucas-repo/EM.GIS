@@ -53,7 +53,7 @@ namespace EM.GIS.Symbology
             Draw(mapArgs, newProgressAction, cancelFunc);
             return ret;
         }
-        private List<TileInfo> GetTileInfos(MapArgs mapArgs)
+        private List<TileInfo> GetTileInfos(IProj proj,IExtent extent)
         {
             if (DataSet == null)
             {
@@ -62,9 +62,9 @@ namespace EM.GIS.Symbology
             else
             {
                 // 若为投影坐标系，记录投影坐标范围
-                IExtent geogExtent = mapArgs.DestExtent.Copy();//地理范围
-                IExtent destExtent = mapArgs.DestExtent.Copy();//要下载的地图范围
-                var destRectangle = mapArgs.ProjToPixel(mapArgs.DestExtent);
+                IExtent geogExtent = extent.Copy();//地理范围
+                IExtent destExtent = extent.Copy();//要下载的地图范围
+                var destRectangle = proj.ProjToPixel(extent);
                 switch (DataSet.Projection.EPSG)
                 {
                     case 3857:
@@ -72,7 +72,7 @@ namespace EM.GIS.Symbology
                         destExtent.MaxX = TileCalculator.Clip(destExtent.MaxX, TileCalculator.MinWebMercX, TileCalculator.MaxWebMercX);
                         destExtent.MinY = TileCalculator.Clip(destExtent.MinY, TileCalculator.MinWebMercY, TileCalculator.MaxWebMercY);
                         destExtent.MaxY = TileCalculator.Clip(destExtent.MaxY, TileCalculator.MinWebMercY, TileCalculator.MaxWebMercY);
-                        destRectangle = mapArgs.ProjToPixel(destExtent);
+                        destRectangle = proj.ProjToPixel(destExtent);
                         geogExtent = destExtent.Copy();
                         DataSet.Projection.ReProject(4326, geogExtent);
                         break;
@@ -81,7 +81,7 @@ namespace EM.GIS.Symbology
                         destExtent.MinX = TileCalculator.Clip(destExtent.MaxX, TileCalculator.MinLongitude, TileCalculator.MaxLongitude);
                         destExtent.MinY = TileCalculator.Clip(destExtent.MinY, TileCalculator.MinLatitude, TileCalculator.MaxLatitude);
                         destExtent.MaxY = TileCalculator.Clip(destExtent.MaxY, TileCalculator.MinLatitude, TileCalculator.MaxLatitude);
-                        destRectangle = mapArgs.ProjToPixel(destExtent);
+                        destRectangle = proj.ProjToPixel(destExtent);
                         geogExtent = destExtent.Copy();
                         break;
                     default:
@@ -92,14 +92,14 @@ namespace EM.GIS.Symbology
             }
         }
         /// <inheritdoc/>
-        public override bool IsDrawingInitialized(MapArgs mapArgs)
+        public override bool IsDrawingInitialized(IProj proj, IExtent extent)
         {
             bool ret = false;
             if (DataSet == null)
             {
                 return ret;
             }
-            var tileInfos = GetTileInfos(mapArgs); // 计算要下载的瓦片
+            var tileInfos = GetTileInfos( proj,  extent); // 计算要下载的瓦片
             if (tileInfos.Count == 0)
             {
                 ret = true;
@@ -119,13 +119,13 @@ namespace EM.GIS.Symbology
             return ret;
         }
         /// <inheritdoc/>
-        public override void InitializeDrawing(MapArgs mapArgs, Func<bool>? cancelFunc = null)
+        public override void InitializeDrawing(IProj proj, IExtent extent, Func<bool>? cancelFunc = null)
         {
-            InitializeDrawing(mapArgs, null, cancelFunc);
+            InitializeDrawing( proj,  extent, null, cancelFunc);
         }
-        private void InitializeDrawing(MapArgs mapArgs, Action<int>? progressAction = null, Func<bool>? cancelFunc = null)
+        private void InitializeDrawing(IProj proj, IExtent extent, Action<int>? progressAction = null, Func<bool>? cancelFunc = null)
         {
-            if (mapArgs == null || mapArgs.Graphics == null || mapArgs.Bound.IsEmpty || mapArgs.Extent == null || mapArgs.Extent.IsEmpty() || mapArgs.DestExtent == null || mapArgs.DestExtent.IsEmpty() || cancelFunc?.Invoke() == true || DataSet == null)
+            if (proj == null || proj.Bound.IsEmpty || proj.Extent == null || proj.Extent.IsEmpty() || extent == null || extent.IsEmpty() || cancelFunc?.Invoke() == true || DataSet == null)
             {
                 return;
             }
@@ -134,38 +134,7 @@ namespace EM.GIS.Symbology
                 progressAction?.Invoke(10);
                 if (cancelFunc?.Invoke() == true) return;
 
-                if (cancelFunc?.Invoke() == true) return;
-                // 若为投影坐标系，记录投影坐标范围
-                IExtent geogExtent = mapArgs.DestExtent.Copy();//地理范围
-                IExtent destExtent = mapArgs.DestExtent.Copy();//要下载的地图范围
-                var destRectangle = mapArgs.ProjToPixel(mapArgs.DestExtent);
-                switch (DataSet.Projection.EPSG)
-                {
-                    case 3857:
-                        destExtent.MinX = TileCalculator.Clip(destExtent.MinX, TileCalculator.MinWebMercX, TileCalculator.MaxWebMercX);
-                        destExtent.MaxX = TileCalculator.Clip(destExtent.MaxX, TileCalculator.MinWebMercX, TileCalculator.MaxWebMercX);
-                        destExtent.MinY = TileCalculator.Clip(destExtent.MinY, TileCalculator.MinWebMercY, TileCalculator.MaxWebMercY);
-                        destExtent.MaxY = TileCalculator.Clip(destExtent.MaxY, TileCalculator.MinWebMercY, TileCalculator.MaxWebMercY);
-                        destRectangle = mapArgs.ProjToPixel(destExtent);
-                        geogExtent = destExtent.Copy();
-                        DataSet.Projection.ReProject(4326, geogExtent);
-                        break;
-                    case 4326:
-                        destExtent.MinX = TileCalculator.Clip(destExtent.MinX, TileCalculator.MinLongitude, TileCalculator.MaxLongitude);
-                        destExtent.MinX = TileCalculator.Clip(destExtent.MaxX, TileCalculator.MinLongitude, TileCalculator.MaxLongitude);
-                        destExtent.MinY = TileCalculator.Clip(destExtent.MinY, TileCalculator.MinLatitude, TileCalculator.MaxLatitude);
-                        destExtent.MaxY = TileCalculator.Clip(destExtent.MaxY, TileCalculator.MinLatitude, TileCalculator.MaxLatitude);
-                        destRectangle = mapArgs.ProjToPixel(destExtent);
-                        geogExtent = destExtent.Copy();
-                        break;
-                    default:
-                        throw new Exception($"不支持的坐标系 {DataSet.Projection.EPSG}");
-                }
-
-                progressAction?.Invoke(20);
-                if (cancelFunc?.Invoke() == true) return;
-
-                var tileInfos = GetTileInfos(geogExtent, destExtent, destRectangle); // 计算要下载的瓦片
+                var tileInfos = GetTileInfos(proj, extent); // 计算要下载的瓦片
                 if (tileInfos.Count > 0)
                 {
                     progressAction?.Invoke(30);
@@ -312,7 +281,7 @@ namespace EM.GIS.Symbology
             }
             try
             {
-                InitializeDrawing(mapArgs, progressAction, cancelFunc);
+                InitializeDrawing(mapArgs, mapArgs.DestExtent, progressAction, cancelFunc);
                 if (cancelFunc?.Invoke() == true)
                 {
                     return;

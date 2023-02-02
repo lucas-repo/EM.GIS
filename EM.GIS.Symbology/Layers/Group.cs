@@ -78,7 +78,7 @@ namespace EM.GIS.Symbology
                     {
                         if (onlyInitialized)
                         {
-                            if (renderableItem.IsDrawingInitialized(mapArgs))
+                            if (renderableItem.IsDrawingInitialized(mapArgs, mapArgs.DestExtent))
                             {
                                 visibleItems.Add(renderableItem);
                             }
@@ -129,12 +129,12 @@ namespace EM.GIS.Symbology
             return ret;
         }
         /// <inheritdoc/>
-        public override bool IsDrawingInitialized(MapArgs mapArgs)
+        public override bool IsDrawingInitialized(IProj proj, IExtent extent)
         {
             bool ret = true;
             foreach (var item in Children)
             {
-                if (item is IRenderableItem renderableItem && !renderableItem.IsDrawingInitialized(mapArgs))
+                if (item is IRenderableItem renderableItem && !renderableItem.IsDrawingInitialized(proj,extent))
                 {
                     ret = false;
                     break;

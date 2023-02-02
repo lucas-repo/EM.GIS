@@ -73,7 +73,7 @@ namespace EM.GIS.Symbology
         public override RectangleF Draw(MapArgs mapArgs, bool onlyInitialized = false, bool selected = false, Action<string, int>? progressAction = null, Func<bool>? cancelFunc = null, Action<RectangleF>? invalidateMapFrameAction = null)
         {
             RectangleF ret=RectangleF.Empty;
-            if (mapArgs == null || mapArgs.Graphics == null || mapArgs.Bound.IsEmpty || mapArgs.Extent == null || mapArgs.Extent.IsEmpty() || mapArgs.DestExtent == null || mapArgs.DestExtent.IsEmpty() || !GetVisible(mapArgs.DestExtent) || (onlyInitialized && !IsDrawingInitialized(mapArgs)) || cancelFunc?.Invoke() == true)
+            if (mapArgs == null || mapArgs.Graphics == null || mapArgs.Bound.IsEmpty || mapArgs.Extent == null || mapArgs.Extent.IsEmpty() || mapArgs.DestExtent == null || mapArgs.DestExtent.IsEmpty() || !GetVisible(mapArgs.DestExtent) || (onlyInitialized && !IsDrawingInitialized(mapArgs, mapArgs.DestExtent)) || cancelFunc?.Invoke() == true)
             {
                 return ret;
             }
