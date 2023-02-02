@@ -17,7 +17,7 @@ namespace EM.GIS.Symbology
         /// <summary>
         /// 图片
         /// </summary>
-        public Image Image { get; }
+        public Image Image { get; private set; }
         /// <inheritdoc/>
         public IExtent Extent { get; }
         /// <inheritdoc/>

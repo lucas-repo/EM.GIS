@@ -443,14 +443,25 @@ namespace EM.GIS.Symbology
                 initializeLayerTask = Task.Run(() =>
                 {
                     #region 初始化图层绘制
-                    ParallelOptions parallelOptions = new ParallelOptions()
+                    try
                     {
-                        CancellationToken = parallelCts.Token
-                    };
-                    Parallel.ForEach(layers, parallelOptions, (layer) =>
+                        ParallelOptions parallelOptions = new ParallelOptions()
+                        {
+                            CancellationToken = parallelCts.Token
+                        };
+                        Parallel.ForEach(layers, parallelOptions, (layer) =>
+                        {
+                            layer.InitializeDrawing(mapArgs);
+                        });
+                    }
+                    catch (OperationCanceledException)
                     {
-                        layer.InitializeDrawing(mapArgs);
-                    });
+                        Debug.WriteLine($"已正常取消{nameof(ILayer.InitializeDrawing)}。"); // 不用管该异常
+                    }
+                    catch (Exception ex)
+                    {
+                        Debug.WriteLine($"{nameof(ILayer.InitializeDrawing)}失败，{ex}");
+                    }
                     #endregion
                 }).ContinueWith((task) =>
                 {
@@ -492,7 +503,7 @@ namespace EM.GIS.Symbology
             }
             IsWorking = true;
             //记录正在绘制的视图缓存
-            if (BackImage?.Image != null && BackImage.Bound.Equals(rectangle) && BackImage.Extent.Equals(extent))
+            if (BackImage?.Image != null && BackImage.Bound.Equals(rectangle) && BackImage.Extent.Equals(extent) && BackImage.Image.PixelFormat != System.Drawing.Imaging.PixelFormat.DontCare)
             {
                 var bitmap = BackImage.Image.Copy();
                 drawingViewCache = new ViewCache(bitmap, rectangle, extent, drawingExtent);

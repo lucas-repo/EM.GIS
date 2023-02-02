@@ -100,9 +100,6 @@ namespace EM.GIS.Symbology
                     break;
                 case NotifyCollectionChangedAction.Move:
                     break;
-                case NotifyCollectionChangedAction.Reset:
-                    setOldItemsAction.Invoke();
-                    break;
             }
         }
 
