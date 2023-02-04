@@ -97,9 +97,9 @@ namespace EM.GIS.Symbology
         /// <inheritdoc/>
         public Dictionary<long, IFeatureCategory> DrawnStates { get; } = new Dictionary<long, IFeatureCategory>();
         /// <inheritdoc/>
-        protected override RectangleF OnDraw(MapArgs mapArgs, bool selected = false, Action<string, int>? progressAction = null, Func<bool>? cancelFunc = null, Action<RectangleF>? invalidateMapFrameAction = null)
+        protected override Rectangle OnDraw(MapArgs mapArgs, bool selected = false, Action<string, int>? progressAction = null, Func<bool>? cancelFunc = null, Action<Rectangle>? invalidateMapFrameAction = null)
         {
-            RectangleF ret = RectangleF.Empty;
+            var ret = Rectangle.Empty;
             if (selected && Selection.Count == 0 || cancelFunc?.Invoke() == true || DataSet == null)
             {
                 return ret;
@@ -122,7 +122,20 @@ namespace EM.GIS.Symbology
                         progressAction?.Invoke(ProgressMessage, percent);
                         DrawFeatures(mapArgs, mapArgs.Graphics, features, selected, progressAction, cancelFunc);
                         drawnFeatureCount += features.Count;
-                        invalidateMapFrameAction?.Invoke(mapArgs.ProjToPixelF(mapArgs.DestExtent));
+                        if (features.Count > 0)
+                        {
+                            IExtent extent = new Extent();
+                            foreach (var feature in features)
+                            {
+                                extent.ExpandToInclude(feature.Geometry.GetExtent());
+                            }
+                            var rect = mapArgs.ProjToPixel(extent);
+                            if (!rect.IsEmpty)
+                            {
+                                ret = ret.ExpandToInclude(rect);
+                                invalidateMapFrameAction?.Invoke(rect);
+                            }
+                        }
                     }
                     foreach (var item in features)
                     {

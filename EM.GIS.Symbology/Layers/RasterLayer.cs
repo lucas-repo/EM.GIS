@@ -51,9 +51,9 @@ namespace EM.GIS.Symbology
         }
 
         /// <inheritdoc/>
-        protected override RectangleF OnDraw(MapArgs mapArgs, bool selected = false, Action<string, int>? progressAction = null, Func<bool>? cancelFunc = null, Action<RectangleF>? invalidateMapFrameAction = null)
+        protected override Rectangle OnDraw(MapArgs mapArgs, bool selected = false, Action<string, int>? progressAction = null, Func<bool>? cancelFunc = null, Action<Rectangle>? invalidateMapFrameAction = null)
         {
-            RectangleF ret = RectangleF.Empty;
+            var ret = Rectangle.Empty;
             if (selected || cancelFunc?.Invoke() == true)
             {
                 return ret;
@@ -61,7 +61,7 @@ namespace EM.GIS.Symbology
             if (DataSet is IDrawable drawable)
             {
                 Action<int> newProgressAction = (progress) => progressAction?.Invoke(ProgressMessage, progress);
-                drawable.Draw(mapArgs, newProgressAction, cancelFunc);
+                ret= drawable.Draw(mapArgs, newProgressAction, cancelFunc);
             }
             return ret;
         }

@@ -19,7 +19,7 @@ namespace EM.GIS.WPFControls
         /// <param name="e">鼠标事件参数</param>
         /// <param name="map">地图</param>
         /// <exception cref="ArgumentNullException">参数为空时</exception>
-        public GeoMouseWheelEventArgs(MouseWheelEventArgs e, Map map) : base(e.MouseDevice, e.Timestamp, e.Delta)
+        public GeoMouseWheelEventArgs(MouseWheelEventArgs e, MapControl map) : base(e.MouseDevice, e.Timestamp, e.Delta)
         {
             Map = map ?? throw new ArgumentNullException(nameof(map));
             var position = e.GetPosition(map);

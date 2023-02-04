@@ -70,9 +70,9 @@ namespace EM.GIS.Symbology
             Text = dataSet.Name;
         }
         /// <inheritdoc/>
-        public override RectangleF Draw(MapArgs mapArgs, bool onlyInitialized = false, bool selected = false, Action<string, int>? progressAction = null, Func<bool>? cancelFunc = null, Action<RectangleF>? invalidateMapFrameAction = null)
+        public override Rectangle Draw(MapArgs mapArgs, bool onlyInitialized = false, bool selected = false, Action<string, int>? progressAction = null, Func<bool>? cancelFunc = null, Action<Rectangle>? invalidateMapFrameAction = null)
         {
-            RectangleF ret=RectangleF.Empty;
+            var ret=Rectangle.Empty;
             if (mapArgs == null || mapArgs.Graphics == null || mapArgs.Bound.IsEmpty || mapArgs.Extent == null || mapArgs.Extent.IsEmpty() || mapArgs.DestExtent == null || mapArgs.DestExtent.IsEmpty() || !GetVisible(mapArgs.DestExtent) || (onlyInitialized && !IsDrawingInitialized(mapArgs, mapArgs.DestExtent)) || cancelFunc?.Invoke() == true)
             {
                 return ret;
@@ -88,7 +88,6 @@ namespace EM.GIS.Symbology
             }
             ret = OnDraw(destMapArgs, selected, progressAction, cancelFunc, invalidateMapFrameAction);
             progressAction?.Invoke(ProgressMessage, 100);
-            invalidateMapFrameAction?.Invoke(destMapArgs.ProjToPixelF(destMapArgs.DestExtent));
             return ret;
         }
         /// <summary>
@@ -100,7 +99,7 @@ namespace EM.GIS.Symbology
         /// <param name="cancelFunc">取消匿名方法</param>
         /// <param name="invalidateMapFrameAction">使地图无效匿名方法</param>
         /// <returns>返回绘制的区域，未绘制则返回空矩形</returns>
-        protected abstract RectangleF OnDraw(MapArgs mapArgs, bool selected = false, Action<string, int>? progressAction = null, Func<bool>? cancelFunc = null, Action<RectangleF>? invalidateMapFrameAction = null);
+        protected abstract Rectangle OnDraw(MapArgs mapArgs, bool selected = false, Action<string, int>? progressAction = null, Func<bool>? cancelFunc = null, Action<Rectangle>? invalidateMapFrameAction = null);
         /// <inheritdoc/>
         protected override void Dispose(bool disposing)
         {

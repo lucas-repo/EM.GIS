@@ -188,7 +188,7 @@ namespace EM.GIS.Symbology
         /// <inheritdoc/>
         public Action<string, int>? Progress { get; set; }
         /// <inheritdoc/>
-        public Action<RectangleF>? UpdateMapAction { get; set; }
+        public Action<Rectangle>? UpdateMapAction { get; set; }
         /// <summary>
         /// 实例化<see cref="View"/>
         /// </summary>
@@ -298,7 +298,7 @@ namespace EM.GIS.Symbology
             }
         }
 
-        private void DrawFrame(MapArgs mapArgs, bool onlyInitialized, Func<bool> cancelFunc, Action<RectangleF> updateMapAction)
+        private void DrawFrame(MapArgs mapArgs, bool onlyInitialized, Func<bool> cancelFunc, Action<Rectangle> updateMapAction)
         {
             mapArgs.Graphics.Clear(Background); //填充背景色
 
@@ -340,7 +340,7 @@ namespace EM.GIS.Symbology
                 }
             };
             #endregion
-            RectangleF destRect = RectangleF.Empty;
+            var destRect = Rectangle.Empty;
             #region 绘制图层
             int count = 2;
             for (int i = 0; i < count; i++)
@@ -379,7 +379,7 @@ namespace EM.GIS.Symbology
             //    updateMapAction.Invoke(destRect);//更新地图控件
             //}
         }
-        private void ResetViewCacheAndUpdateMap(ViewCache viewCache, RectangleF rect, bool copyView = true)
+        private void ResetViewCacheAndUpdateMap(ViewCache viewCache, Rectangle rect, bool copyView = true)
         {
             #region 设置缓存图片、视图矩形、试图范围
             ViewCache destViewCache = copyView ? viewCache.Copy() : viewCache;
@@ -398,9 +398,9 @@ namespace EM.GIS.Symbology
             UpdateMapAction?.Invoke(rect);//更新地图控件
         }
          
-        private Action<RectangleF> GetNewUpdateMapAction(ViewCache viewCache)
+        private Action<Rectangle> GetNewUpdateMapAction(ViewCache viewCache)
         {
-            Action<RectangleF> newUpdateMapAction = (rect) => ResetViewCacheAndUpdateMap(viewCache, rect);
+            Action<Rectangle> newUpdateMapAction = (rect) => ResetViewCacheAndUpdateMap(viewCache, rect);
             return newUpdateMapAction;
         }
         /// <summary>
@@ -508,7 +508,7 @@ namespace EM.GIS.Symbology
             using Graphics g = Graphics.FromImage(viewCache.Image);
             MapArgs mapArgs = new MapArgs(viewCache.Bound, viewCache.Extent, g, Frame.Projection, viewCache.DrawingExtent);
             SetClip(mapArgs);
-            Action<RectangleF> newUpdateMapAction = GetNewUpdateMapAction(viewCache);//先设置缓存图片，再更新地图控件
+            Action<Rectangle> newUpdateMapAction = GetNewUpdateMapAction(viewCache);//先设置缓存图片，再更新地图控件
             DrawFrame(mapArgs, true, drawingInitializedLayersCancelFunc, newUpdateMapAction);//mapargs绘制冲突
         }
         /// <inheritdoc/>
@@ -610,6 +610,31 @@ namespace EM.GIS.Symbology
             };
             return result;
         }
+        /// <summary>
+        /// 获得相对于背景图像的矩形范围
+        /// </summary>
+        /// <param name="rectangle">矩形范围</param>
+        /// <returns>相对于背景图像的矩形范围</returns>
+        public Rectangle GetSrcRectangleToView(Rectangle rectangle)
+        {
+            var dx = ViewBound.Width / Width;
+            var dy = ViewBound.Height / Height;
+            var left = (int)(ViewBound.Left + rectangle.Left * dx);
+            if (left < 0)
+            {
+                //left = 0;
+            }
+            var right = (int)(ViewBound.Left + rectangle.Right * dx);
+            var top = (int)(ViewBound.Top + rectangle.Top * dy);
+            if (top < 0)
+            {
+                //top = 0;
+            }
+            var bottom = (int)(ViewBound.Top + rectangle.Bottom * dy);
+            var result = Rectangle.FromLTRB(left,top,right,bottom);
+            return result;
+        }
+        /// <inheritdoc/>
         public void ResetViewExtent()
         {
             IExtent env = IProjExtensions.PixelToProj(ViewBound, Bound, ViewExtent);
@@ -690,6 +715,29 @@ namespace EM.GIS.Symbology
             // 不要更改此代码。请将清理代码放入“Dispose(bool disposing)”方法中
             Dispose(disposing: true);
             GC.SuppressFinalize(this);
+        }
+        /// <inheritdoc/>
+        public (Bitmap? Bmp, Rectangle SrcRect) GetBitmap(Rectangle rectangle)
+        {
+            Bitmap? bmp=null;
+            Rectangle srcRect=rectangle;
+            if (rectangle.IsEmpty|| BackImage?.Image == null)
+            {
+                return (bmp,srcRect);
+            }
+            srcRect = GetSrcRectangleToView(rectangle);
+            try
+            {
+                bmp=new Bitmap(rectangle.Width, rectangle.Height);//调试用哪个宽度
+                var bound = new Rectangle(0, 0, rectangle.Width, rectangle.Height);
+                using Graphics g=Graphics.FromImage(bmp);
+                g.DrawImage(BackImage.Image, bound, srcRect, GraphicsUnit.Pixel);
+            }
+            catch (Exception e)
+            {
+                Trace.WriteLine($"{nameof(Draw)}失败_{rectangle}，{e}");
+            }
+            return (bmp, srcRect);
         }
     }
 }

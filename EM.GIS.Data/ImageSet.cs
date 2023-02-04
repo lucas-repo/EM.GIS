@@ -37,22 +37,27 @@ namespace EM.GIS.Data
             RasterType = RasterType.Byte;
         }
         /// <inheritdoc/>
-        public override void Draw(MapArgs mapArgs, Action<int>? progressAction = null, Func<bool>? cancelFunc = null)
+        public override Rectangle Draw(MapArgs mapArgs, Action<int>? progressAction = null, Func<bool>? cancelFunc = null)
         {
+            var ret = Rectangle.Empty;
             if (mapArgs == null || mapArgs.Graphics == null || mapArgs.Bound.IsEmpty || mapArgs.Extent == null || mapArgs.Extent.IsEmpty() || mapArgs.DestExtent == null || mapArgs.DestExtent.IsEmpty() || cancelFunc?.Invoke() == true|| Bitmap == null || Bounds == null || Bounds.Extent == null || Bounds.Extent.IsEmpty())
             {
-                return;
+                return ret;
             }
 
             var destExtent = mapArgs.DestExtent.Intersection(Extent);
             if (destExtent == null || destExtent.IsEmpty())
             {
-                return;
+                return ret;
             }
-            RectangleF srcRect = destExtent.ProjToPixelF(new Rectangle(0, 0, Bounds.NumColumns, Bounds.NumRows), Extent);
-            RectangleF destRect = mapArgs.ProjToPixelF(destExtent);
-            destRect = RectangleF.FromLTRB((float)Math.Floor(destRect.Left), (float)Math.Floor(destRect.Top), (float)Math.Ceiling(destRect.Right), (float)Math.Ceiling(destRect.Bottom));
-            if (!mapArgs.Graphics.VisibleClipBounds.IsEmpty) mapArgs.Graphics.DrawImage(Bitmap, destRect, srcRect, GraphicsUnit.Pixel);
+            if (!mapArgs.Graphics.VisibleClipBounds.IsEmpty)
+            {
+                RectangleF srcRect = destExtent.ProjToPixelF(new Rectangle(0, 0, Bounds.NumColumns, Bounds.NumRows), Extent);
+                var destRect = mapArgs.ProjToPixelF(destExtent);
+                mapArgs.Graphics.DrawImage(Bitmap, destRect, srcRect, GraphicsUnit.Pixel);
+                ret = Rectangle.FromLTRB((int)destRect.Left, (int)destRect.Top, (int)Math.Ceiling(destRect.Right), (int)Math.Ceiling(destRect.Bottom));
+            }
+            return ret;
         }
         protected override void Dispose(bool disposing)
         {

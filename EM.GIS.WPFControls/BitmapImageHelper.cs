@@ -94,32 +94,61 @@ namespace EM.GIS.WPFControls
             }
             return bitmapImage;
         }
-        [System.Runtime.InteropServices.DllImport("gdi32.dll")]
+        /// <summary>
+        /// 删除对象
+        /// </summary>
+        /// <param name="hObject">对象句柄</param>
+        /// <returns>成功与否</returns>
+        [System.Runtime.InteropServices.DllImport("gdi32.dll", SetLastError = true)]
         public static extern bool DeleteObject(IntPtr hObject);
-
-        public static BitmapSource ToBitmapImage(this Bitmap bitmap)
+        public static BitmapImage BitmapToBitmapImage(this Image image, ImageFormat? imageFormat=   null)
         {
-            BitmapSource source = null;
-            if (bitmap != null)
+            BitmapImage result = new BitmapImage();
+            using (MemoryStream stream = new MemoryStream())
             {
-                IntPtr hBitmap = bitmap.GetHbitmap();
-                try
-                {
-                    source = System.Windows.Interop.Imaging.CreateBitmapSourceFromHBitmap(hBitmap, IntPtr.Zero, Int32Rect.Empty, BitmapSizeOptions.FromEmptyOptions());
-                }
-                finally
-                {
-                    DeleteObject(hBitmap);
-                }
+                ImageFormat destImageFormat= imageFormat?? ImageFormat.Png;
+                image.Save(stream, destImageFormat); // 坑点：格式选Bmp时，不带透明度
+
+                stream.Position = 0;
+                result.BeginInit();
+                // According to MSDN, "The default OnDemand cache option retains access to the stream until the image is needed."
+                // Force the bitmap to load right now so we can dispose the stream.
+                result.CacheOption = BitmapCacheOption.OnLoad;
+                result.StreamSource = stream;
+                result.EndInit();
+                //result.Freeze();
+            }
+            return result;
+        }
+        public static BitmapSource ToBitmapSource(this Bitmap bitmap)
+        {
+            BitmapSource source;
+            IntPtr hBitmap = bitmap.GetHbitmap();
+            try
+            {
+                source = System.Windows.Interop.Imaging.CreateBitmapSourceFromHBitmap(hBitmap, IntPtr.Zero, Int32Rect.Empty, BitmapSizeOptions.FromEmptyOptions());
+            }
+            finally
+            {
+                DeleteObject(hBitmap);
             }
             return source;
         }
         /// <summary>
         /// 将<see cref="RectangleF"/>转为<see cref="Rect"/>
         /// </summary>
-        /// <param name="rectangle"><see cref="Rect"/></param>
+        /// <param name="rectangle"><see cref="RectangleF"/></param>
         /// <returns><see cref="Rect"/></returns>
         public static Rect ToRect(this RectangleF rectangle)
+        {
+            return new Rect(rectangle.X, rectangle.Y, rectangle.Width, rectangle.Height);
+        }
+        /// <summary>
+        /// 将<see cref="Rectangle"/>转为<see cref="Rect"/>
+        /// </summary>
+        /// <param name="rectangle"><see cref="Rectangle"/></param>
+        /// <returns><see cref="Rect"/></returns>
+        public static Rect ToRect(this Rectangle rectangle)
         {
             return new Rect(rectangle.X, rectangle.Y, rectangle.Width, rectangle.Height);
         }

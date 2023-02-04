@@ -1,13 +1,9 @@
 ﻿using EM.Bases;
 using EM.GIS.Controls;
-using EM.GIS.Data;
-using EM.GIS.Geometries;
 using EM.GIS.Symbology;
 using EM.IOC;
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
@@ -25,8 +21,9 @@ namespace EM.GIS.WPFControls
     /// Map.xaml 的交互逻辑
     /// </summary>
     [Injectable(ServiceLifetime = ServiceLifetime.Singleton, ServiceType = typeof(IMap))]
-    public partial class Map : UserControl, IMap
+    public partial class MapControl : UserControl, IMap
     {
+        private VisualCollection children;  
         private bool disposedValue;
         private IFrame frame;
         /// <inheritdoc/>
@@ -74,9 +71,10 @@ namespace EM.GIS.WPFControls
         /// <inheritdoc/>
         public event PropertyChangedEventHandler? PropertyChanged;
 
-        public Map(IFrame frame)
+        public MapControl(IFrame frame)
         {
             InitializeComponent();
+            children = new VisualCollection(this);
             PropertyChanged += Map_PropertyChanged;
             Frame = frame;
             Frame.View.PropertyChanged += View_PropertyChanged;
@@ -92,18 +90,24 @@ namespace EM.GIS.WPFControls
             }
             ActivateMapToolWithZoom(pan);
         }
+
         /// <summary>
         /// 需要刷新的范围
         /// </summary>
-        private RectangleF updateRectangle;
+        private Rectangle updateRectangle;
         /// <summary>
         /// 使地图控件无效，以重新绘制
         /// </summary>
         /// <param name="rectangle">范围</param>
-        private void Invalidate(RectangleF rectangle)
+        private void Invalidate(Rectangle rectangle)
         {
-            updateRectangle = rectangle;
-            Dispatcher.BeginInvoke(() => InvalidateVisual());
+            if (!rectangle.IsEmpty)
+            {
+                //updateRectangle = rectangle;
+                updateRectangle = Frame.View.Bound;
+                Debug.WriteLine($"1:{updateRectangle}");
+                Dispatcher.Invoke(() => InvalidateVisual());
+            }
         }
         /// <summary>
         /// 使地图控件无效，以重新绘制
@@ -152,27 +156,53 @@ namespace EM.GIS.WPFControls
                 }
             }
         }
-
+        private KeyValueClass<ViewCache?, BitmapSource?> catchBitmap = new KeyValueClass<ViewCache?, BitmapSource?>(null, null);
+        private BitmapSource? GetBitmapSource(ViewCache viewCache)
+        {
+            if (catchBitmap.Key != viewCache)
+            {
+                var bitmapCopy = viewCache.Image.Copy();
+                if (bitmapCopy is Bitmap bitmap && bitmap.PixelFormat != System.Drawing.Imaging.PixelFormat.DontCare)
+                {
+                    catchBitmap.Key = viewCache;
+                    catchBitmap.Value = bitmap.ToBitmapSource();
+                }
+                //bitmapCopy.Dispose();
+            }
+            return catchBitmap.Value;
+        }
         /// <inheritdoc/>
         protected override void OnRender(DrawingContext drawingContext)
         {
             if (drawingContext != null && Frame.View.Width > 0 && Frame.View.Height > 0)
             {
-                BitmapSource bitmapSource;
-                using (Bitmap bmp = new(Frame.View.Width, Frame.View.Height))
+                //Debug.WriteLine($"2:{updateRectangle}");
+                //var image = Frame.View.GetBitmap(updateRectangle);
+                //if (image.Bmp == null)
+                //{
+                //    return;
+                //}
+
+                //BitmapSource bitmapSource = image.Bmp.ToBitmapSource();
+                //image.Bmp.Dispose();
+                //if (Frame.View.BackImage.Image is Bitmap bitmap)
                 {
-                    using (Graphics g = Graphics.FromImage(bmp))
+                    var bitmapSource = GetBitmapSource(Frame.View.BackImage);
+                    if (bitmapSource != null)
                     {
-                        Frame.View.Draw(g, updateRectangle);
+                        //BitmapSource bitmapSource = bitmap.ToBitmapImage();
+                        //var bitmapSource = bitmap.BitmapToBitmapImage(); 
+                        double offsetX = (ActualWidth - Frame.View.Width) / 2.0;
+                        double offsetY = (ActualHeight - Frame.View.Height) / 2.0;
+                        if (offsetX != 0 || offsetY != 0)
+                        {
+                            Transform transform = new TranslateTransform(offsetX, offsetY);
+                            drawingContext.PushTransform(transform);
+                        }
+                        var destRect = updateRectangle.ToRect();
+                        drawingContext.DrawImage(bitmapSource, destRect);
                     }
-                    bitmapSource = bmp.ToBitmapImage();
                 }
-                var rect = updateRectangle.ToRect();
-                double offsetX = (ActualWidth - updateRectangle.Width) / 2.0;
-                double offsetY = (ActualHeight - updateRectangle.Height) / 2.0;
-                Transform transform = new TranslateTransform(offsetX, offsetY);
-                drawingContext.PushTransform(transform);
-                drawingContext.DrawImage(bitmapSource, rect);
             }
             base.OnRender(drawingContext);
         }

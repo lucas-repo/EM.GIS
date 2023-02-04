@@ -53,5 +53,14 @@ namespace EM.GIS.Symbology
                 isDisposed = true;
             }
         }
+        /// <inheritdoc/>
+        protected override void OnCopy(object copy)
+        {
+            if (isDisposed)
+            {
+                throw new Exception("不允许复制已释放的实例");
+            }
+            base.OnCopy(copy);
+        }
     }
 }

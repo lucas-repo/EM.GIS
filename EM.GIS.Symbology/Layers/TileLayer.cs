@@ -38,19 +38,53 @@ namespace EM.GIS.Symbology
 
         public TileLayer(ITileSet rasterSet) : base(rasterSet)
         {
-            Children = new RasterCategoryCollection(this);
         }
 
         /// <inheritdoc/>
-        protected override RectangleF OnDraw(MapArgs mapArgs, bool selected = false, Action<string, int>? progressAction = null, Func<bool>? cancelFunc = null, Action<RectangleF>? invalidateMapFrameAction = null)
+        protected override Rectangle OnDraw(MapArgs mapArgs, bool selected = false, Action<string, int>? progressAction = null, Func<bool>? cancelFunc = null, Action<Rectangle>? invalidateMapFrameAction = null)
         {
-            RectangleF ret = RectangleF.Empty;
-            if (selected || cancelFunc?.Invoke() == true)
+            var ret = Rectangle.Empty;
+            if (selected || DataSet == null)
             {
                 return ret;
             }
             Action<int> newProgressAction = (progress) => progressAction?.Invoke(ProgressMessage, progress);
-            Draw(mapArgs, newProgressAction, cancelFunc);
+            try
+            {
+                InitializeDrawing(mapArgs, mapArgs.DestExtent, newProgressAction, cancelFunc);
+                if (cancelFunc?.Invoke() == true)
+                {
+                    return ret;
+                }
+
+                #region 绘制相交的图片
+                foreach (var tile in DataSet.Tiles)
+                {
+                    if (cancelFunc?.Invoke() == true)
+                    {
+                        Debug.WriteLine($"{nameof(OnDraw)}取消_{tile.Key.Level}_{tile.Key.Col}_{tile.Key.Row}");
+                        return ret;
+                    }
+                    if (tile.Value.Tile.Extent.Intersects(mapArgs.DestExtent))
+                    {
+                        var rect = tile.Value.Tile.Draw(mapArgs, newProgressAction, cancelFunc);
+                        if (!rect.IsEmpty)
+                        {
+                            ret = ret.ExpandToInclude(rect);
+                            invalidateMapFrameAction?.Invoke(ret);
+                        }
+                    }
+                }
+                #endregion
+            }
+            catch (OperationCanceledException)
+            {
+                Debug.WriteLine($"已正常取消获取瓦片。"); // 不用管该异常
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"{nameof(OnDraw)}失败，{ex}");
+            }
             return ret;
         }
         private List<TileInfo> GetTileInfos(IProj proj,IExtent extent)
@@ -273,43 +307,6 @@ namespace EM.GIS.Symbology
 
             return ret;
         }
-        private void Draw(MapArgs mapArgs, Action<int>? progressAction = null, Func<bool>? cancelFunc = null)
-        {
-            if (mapArgs == null || mapArgs.Graphics == null || mapArgs.Bound.IsEmpty || mapArgs.Extent == null || mapArgs.Extent.IsEmpty() || mapArgs.DestExtent == null || mapArgs.DestExtent.IsEmpty() || cancelFunc?.Invoke() == true || DataSet == null)
-            {
-                return;
-            }
-            try
-            {
-                InitializeDrawing(mapArgs, mapArgs.DestExtent, progressAction, cancelFunc);
-                if (cancelFunc?.Invoke() == true)
-                {
-                    return;
-                }
-
-                #region 绘制相交的图片
-                foreach (var tile in DataSet.Tiles)
-                {
-                    if (cancelFunc?.Invoke() == true)
-                    {
-                        Debug.WriteLine($"{nameof(Draw)}取消_{tile.Key.Level}_{tile.Key.Col}_{tile.Key.Row}");
-                        return;
-                    }
-                    if (tile.Value.Tile.Extent.Intersects(mapArgs.DestExtent))
-                    {
-                        tile.Value.Tile.Draw(mapArgs, progressAction, cancelFunc);
-                    }
-                }
-                #endregion
-            }
-            catch (OperationCanceledException)
-            {
-                Debug.WriteLine($"已正常取消获取瓦片。"); // 不用管该异常
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"{nameof(Draw)}失败，{ex}");
-            }
-        }
+       
     }
 }

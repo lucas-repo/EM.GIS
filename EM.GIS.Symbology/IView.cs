@@ -54,7 +54,7 @@ namespace EM.GIS.Symbology
         /// <summary>
         /// 重绘地图控件委托
         /// </summary>
-        Action<RectangleF>? UpdateMapAction { get; set; }
+        Action<Rectangle>? UpdateMapAction { get; set; }
         /// <summary>
         /// 重绘缓存
         /// </summary>
@@ -82,5 +82,11 @@ namespace EM.GIS.Symbology
         /// 缩放至最大范围
         /// </summary>
         void ZoomToMaxExtent();
+        /// <summary>
+        /// 获取指定矩形范围的图片
+        /// </summary>
+        /// <param name="rectangle">矩形范围</param>
+        /// <returns>图片和原始矩形</returns>
+        (Bitmap? Bmp, Rectangle SrcRect) GetBitmap(Rectangle rectangle);
     }
 }

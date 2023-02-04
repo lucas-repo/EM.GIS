@@ -170,11 +170,12 @@ namespace EM.GIS.Gdals
         #region Methods
 
         /// <inheritdoc/>
-        public override void Draw(MapArgs mapArgs, Action<int>? progressAction = null, Func<bool>? cancelFunc = null)
+        public override Rectangle Draw(MapArgs mapArgs, Action<int>? progressAction = null, Func<bool>? cancelFunc = null)
         {
+            var ret = Rectangle.Empty;
             if (mapArgs == null || mapArgs.Graphics == null || mapArgs.Bound.IsEmpty || mapArgs.Extent == null || mapArgs.Extent.IsEmpty() || mapArgs.DestExtent == null || mapArgs.DestExtent.IsEmpty() || cancelFunc?.Invoke() == true)
             {
-                return;
+                return ret;
             }
 
             progressAction?.Invoke(5);
@@ -355,6 +356,12 @@ namespace EM.GIS.Gdals
                 }
             }
             progressAction?.Invoke(100);
+            if (mapArgs.DestExtent.Intersects(Extent))
+            {
+                var destExtent= mapArgs.DestExtent.Intersection(Extent);//TODO 待测试
+                ret = mapArgs.ProjToPixel(destExtent);
+            }
+            return ret;
         }
         private Bitmap ReadGrayIndex(int xOffset, int yOffset, int xSize, int ySize)
         {

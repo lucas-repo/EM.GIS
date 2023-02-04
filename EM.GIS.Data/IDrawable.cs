@@ -17,7 +17,7 @@ namespace EM.GIS.Data
         /// <param name="mapArgs">参数</param>
         /// <param name="progressAction">进度委托</param>
         /// <param name="cancelFunc">取消委托</param>
-        /// <returns>图片</returns>
-        void Draw(MapArgs mapArgs, Action< int>? progressAction = null, Func<bool>? cancelFunc = null);
+        /// <returns>绘制的区域</returns>
+        Rectangle Draw(MapArgs mapArgs, Action< int>? progressAction = null, Func<bool>? cancelFunc = null);
     }
 }

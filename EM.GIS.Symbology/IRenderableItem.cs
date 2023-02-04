@@ -58,6 +58,6 @@ namespace EM.GIS.Symbology
         /// <param name="cancelFunc">取消委托</param>
         /// <param name="invalidateMapFrameAction">重绘地图委托</param>
         /// <returns>返回绘制的区域，未绘制则返回空矩形</returns>
-        RectangleF Draw(MapArgs mapArgs,bool onlyInitialized=false, bool selected = false, Action<string, int>? progressAction = null, Func<bool>? cancelFunc = null, Action<RectangleF>? invalidateMapFrameAction = null);
+        Rectangle Draw(MapArgs mapArgs,bool onlyInitialized=false, bool selected = false, Action<string, int>? progressAction = null, Func<bool>? cancelFunc = null, Action<Rectangle>? invalidateMapFrameAction = null);
     }
 }

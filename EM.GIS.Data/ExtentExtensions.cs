@@ -19,7 +19,48 @@ namespace EM.GIS.Data
         /// <returns>扩展后的矩形</returns>
         public static RectangleF ExpandToInclude(this RectangleF rect0, RectangleF rect1)
         {
-            RectangleF ret = RectangleF.FromLTRB(Math.Min(rect0.Left, rect1.Left), Math.Min(rect0.Top, rect1.Top), Math.Min(rect0.Right, rect1.Right), Math.Min(rect0.Bottom, rect1.Bottom));
+            RectangleF ret;
+            if (rect0.IsEmpty)
+            {
+                ret = rect1;
+            }
+            else
+            {
+                if (rect1.IsEmpty)
+                {
+                    ret = rect0;
+                }
+                else
+                {
+                    ret = RectangleF.FromLTRB(Math.Min(rect0.Left, rect1.Left), Math.Min(rect0.Top, rect1.Top), Math.Min(rect0.Right, rect1.Right), Math.Min(rect0.Bottom, rect1.Bottom));
+                }
+            }
+            return ret;
+        }
+        /// <summary>
+        /// 扩展矩形
+        /// </summary>
+        /// <param name="rect0">矩形0</param>
+        /// <param name="rect1">矩形1</param>
+        /// <returns>扩展后的矩形</returns>
+        public static Rectangle ExpandToInclude(this Rectangle rect0, Rectangle rect1)
+        {
+            Rectangle ret;
+            if (rect0.IsEmpty)
+            {
+                ret = rect1;
+            }
+            else
+            {
+                if (rect1.IsEmpty)
+                {
+                    ret = rect0;
+                }
+                else
+                {
+                    ret = Rectangle.FromLTRB(Math.Min(rect0.Left, rect1.Left), Math.Min(rect0.Top, rect1.Top), Math.Min(rect0.Right, rect1.Right), Math.Min(rect0.Bottom, rect1.Bottom));
+                }
+            }
             return ret;
         }
         /// <summary>

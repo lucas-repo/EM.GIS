@@ -23,15 +23,17 @@ namespace EM.GIS.Symbology
         public void CreateLabels()
         {
         }
-        protected override RectangleF OnDraw(MapArgs mapArgs, bool selected = false, Action<string, int>? progressAction = null, Func<bool>? cancelFunc = null, Action<RectangleF>? invalidateMapFrameAction = null)
+        /// <inheritdoc/>
+        protected override Rectangle OnDraw(MapArgs mapArgs, bool selected = false, Action<string, int>? progressAction = null, Func<bool>? cancelFunc = null, Action<Rectangle>? invalidateMapFrameAction = null)
         {
-            return RectangleF.Empty;//TODO 待完善标注绘制
+            return Rectangle.Empty;//TODO 待完善标注绘制
         }
+        /// <inheritdoc/>
         public bool Select(IExtent region)
         {
             return true;
         }
-
+        /// <inheritdoc/>
         public void Invalidate()
         {
         }

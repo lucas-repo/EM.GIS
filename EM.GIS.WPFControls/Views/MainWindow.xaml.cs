@@ -32,7 +32,7 @@ namespace EM.GIS.WPFControls
             {
                 throw new Exception($"未注册{nameof(IWpfAppManager)}");
             }
-            var map = IocManager.GetService<IMap, Map>();
+            var map = IocManager.GetService<IMap, MapControl>();
             mapDocument.Content = map;
             appManager.Map = map;
             var legend = IocManager.GetService<ILegend, Legend>();

@@ -57,9 +57,9 @@ namespace EM.GIS.Symbology
         }
 
         /// <inheritdoc/>
-        public override RectangleF Draw(MapArgs mapArgs, bool onlyInitialized = false, bool selected = false, Action<string, int>? progressAction = null, Func<bool>? cancelFunc = null, Action<RectangleF>? invalidateMapFrameAction = null)
+        public override Rectangle Draw(MapArgs mapArgs, bool onlyInitialized = false, bool selected = false, Action<string, int>? progressAction = null, Func<bool>? cancelFunc = null, Action<Rectangle>? invalidateMapFrameAction = null)
         {
-            RectangleF ret = RectangleF.Empty;
+            var ret = Rectangle.Empty;
             if (mapArgs == null || mapArgs.Graphics == null || mapArgs.Bound.IsEmpty || mapArgs.Extent == null || mapArgs.Extent.IsEmpty() || mapArgs.DestExtent == null || mapArgs.DestExtent.IsEmpty() || cancelFunc?.Invoke() == true || Children.Count == 0)
             {
                 return ret;
@@ -108,7 +108,7 @@ namespace EM.GIS.Symbology
             };
             for (int i = visibleItems.Count - 1; i >= 0; i--)
             {
-                RectangleF rect = RectangleF.Empty;
+                var rect = Rectangle.Empty;
                 switch (visibleItems[i])
                 {
                     case ILayer layer:
@@ -120,7 +120,7 @@ namespace EM.GIS.Symbology
                 }
                 if (!rect.IsEmpty)
                 {
-                    ret.ExpandToInclude(rect);
+                    ret = ret.ExpandToInclude(rect);
                     //invalidateMapFrameAction?.Invoke(rect);
                 }
                 totalProgress += increment;
