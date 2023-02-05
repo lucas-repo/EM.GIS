@@ -101,12 +101,12 @@ namespace EM.GIS.WPFControls
         /// <returns>成功与否</returns>
         [System.Runtime.InteropServices.DllImport("gdi32.dll", SetLastError = true)]
         public static extern bool DeleteObject(IntPtr hObject);
-        public static BitmapImage BitmapToBitmapImage(this Image image, ImageFormat? imageFormat=   null)
+        public static BitmapImage BitmapToBitmapImage(this Image image, ImageFormat? imageFormat = null)
         {
             BitmapImage result = new BitmapImage();
             using (MemoryStream stream = new MemoryStream())
             {
-                ImageFormat destImageFormat= imageFormat?? ImageFormat.Png;
+                ImageFormat destImageFormat = imageFormat ?? ImageFormat.Png;
                 image.Save(stream, destImageFormat); // 坑点：格式选Bmp时，不带透明度
 
                 stream.Position = 0;
@@ -151,6 +151,57 @@ namespace EM.GIS.WPFControls
         public static Rect ToRect(this Rectangle rectangle)
         {
             return new Rect(rectangle.X, rectangle.Y, rectangle.Width, rectangle.Height);
+        }
+
+        /// <summary>
+        /// 将Bitmap转成WriteableBitmap 
+        /// </summary>
+        /// <param name="bitmap">位图</param>
+        /// <returns><see cref="WriteableBitmap"/> </returns>
+        /// <exception cref="NotImplementedException">不支持的格式</exception>
+        public static WriteableBitmap ToWriteableBitmap(Bitmap bitmap)
+        {
+            System.Windows.Media.PixelFormat format;
+            switch (bitmap.PixelFormat)
+            {
+                case PixelFormat.Format16bppRgb555:
+                    format = System.Windows.Media.PixelFormats.Bgr555;
+                    break;
+                case PixelFormat.Format16bppRgb565:
+                    format = System.Windows.Media.PixelFormats.Bgr565;
+                    break;
+                case PixelFormat.Format24bppRgb:
+                    format = System.Windows.Media.PixelFormats.Bgr24;
+                    break;
+                case PixelFormat.Format32bppRgb:
+                    format = System.Windows.Media.PixelFormats.Bgr32;
+                    break;
+                case PixelFormat.Format32bppPArgb:
+                    format = System.Windows.Media.PixelFormats.Pbgra32;
+                    break;
+                case PixelFormat.Format32bppArgb:
+                    format = System.Windows.Media.PixelFormats.Bgra32;
+                    break;
+                default:
+                    throw new NotImplementedException($"不支持的格式 {bitmap.PixelFormat}");
+            }
+            var wb = new WriteableBitmap(bitmap.Width, bitmap.Height, 0, 0, format, null);
+            bitmap.CopyToWriteableBitmap(wb, new Rectangle(0, 0, bitmap.Width, bitmap.Height), 0, 0);
+            return wb;
+        }
+        /// <summary>
+        /// 将Bitmap数据写入WriteableBitmap中
+        /// </summary>
+        /// <param name="src">源位图</param>
+        /// <param name="dst">目标位图</param>
+        /// <param name="srcRect">原始范围</param>
+        /// <param name="destinationX">目标x坐标</param>
+        /// <param name="destinationY">目标y坐标</param>
+        public static void CopyToWriteableBitmap(this Bitmap src, WriteableBitmap dst, Rectangle srcRect, int destinationX, int destinationY)
+        {
+            var data = src.LockBits(new Rectangle(new System.Drawing.Point(0, 0), src.Size), ImageLockMode.ReadOnly, src.PixelFormat);
+            dst.WritePixels(new Int32Rect(srcRect.X, srcRect.Y, srcRect.Width, srcRect.Height), data.Scan0, data.Height * data.Stride, data.Stride, destinationX, destinationY);
+            src.UnlockBits(data);
         }
     }
 }
