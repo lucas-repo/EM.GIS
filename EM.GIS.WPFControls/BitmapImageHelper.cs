@@ -1,5 +1,7 @@
-﻿using System;
+﻿using EM.Bases;
+using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
@@ -120,17 +122,33 @@ namespace EM.GIS.WPFControls
             }
             return result;
         }
-        public static BitmapSource ToBitmapSource(this Bitmap bitmap)
+        /// <summary>
+        /// 将<see cref="Bitmap"/>转为<see cref="BitmapSource"/>
+        /// </summary>
+        /// <param name="bitmap">位图</param>
+        /// <returns><see cref="BitmapSource"/>位图源</returns>
+        public static BitmapSource? ToBitmapSource(this Bitmap bitmap)
         {
-            BitmapSource source;
-            IntPtr hBitmap = bitmap.GetHbitmap();
-            try
+            BitmapSource? source=null;
+            if (bitmap.PixelFormat != PixelFormat.DontCare)
             {
-                source = System.Windows.Interop.Imaging.CreateBitmapSourceFromHBitmap(hBitmap, IntPtr.Zero, Int32Rect.Empty, BitmapSizeOptions.FromEmptyOptions());
-            }
-            finally
-            {
-                DeleteObject(hBitmap);
+                IntPtr hBitmap = IntPtr.Zero;
+                try
+                {
+                    hBitmap = bitmap.GetHbitmap();
+                    source = System.Windows.Interop.Imaging.CreateBitmapSourceFromHBitmap(hBitmap, IntPtr.Zero, Int32Rect.Empty, BitmapSizeOptions.FromEmptyOptions());
+                }
+                catch (Exception e)
+                {
+                    Debug.WriteLine($"{nameof(ToBitmapSource)} 失败,{e}");
+                }
+                finally
+                {
+                    if (hBitmap != IntPtr.Zero)
+                    {
+                        DeleteObject(hBitmap);
+                    }
+                }
             }
             return source;
         }

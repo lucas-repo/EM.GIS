@@ -2,9 +2,7 @@
 using EM.GIS.Data;
 using EM.GIS.Geometries;
 using System;
-using System.Collections.Generic;
 using System.Drawing;
-using System.Text;
 
 namespace EM.GIS.Symbology
 {
@@ -14,24 +12,50 @@ namespace EM.GIS.Symbology
     public class ViewCache : BaseCopy, IProj,IDisposable
     {
         private bool isDisposed;
+        private readonly object lockObj=new object();
+        private Bitmap? bitmap;
         /// <summary>
         /// 图片
         /// </summary>
-        public Image Image { get; private set; }
+        public Bitmap? Bitmap
+        {
+            get { return bitmap; }
+            set 
+            {
+                lock (lockObj)
+                {
+                    if (bitmap != value)
+                    {
+                        if (bitmap != null)
+                        {
+                            bitmap.Dispose();
+                        }
+                        bitmap = value;
+                    }
+                }
+            }
+        }
+
         /// <inheritdoc/>
-        public IExtent Extent { get; }
+        public IExtent Extent { get; set; }
         /// <inheritdoc/>
-        public Rectangle Bound { get;  }
+        public Rectangle Bound { get; set; }
         /// <summary>
         /// 绘制的范围
         /// </summary>
-        public IExtent DrawingExtent { get; }
-        public ViewCache(Image image,Rectangle rectangle,IExtent extent,IExtent drawingExtent)
+        public IExtent DrawingExtent { get; set; }
+        public ViewCache(Bitmap bitmap,Rectangle rectangle,IExtent extent,IExtent drawingExtent)
         {
-            Image = image??throw new NullReferenceException(nameof(image));
+            Bitmap = bitmap??throw new NullReferenceException(nameof(bitmap));
             Bound=rectangle;
             Extent = extent;
             DrawingExtent = drawingExtent;
+        }
+        public ViewCache(DrawingArgs drawingArgs)
+        {
+            Bound = drawingArgs.Bound;
+            Extent=drawingArgs.Extent;
+            DrawingExtent=drawingArgs.Extent;
         }
         public ViewCache(int imageWidth,int imageHeight, Rectangle rectangle, IExtent extent, IExtent drawingExtent)
         {
@@ -39,7 +63,7 @@ namespace EM.GIS.Symbology
             {
                 throw new ArgumentException($"{nameof(imageWidth)}和{nameof(imageHeight)}不能为0");
             }
-            Image = new Bitmap(imageWidth,imageHeight);
+            Bitmap = new Bitmap(imageWidth,imageHeight);
             Bound = rectangle;
             Extent = extent;
             DrawingExtent = drawingExtent;
@@ -49,7 +73,11 @@ namespace EM.GIS.Symbology
         {
             if (!isDisposed)
             {
-                Image?.Dispose();
+                if (Bitmap != null)
+                {
+                    Bitmap.Dispose();
+                    Bitmap = null;
+                }
                 isDisposed = true;
             }
         }

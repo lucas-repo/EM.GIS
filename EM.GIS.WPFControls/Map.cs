@@ -89,7 +89,7 @@ namespace EM.GIS.WPFControls
             }
             ActivateMapToolWithZoom(pan);
         }
-        private KeyValueClass<Rect, BitmapSource?> ImageCache { get; } = new KeyValueClass<Rect, BitmapSource?>(Rect.Empty, null);
+        private (ViewCache? ViewCache, BitmapSource? BitmapSource, Rect Rect) imageCache = new(null, null, Rect.Empty);
         /// <summary>
         /// 使地图控件无效，以重新绘制
         /// </summary>
@@ -104,29 +104,69 @@ namespace EM.GIS.WPFControls
             {
                 //var image = Frame.View.GetBitmap(rectangle);
                 //ImageCache.Key = rectangle.ToRect();
-                var image = Frame.View.GetBitmap(Frame.View.Bound);
-                ImageCache.Key = Frame.View.Bound.ToRect();
-                ImageCache.Value = image.Bmp?.ToBitmapSource();
-                if (ImageCache.Value != null)
-                {
-                    InvalidateVisual();
-                }
+                //var image = Frame.View.GetBitmap(Frame.View.Bound);
+                //if (imageCache.ViewCache != Frame.View.BackImage && Frame.View.BackImage.Image is Bitmap bitmap&& bitmap.PixelFormat!= System.Drawing.Imaging.PixelFormat.DontCare)
+                //{
+                //    imageCache.ViewCache = Frame.View.BackImage;
+                //    imageCache.BitmapSource = bitmap.ToBitmapSource(true);
+                //    imageCache.Rect = Frame.View.Bound.ToRect();
+                //    if (imageCache.BitmapSource != null)
+                //    {
+                //        InvalidateVisual();
+                //    }
+                //}
+                //ImageCache.Key = Frame.View.Bound.ToRect();
+                //ImageCache.Value = image.Bmp?.ToBitmapSource();
+                InvalidateVisual();
             });
         }
+
+        //protected override void OnRender(DrawingContext drawingContext)
+        //{
+        //    if (imageCache.BitmapSource != null)
+        //    {
+        //        //double offsetX = (ActualWidth - Frame.View.Width) / 2.0;
+        //        //double offsetY = (ActualHeight - Frame.View.Height) / 2.0;
+        //        double scaleX = Frame.View.ViewBound.Width / Frame.View.Width;
+        //        double scaleY = Frame.View.ViewBound.Height / Frame.View.Height;
+        //        if (scaleX != 1 || scaleY != 1)
+        //        {
+        //            var transform = new ScaleTransform(scaleX, scaleY);
+        //            drawingContext.PushTransform(transform);
+        //        }
+        //        double offsetX = (ActualWidth - Frame.View.Width) / 2.0 + Frame.View.ViewBound.X / scaleX;
+        //        double offsetY = (ActualHeight - Frame.View.Height) / 2.0 + Frame.View.ViewBound.Y / scaleY;
+        //        if (offsetX != 0 || offsetY != 0)
+        //        {
+        //            var transform = new TranslateTransform(offsetX, offsetY);
+        //            drawingContext.PushTransform(transform);
+        //        }
+        //        drawingContext.DrawImage(imageCache.BitmapSource, imageCache.Rect);
+        //    }
+        //    base.OnRender(drawingContext);
+        //}
         protected override void OnRender(DrawingContext drawingContext)
         {
-            if (ImageCache.Value != null)
-            {
-                double offsetX = (ActualWidth - Frame.View.Width) / 2.0;
-                double offsetY = (ActualHeight - Frame.View.Height) / 2.0;
-                if (offsetX != 0 || offsetY != 0)
-                {
-                    Transform transform = new TranslateTransform(offsetX, offsetY);
-                    drawingContext.PushTransform(transform);
-                }
-                drawingContext.DrawImage(ImageCache.Value, ImageCache.Key);
-            }
             base.OnRender(drawingContext);
+            if (Frame.View?.BackImage?.Bitmap is Bitmap bmp)
+            {
+                var bitmapSource = bmp.ToBitmapSource();
+                if (bitmapSource != null)
+                {
+                    double offsetX = (ActualWidth - Frame.View.Width) / 2.0;
+                    double offsetY = (ActualHeight - Frame.View.Height) / 2.0;
+                    if (offsetX != 0 || offsetY != 0)
+                    {
+                        var transform = new TranslateTransform(offsetX, offsetY);
+                        drawingContext.PushTransform(transform);
+                    }
+                    //var rect = (Frame.View as View).GetSrcRectangleToView(Frame.View.Bound).ToRect();
+                    var dx = Frame.View.Width / Frame.View.ViewBound.Width;
+                    var dy = Frame.View.Height / Frame.View.ViewBound.Height;
+                    Rect rect1 = new Rect(-Frame.View.ViewBound.X, -Frame.View.ViewBound.Y, Frame.View.Width*dx, Frame.View.Height*dy);
+                    drawingContext.DrawImage(bitmapSource, rect1);
+                }
+            }
         }
         /// <summary>
         /// 使地图控件无效，以重新绘制
@@ -135,7 +175,7 @@ namespace EM.GIS.WPFControls
         {
             Invalidate(Frame.View.Bound);
         }
-        
+
         private void Map_PropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
             //switch (e.PropertyName)
@@ -177,7 +217,7 @@ namespace EM.GIS.WPFControls
             }
         }
         private KeyValueClass<ViewCache?, BitmapSource?> catchBitmap = new KeyValueClass<ViewCache?, BitmapSource?>(null, null);
-       
+
         /// <inheritdoc/>
         public void ActivateMapToolWithZoom(ITool tool)
         {
@@ -234,7 +274,7 @@ namespace EM.GIS.WPFControls
         }
 
         #region 鼠标事件
-         
+
         ///// <inheritdoc/>
         //protected override void OnMouseDoubleClick(MouseButtonEventArgs e)
         //{

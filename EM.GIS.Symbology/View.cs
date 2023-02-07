@@ -9,9 +9,11 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Drawing2D;
+using System.Drawing.Imaging;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 
 namespace EM.GIS.Symbology
 {
@@ -33,10 +35,21 @@ namespace EM.GIS.Symbology
         /// </summary>
         private bool viewExtentChanged;
         private BackgroundWorker bw;
+        private ViewCache? drawingViewCache;
         /// <summary>
         /// 正在绘制的缓存图片
         /// </summary>
-        private ViewCache drawingViewCache;
+        private ViewCache? DrawingViewCache
+        {
+            get => drawingViewCache;
+            set
+            {
+                if (drawingViewCache != value)
+                {
+                    drawingViewCache = value;
+                }
+            }
+        }
         private bool disposedValue;
 
         /// <summary>
@@ -147,14 +160,27 @@ namespace EM.GIS.Symbology
             }
             set
             {
-                if (Equals(viewExtent, value) || value == null) return;
-
-                IExtent ext = value.Copy();
-                ExtentExtensions.ResetAspectRatio(ext, Width, Height);
-
-                ResetBuffer(Bound, ext, ext);
-                //OnPropertyChanged(nameof(ViewExtent));
+                SetViewExtent(value, true);
             }
+        }
+        /// <summary>
+        /// 设置视图范围
+        /// </summary>
+        /// <param name="extent">范围</param>
+        /// <param name="resetAspectRatio">是否根据长宽比重设范围</param>
+        private void SetViewExtent(IExtent extent,bool resetAspectRatio)
+        {
+            if (Equals(viewExtent, extent) || extent == null) return;
+
+            IExtent ext = extent;
+            if (resetAspectRatio)
+            {
+                ext = extent.Copy();
+                ExtentExtensions.ResetAspectRatio(ext, Width, Height);
+            }
+            viewExtent = ext;
+            ResetBuffer(Bound, ext, ext);
+            OnPropertyChanged(nameof(ViewExtent));
         }
         /// <inheritdoc/>
         public IFrame Frame { get; }
@@ -293,7 +319,7 @@ namespace EM.GIS.Symbology
                 IsWorking = false;
                 if (IsWorking)
                 {
-                    bw.RunWorkerAsync(drawingViewCache);
+                    bw.RunWorkerAsync(DrawingViewCache);
                 }
             }
         }
@@ -418,11 +444,66 @@ namespace EM.GIS.Symbology
                 mapArgs.Graphics.Clip = new Region(gp);
             }
         }
-        private void BwDoWork(object sender, DoWorkEventArgs e)
+        /// <summary>
+        /// 将当前绘制的缓存复制到视图缓存
+        /// </summary>
+        private void CopyDrawingViewCacheToBackImage()
         {
-            if (!(sender is BackgroundWorker worker) || !(e.Argument is ViewCache viewCache) || Frame == null)
+            if (DrawingViewCache == null)
             {
                 return;
+            }
+            if (BackImage == null)
+            {
+                BackImage = DrawingViewCache.Copy();
+            }
+            else
+            {
+                BackImage.Bound = DrawingViewCache.Bound;
+                BackImage.Extent = DrawingViewCache.Extent;
+                BackImage.DrawingExtent = DrawingViewCache.DrawingExtent;
+                if (DrawingViewCache.Bitmap == null)
+                {
+                    return;
+                }
+                try
+                {
+                    if (BackImage.Bitmap != null && BackImage.Bitmap.Width == DrawingViewCache.Bitmap.Width && BackImage.Bitmap.Height == DrawingViewCache.Bitmap.Height)
+                    {
+                        DrawingViewCache.Bitmap.CopyBitmapByPointer(BackImage.Bitmap);
+                    }
+                    else
+                    {
+                        BackImage.Bitmap = DrawingViewCache.Bitmap.Copy();
+                    }
+                }
+                catch (Exception e)
+                {
+                    Debug.WriteLine($"{nameof(CopyDrawingViewCacheToBackImage)}失败，{e}");
+                }
+            }
+        }
+        private void BwDoWork(object sender, DoWorkEventArgs e)
+        {
+            if (!(sender is BackgroundWorker worker) || !(e.Argument is DrawingArgs drawingArgs) || Frame == null|| Width==0||Height==0)
+            {
+                return;
+            }
+
+            //记录正在绘制的视图缓存
+            if (DrawingViewCache == null)
+            {
+                DrawingViewCache = new ViewCache(drawingArgs);
+            }
+            else
+            {
+                DrawingViewCache.Bound = drawingArgs.Bound;
+                DrawingViewCache.Extent = drawingArgs.Extent;
+                DrawingViewCache.DrawingExtent = drawingArgs.Extent;
+            }
+            if (DrawingViewCache.Bitmap==null|| DrawingViewCache.Bitmap?.PixelFormat== PixelFormat.DontCare|| DrawingViewCache.Bitmap.Width!=Width|| DrawingViewCache.Bitmap.Height!=Height)
+            {
+                DrawingViewCache.Bitmap=new Bitmap(Width,Height);    
             }
 
             #region 初始化绘制图层
@@ -445,7 +526,7 @@ namespace EM.GIS.Symbology
             {
                 return cancelFunc() || cancelDrawingInitializedLayers;
             };
-           var layers = Frame.Children.GetAllLayers().Where(x => !x.IsDrawingInitialized(viewCache,viewCache.DrawingExtent));
+           var layers = Frame.Children.GetAllLayers().Where(x => !x.IsDrawingInitialized(drawingArgs, drawingArgs.DrawingExtent));
             Task? initializeLayerTask = null;//初始化图层任务
             if (layers.Count() > 0)
             {
@@ -461,7 +542,7 @@ namespace EM.GIS.Symbology
                         };
                         Parallel.ForEach(layers, parallelOptions, (layer) =>
                         {
-                            layer.InitializeDrawing(viewCache, viewCache.DrawingExtent);
+                            layer.InitializeDrawing(drawingArgs, drawingArgs.DrawingExtent);
                         });
                     }
                     catch (OperationCanceledException)
@@ -478,21 +559,16 @@ namespace EM.GIS.Symbology
                     #region 再重新绘制所有图层
                     if (!cancelFunc())
                     {
-                        var viewCacheCopy = viewCache.Copy();
                         cancelDrawingInitializedLayers = true;//先取消绘制已准备好的图层
-                        DrawToViewCache(viewCacheCopy, cancelFunc);
+                        DrawToViewCache(DrawingViewCache, cancelFunc);
                     }
                     #endregion
                 });
                 initializeLayerTask.ConfigureAwait(false);
             }
             #endregion
-            DrawToViewCache( viewCache,  drawingInitializedLayersCancelFunc);
-            if (drawingInitializedLayersCancelFunc())//若取消绘制则释放图片
-            {
-                viewCache.Dispose();
-            }
-            else
+            DrawToViewCache(DrawingViewCache,  drawingInitializedLayersCancelFunc);
+            if (!drawingInitializedLayersCancelFunc())//若取消绘制则释放图片
             {
                 if (initializeLayerTask != null)
                 {
@@ -505,10 +581,15 @@ namespace EM.GIS.Symbology
         }
         private void DrawToViewCache(ViewCache viewCache,Func<bool> drawingInitializedLayersCancelFunc)
         {
-            using Graphics g = Graphics.FromImage(viewCache.Image);
+            using Graphics g = Graphics.FromImage(viewCache.Bitmap);
             MapArgs mapArgs = new MapArgs(viewCache.Bound, viewCache.Extent, g, Frame.Projection, viewCache.DrawingExtent);
             SetClip(mapArgs);
-            Action<Rectangle> newUpdateMapAction = GetNewUpdateMapAction(viewCache);//先设置缓存图片，再更新地图控件
+            //Action<Rectangle> newUpdateMapAction = GetNewUpdateMapAction(viewCache);//先设置缓存图片，再更新地图控件
+            Action<Rectangle> newUpdateMapAction = (rect) =>
+            {
+                CopyDrawingViewCacheToBackImage();
+                UpdateMapAction?.Invoke(rect);//更新地图控件
+            };
             DrawFrame(mapArgs, true, drawingInitializedLayersCancelFunc, newUpdateMapAction);//mapargs绘制冲突
         }
         /// <inheritdoc/>
@@ -519,18 +600,9 @@ namespace EM.GIS.Symbology
                 return;
             }
             IsWorking = true;
-            //记录正在绘制的视图缓存
-            if (BackImage?.Image != null && BackImage.Bound.Equals(rectangle) && BackImage.Extent.Equals(extent) && BackImage.Image.PixelFormat != System.Drawing.Imaging.PixelFormat.DontCare)
-            {
-                var bitmap = BackImage.Image.Copy();
-                drawingViewCache = new ViewCache(bitmap, rectangle, extent, drawingExtent);
-            }
-            else
-            {
-                drawingViewCache = new ViewCache(rectangle.Width, rectangle.Height, rectangle, extent, drawingExtent);
-            }
+            DrawingArgs drawingArgs = new DrawingArgs(rectangle, extent, drawingExtent);
             if (!bw.IsBusy)
-                bw.RunWorkerAsync(drawingViewCache);
+                bw.RunWorkerAsync(drawingArgs);
             else
                 bw.CancelAsync();
         }
@@ -578,14 +650,14 @@ namespace EM.GIS.Symbology
         /// <inheritdoc/>
         public void Draw(Graphics g, RectangleF rectangle)
         {
-            if (BackImage?.Image != null && g != null)
+            if (BackImage?.Bitmap != null && g != null)
             {
                 var srcRectangle = GetSrcRectangleToView(rectangle);
                 try
                 {
                     lock (_lockObj)
                     {
-                        g.DrawImage(BackImage.Image, rectangle, srcRectangle, GraphicsUnit.Pixel);
+                        g.DrawImage(BackImage.Bitmap, rectangle, srcRectangle, GraphicsUnit.Pixel);
                     }
                 }
                 catch (Exception e)
@@ -637,8 +709,13 @@ namespace EM.GIS.Symbology
         /// <inheritdoc/>
         public void ResetViewExtent()
         {
+            if (Bound.IsEmpty|| ViewExtent.IsEmpty())
+            {
+                return;
+            }
             IExtent env = IProjExtensions.PixelToProj(ViewBound, Bound, ViewExtent);
-            ResetBuffer(Bound, env, env);
+            SetViewExtent(env, false);
+            ViewBound = Bound;
         }
         /// <inheritdoc/>
         public void Resize(int width, int height)
@@ -721,7 +798,7 @@ namespace EM.GIS.Symbology
         {
             Bitmap? bmp=null;
             Rectangle srcRect=rectangle;
-            if (rectangle.IsEmpty|| BackImage?.Image == null)
+            if (rectangle.IsEmpty|| BackImage?.Bitmap == null)
             {
                 return (bmp,srcRect);
             }
@@ -731,7 +808,7 @@ namespace EM.GIS.Symbology
                 bmp=new Bitmap(rectangle.Width, rectangle.Height);//调试用哪个宽度
                 var bound = new Rectangle(0, 0, rectangle.Width, rectangle.Height);
                 using Graphics g=Graphics.FromImage(bmp);
-                g.DrawImage(BackImage.Image, bound, srcRect, GraphicsUnit.Pixel);
+                g.DrawImage(BackImage.Bitmap, bound, srcRect, GraphicsUnit.Pixel);
             }
             catch (Exception e)
             {
