@@ -85,8 +85,7 @@ namespace EM.GIS.Symbology
         /// <summary>
         /// 获取指定矩形范围的图片
         /// </summary>
-        /// <param name="rectangle">矩形范围</param>
         /// <returns>图片和原始矩形</returns>
-        (Bitmap? Bmp, Rectangle SrcRect) GetBitmap(Rectangle rectangle);
+        Bitmap?  GetBitmap();
     }
 }

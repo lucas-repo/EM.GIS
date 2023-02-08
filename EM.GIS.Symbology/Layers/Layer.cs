@@ -43,13 +43,22 @@ namespace EM.GIS.Symbology
         {
             get
             {
-                if (DataSet == null)
+                IExtent? destExtent = null;
+                if (DataSet != null)
                 {
-                    return new Extent();
+                    destExtent = DataSet.Extent.Copy();
+                    if (Frame?.Projection != null && DataSet.Projection != null && !Equals(Frame.Projection, DataSet.Projection))
+                    {
+                        DataSet.Projection.ReProject(Frame.Projection, destExtent);
+                    }
+                }
+                if (destExtent != null)
+                {
+                    return destExtent;
                 }
                 else
                 {
-                    return DataSet.Extent;
+                    return new Extent();
                 }
             }
         }

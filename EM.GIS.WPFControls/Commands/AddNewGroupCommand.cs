@@ -1,7 +1,6 @@
 ﻿using EM.GIS.Resources;
 using EM.GIS.Symbology;
 using System.Windows;
-using System.Windows.Threading;
 
 namespace EM.GIS.WPFControls
 {
@@ -25,7 +24,11 @@ namespace EM.GIS.WPFControls
                 };
                 if (window.ShowDialog() == true)
                 {
-                    group.Children.AddGroup(window.Value);
+                    var childGroup= group.Children.AddGroup(window.Value);
+                    if (childGroup != null)
+                    {
+                        childGroup.Frame=group.Frame;
+                    }
                 }
             });
         }

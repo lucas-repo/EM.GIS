@@ -224,6 +224,7 @@ namespace EM.GIS.WPFControls
                             if (layer != null)
                             {
                                 ret.Add(layer);
+                                layer.Frame = frame;
                             }
                         }
                     }

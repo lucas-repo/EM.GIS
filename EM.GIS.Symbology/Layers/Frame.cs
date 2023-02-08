@@ -57,6 +57,7 @@ namespace EM.GIS.Symbology
             ProjectionFactory = projectionFactory;
             Text = "地图框";
             View = new View(this);
+            Frame = this;
             Children.CollectionChanged += Layers_CollectionChanged;
             projection = projectionFactory.GetProjection(4326);//默认4326
         }

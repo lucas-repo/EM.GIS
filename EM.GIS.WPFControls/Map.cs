@@ -100,7 +100,7 @@ namespace EM.GIS.WPFControls
             {
                 return;
             }
-            Dispatcher.BeginInvoke(() =>
+            Dispatcher.Invoke(() =>
             {
                 //var image = Frame.View.GetBitmap(rectangle);
                 //ImageCache.Key = rectangle.ToRect();
@@ -148,9 +148,10 @@ namespace EM.GIS.WPFControls
         protected override void OnRender(DrawingContext drawingContext)
         {
             base.OnRender(drawingContext);
-            if (Frame.View?.BackImage?.Bitmap is Bitmap bmp)
+            var bitmap = Frame.View.GetBitmap();
+            if (bitmap!=null)
             {
-                var bitmapSource = bmp.ToBitmapSource();
+                var bitmapSource = bitmap.ToBitmapSource();
                 if (bitmapSource != null)
                 {
                     double offsetX = (ActualWidth - Frame.View.Width) / 2.0;
@@ -161,12 +162,19 @@ namespace EM.GIS.WPFControls
                         drawingContext.PushTransform(transform);
                     }
                     //var rect = (Frame.View as View).GetSrcRectangleToView(Frame.View.Bound).ToRect();
-                    var dx = Frame.View.Width / Frame.View.ViewBound.Width;
-                    var dy = Frame.View.Height / Frame.View.ViewBound.Height;
-                    Rect rect1 = new Rect(-Frame.View.ViewBound.X, -Frame.View.ViewBound.Y, Frame.View.Width*dx, Frame.View.Height*dy);
+               
+                    Rect rect1 = Frame.View.Bound.ToRect();
                     drawingContext.DrawImage(bitmapSource, rect1);
                 }
+                bitmap.Dispose();
             }
+        }
+        private Rect GetDestRect()
+        {
+            var dx = Frame.View.Width / Frame.View.ViewBound.Width;
+            var dy = Frame.View.Height / Frame.View.ViewBound.Height;
+            Rect ret = new Rect(-Frame.View.ViewBound.X, -Frame.View.ViewBound.Y, Frame.View.Width * dx, Frame.View.Height * dy);
+            return ret;
         }
         /// <summary>
         /// 使地图控件无效，以重新绘制

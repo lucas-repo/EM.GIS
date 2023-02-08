@@ -92,6 +92,5 @@ namespace EM.GIS.Symbology
                     break;
             }
         }
-      
     }
 }

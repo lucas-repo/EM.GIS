@@ -14,11 +14,7 @@ namespace EM.GIS.Data
         /// <returns>锁对象</returns>
         public object GetOrCreateLock(object key)
         {
-            object lockObj = null;
-            if (key == null)
-            {
-                return lockObj;
-            }
+            object lockObj;
 
             if (!ContainsKey(key))
             {

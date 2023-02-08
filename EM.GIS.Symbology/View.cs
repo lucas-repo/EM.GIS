@@ -23,9 +23,9 @@ namespace EM.GIS.Symbology
     public class View : BaseCopy, IView
     {
         /// <summary>
-        /// 锁
+        /// 锁容器
         /// </summary>
-        private readonly object _lockObj = new object();
+        private LockContainer lockContainer = new LockContainer();
         /// <summary>
         /// 视图范围改变次数
         /// </summary>
@@ -97,7 +97,8 @@ namespace EM.GIS.Symbology
             }
             set
             {
-                lock (_lockObj)
+                var lockObj = lockContainer.GetOrCreateLock(nameof(BackImage));
+                lock (lockObj)
                 {
                     if (backImage == value)
                     {
@@ -194,7 +195,8 @@ namespace EM.GIS.Symbology
             get => _busyCount > 0;
             private set
             {
-                lock (_lockObj)
+                var lockObj = lockContainer.GetOrCreateLock(nameof(IsWorking));
+                lock (lockObj)
                 {
                     if (value)
                     {
@@ -459,22 +461,26 @@ namespace EM.GIS.Symbology
             }
             else
             {
-                BackImage.Bound = DrawingViewCache.Bound;
-                BackImage.Extent = DrawingViewCache.Extent;
-                BackImage.DrawingExtent = DrawingViewCache.DrawingExtent;
                 if (DrawingViewCache.Bitmap == null)
                 {
                     return;
                 }
                 try
                 {
-                    if (BackImage.Bitmap != null && BackImage.Bitmap.Width == DrawingViewCache.Bitmap.Width && BackImage.Bitmap.Height == DrawingViewCache.Bitmap.Height)
+                    var lockObj = lockContainer.GetOrCreateLock(nameof(BackImage.Bitmap));
+                    lock (lockObj)
                     {
-                        DrawingViewCache.Bitmap.CopyBitmapByPointer(BackImage.Bitmap);
-                    }
-                    else
-                    {
-                        BackImage.Bitmap = DrawingViewCache.Bitmap.Copy();
+                        if (BackImage.Bitmap != null && BackImage.Bitmap.Width == DrawingViewCache.Bitmap.Width && BackImage.Bitmap.Height == DrawingViewCache.Bitmap.Height)
+                        {
+                            DrawingViewCache.Bitmap.CopyBitmapByPointer(BackImage.Bitmap);
+                        }
+                        else
+                        {
+                            BackImage.Bitmap = DrawingViewCache.Bitmap.Copy();
+                        }
+                        BackImage.Bound = DrawingViewCache.Bound;
+                        BackImage.Extent = DrawingViewCache.Extent;
+                        BackImage.DrawingExtent = DrawingViewCache.DrawingExtent;
                     }
                 }
                 catch (Exception e)
@@ -655,7 +661,8 @@ namespace EM.GIS.Symbology
                 var srcRectangle = GetSrcRectangleToView(rectangle);
                 try
                 {
-                    lock (_lockObj)
+                    var lockObj = lockContainer.GetOrCreateLock(nameof(BackImage.Bitmap));
+                    lock (lockObj)
                     {
                         g.DrawImage(BackImage.Bitmap, rectangle, srcRectangle, GraphicsUnit.Pixel);
                     }
@@ -794,27 +801,32 @@ namespace EM.GIS.Symbology
             GC.SuppressFinalize(this);
         }
         /// <inheritdoc/>
-        public (Bitmap? Bmp, Rectangle SrcRect) GetBitmap(Rectangle rectangle)
+        public Bitmap? GetBitmap()
         {
             Bitmap? bmp=null;
-            Rectangle srcRect=rectangle;
-            if (rectangle.IsEmpty|| BackImage?.Bitmap == null)
+            var lockObj = lockContainer.GetOrCreateLock(nameof(BackImage.Bitmap));
+            lock (lockObj)
             {
-                return (bmp,srcRect);
+                if (BackImage?.Bitmap == null)
+                {
+                    return bmp;
+                }
+                try
+                {
+                    var viewRect = BackImage.ProjToPixel(ViewExtent);
+                    var srcRect = GetSrcRectangleToView(viewRect);
+                    bmp = new Bitmap(Width, Height);//调试用哪个宽度
+                    using Graphics g = Graphics.FromImage(bmp);
+                    {
+                        g.DrawImage(BackImage.Bitmap, Bound, srcRect, GraphicsUnit.Pixel);
+                    }
+                }
+                catch (Exception e)
+                {
+                    Trace.WriteLine($"{nameof(GetBitmap)}失败，{e}");
+                }
             }
-            srcRect = GetSrcRectangleToView(rectangle);
-            try
-            {
-                bmp=new Bitmap(rectangle.Width, rectangle.Height);//调试用哪个宽度
-                var bound = new Rectangle(0, 0, rectangle.Width, rectangle.Height);
-                using Graphics g=Graphics.FromImage(bmp);
-                g.DrawImage(BackImage.Bitmap, bound, srcRect, GraphicsUnit.Pixel);
-            }
-            catch (Exception e)
-            {
-                Trace.WriteLine($"{nameof(Draw)}失败_{rectangle}，{e}");
-            }
-            return (bmp, srcRect);
+            return bmp;
         }
     }
 }
