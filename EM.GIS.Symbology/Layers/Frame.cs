@@ -54,11 +54,11 @@ namespace EM.GIS.Symbology
         /// <param name="projectionFactory">投影工厂</param>
         public Frame(IProjectionFactory projectionFactory)
         {
+            Children.CollectionChanged += Layers_CollectionChanged;
             ProjectionFactory = projectionFactory;
             Text = "地图框";
             View = new View(this);
             Frame = this;
-            Children.CollectionChanged += Layers_CollectionChanged;
             projection = projectionFactory.GetProjection(4326);//默认4326
         }
 
@@ -85,7 +85,7 @@ namespace EM.GIS.Symbology
                             #region 设置投影
                             if (e.NewItems.Count > 0 && e.NewItems[0] is ILayer layer)
                             {
-                                Projection = layer.DataSet.Projection;
+                                Projection = layer.DataSet.Projection.Copy();
                             }
                             #endregion
                             FirstLayerAdded?.Invoke(this, EventArgs.Empty);

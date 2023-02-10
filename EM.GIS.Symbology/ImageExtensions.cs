@@ -58,7 +58,8 @@ namespace EM.GIS.Symbology
         /// </summary>
         /// <param name="srcBmp">源位图</param>
         /// <param name="destBmp">目标位图</param>
-        public static void CopyBitmapByMemory(this Bitmap srcBmp, Bitmap destBmp)
+        /// <param name="rect">拷贝的范围</param>
+        public static void CopyBitmapByMemory(this Bitmap srcBmp, Bitmap destBmp, Rectangle? rect=null)
         {
             try
             {
@@ -66,14 +67,17 @@ namespace EM.GIS.Symbology
                 {
                     return;
                 }
-
+                if (rect != null && (rect.Value.Width != srcBmp.Width || rect.Value.Height != srcBmp.Height))
+                {
+                    return;
+                }
                 int w = srcBmp.Width, h = srcBmp.Height; PixelFormat format = srcBmp.PixelFormat;
                 // Lock the bitmap's bits.  锁定位图
-                Rectangle rect = new Rectangle(0, 0, w, h);
-                BitmapData bmpDataSrc = srcBmp.LockBits(rect, ImageLockMode.ReadOnly, format);
+                Rectangle  destRect =rect?? new Rectangle(0, 0, w, h);
+                BitmapData bmpDataSrc = srcBmp.LockBits(destRect, ImageLockMode.ReadOnly, format);
                 // Get the address of the first line.获取首行地址
                 IntPtr ptrSrc = bmpDataSrc.Scan0;
-                BitmapData bmpDataDest = destBmp.LockBits(rect, ImageLockMode.WriteOnly, format);
+                BitmapData bmpDataDest = destBmp.LockBits(destRect, ImageLockMode.WriteOnly, format);
                 IntPtr ptrDest = bmpDataDest.Scan0;// Declare an array to hold the bytes of the bitmap.定义数组保存位图
                 int bytes = Math.Abs(bmpDataSrc.Stride) * h;
                 byte[] rgbValues = new byte[bytes];// Copy the RGB values into the array.复制RGB值到数组

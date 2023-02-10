@@ -161,7 +161,7 @@ namespace EM.GIS.Symbology
             }
             set
             {
-                SetViewExtent(value, true);
+                SetViewExtent(value, true,true);
             }
         }
         /// <summary>
@@ -169,7 +169,8 @@ namespace EM.GIS.Symbology
         /// </summary>
         /// <param name="extent">范围</param>
         /// <param name="resetAspectRatio">是否根据长宽比重设范围</param>
-        private void SetViewExtent(IExtent extent,bool resetAspectRatio)
+        /// <param name="resetBuffer">是否重设缓存</param>
+        private void SetViewExtent(IExtent extent,bool resetAspectRatio,bool resetBuffer)
         {
             if (Equals(viewExtent, extent) || extent == null) return;
 
@@ -180,7 +181,10 @@ namespace EM.GIS.Symbology
                 ExtentExtensions.ResetAspectRatio(ext, Width, Height);
             }
             viewExtent = ext;
-            ResetBuffer(Bound, ext, ext);
+            if (resetBuffer)
+            {
+                ResetBuffer(Bound, ext, ext);
+            }
             OnPropertyChanged(nameof(ViewExtent));
         }
         /// <inheritdoc/>
@@ -243,7 +247,7 @@ namespace EM.GIS.Symbology
             {
                 extent.ExpandBy(extent.Width / 10, extent.Height / 10);
             }
-            ViewExtent = extent;
+            SetViewExtent(extent, true, false);
         }
 
         private void LegendItems_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
@@ -449,7 +453,8 @@ namespace EM.GIS.Symbology
         /// <summary>
         /// 将当前绘制的缓存复制到视图缓存
         /// </summary>
-        private void CopyDrawingViewCacheToBackImage()
+        /// <param name="rectangle">复制矩形的范围</param>
+        private void CopyDrawingViewCacheToBackImage(Rectangle rectangle)
         {
             if (DrawingViewCache == null)
             {
@@ -472,7 +477,7 @@ namespace EM.GIS.Symbology
                     {
                         if (BackImage.Bitmap != null && BackImage.Bitmap.Width == DrawingViewCache.Bitmap.Width && BackImage.Bitmap.Height == DrawingViewCache.Bitmap.Height)
                         {
-                            DrawingViewCache.Bitmap.CopyBitmapByPointer(BackImage.Bitmap);
+                            DrawingViewCache.Bitmap.CopyBitmapByMemory(BackImage.Bitmap);
                         }
                         else
                         {
@@ -593,7 +598,7 @@ namespace EM.GIS.Symbology
             //Action<Rectangle> newUpdateMapAction = GetNewUpdateMapAction(viewCache);//先设置缓存图片，再更新地图控件
             Action<Rectangle> newUpdateMapAction = (rect) =>
             {
-                CopyDrawingViewCacheToBackImage();
+                CopyDrawingViewCacheToBackImage(rect);
                 UpdateMapAction?.Invoke(rect);//更新地图控件
             };
             DrawFrame(mapArgs, true, drawingInitializedLayersCancelFunc, newUpdateMapAction);//mapargs绘制冲突
@@ -721,7 +726,7 @@ namespace EM.GIS.Symbology
                 return;
             }
             IExtent env = IProjExtensions.PixelToProj(ViewBound, Bound, ViewExtent);
-            SetViewExtent(env, false);
+            SetViewExtent(env, false,true);
             ViewBound = Bound;
         }
         /// <inheritdoc/>

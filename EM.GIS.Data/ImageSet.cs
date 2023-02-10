@@ -52,10 +52,13 @@ namespace EM.GIS.Data
             }
             if (!mapArgs.Graphics.VisibleClipBounds.IsEmpty)
             {
-                RectangleF srcRect = destExtent.ProjToPixelF(new Rectangle(0, 0, Bounds.NumColumns, Bounds.NumRows), Extent);
+                Rectangle imgBound = new Rectangle(0, 0, Bounds.NumColumns, Bounds.NumRows);
+                var srcRect = destExtent.ProjToPixelF(imgBound, Extent);
                 var destRect = mapArgs.ProjToPixelF(destExtent);
+                float increment = destRect.Width / srcRect.Width / 2;
+                destRect = RectangleF.FromLTRB(destRect.Left - increment, destRect.Top - increment, destRect.Right + increment, destRect.Bottom + increment);//扩大目标矩形防止出现白线
                 mapArgs.Graphics.DrawImage(Bitmap, destRect, srcRect, GraphicsUnit.Pixel);
-                ret = Rectangle.FromLTRB((int)destRect.Left, (int)destRect.Top, (int)Math.Ceiling(destRect.Right), (int)Math.Ceiling(destRect.Bottom));
+                ret = Rectangle.FromLTRB((int)destRect.Left, (int)destRect.Top, (int)destRect.Right, (int)destRect.Bottom);
             }
             return ret;
         }
