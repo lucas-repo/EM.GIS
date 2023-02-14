@@ -34,7 +34,7 @@ namespace EM.GIS.Symbology
         /// <summary>
         /// 视图缓存
         /// </summary>
-        ViewCache BackImage { get; }
+        ViewCache? BackImage { get; }
         /// <summary>
         /// 视图窗口
         /// </summary>

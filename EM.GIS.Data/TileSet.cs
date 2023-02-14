@@ -14,6 +14,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace EM.GIS.Data
 {
@@ -87,11 +88,12 @@ namespace EM.GIS.Data
             return false;
         }
         /// <inheritdoc/>
-        public void AddTileToTiles(TileInfo tileInfo, (Bitmap Bitmap, bool IsNodata) tileBitmap, Func<bool>? cancelFunc = null)
+        public IRasterSet? AddTileToTiles(TileInfo tileInfo, (Bitmap Bitmap, bool IsNodata) tileBitmap, Func<bool>? cancelFunc = null)
         {
+            IRasterSet? ret = null;
             if (tileInfo == null || tileInfo.Extent == null || tileInfo.Index == null || tileBitmap.Bitmap == null || cancelFunc?.Invoke() == true)
             {
-                return;
+                return ret;
             }
 
             try
@@ -119,52 +121,26 @@ namespace EM.GIS.Data
                         if (cancelFunc?.Invoke() == true)
                         {
                             bmp.Dispose();
-                            return;
+                            return ret;
                         }
                     }
 
-                    var inRamImageData = GetInRamImageData(destImage, extent);
-                    if (inRamImageData == null)
+                    ret = new ImageSet(destImage, extent)
                     {
-                        if (isIndex)
-                        {
-                            destImage.Dispose();
-                        }
-                        Debug.WriteLine($"{nameof(GetInRamImageData)}失败_{tileInfo.Index.Level}_{tileInfo.Index.Col}_{tileInfo.Index.Row}");
-                        return;
-                    }
-                    Tiles.TryAdd(tileInfo.Index, (inRamImageData, tileBitmap.IsNodata));
+                        Name = Name,
+                        Projection = Projection,
+                        Bounds = new RasterBounds(destImage.Height, destImage.Width, extent)
+                    };
+                    Tiles.TryAdd(tileInfo.Index, (ret, tileBitmap.IsNodata));
                 }
             }
             catch (Exception ex)
             {
                 Debug.WriteLine($"{nameof(AddTileToTiles)}失败_{tileInfo.Index.Level}_{tileInfo.Index.Col}_{tileInfo.Index.Row},{ex}");
             }
+            return ret;
         }
 
-        private ImageSet? GetInRamImageData(Image image, Geometries.Extent bmpExtent)
-        {
-            ImageSet? tileImage = null;
-            try
-            {
-                tileImage = new ImageSet(image, bmpExtent)
-                {
-                    Name = Name,
-                    Projection = Projection,
-                    Bounds = new RasterBounds(image.Height, image.Width, bmpExtent)
-                };
-            }
-            catch (Exception e)
-            {
-                Debug.WriteLine(e);
-                if (tileImage != null)
-                {
-                    tileImage.Dispose();
-                    tileImage = null;
-                }
-            }
-            return tileImage;
-        }
         /// <summary>
         /// 获取瓦片位图
         /// </summary>
@@ -185,6 +161,7 @@ namespace EM.GIS.Data
                     {
                         break;
                     }
+                    bool catchedException = false;//是否已捕捉异常
                     try
                     {
                         data = httpTileSource.PersistentCache?.Find(tileInfo.Index);
@@ -197,13 +174,26 @@ namespace EM.GIS.Data
                             }
                         }
                     }
-                    catch (Exception ex)
+                    catch (TaskCanceledException)
                     {
-                        Debug.WriteLine(ex.Message);
+                        Debug.WriteLine($"已取消第{i}次下载瓦片 {tileInfo.Index.Level}_{tileInfo.Index.Col}_{tileInfo.Index.Row} ");
+                        catchedException=true;
+                    }
+                    catch (Exception e)
+                    {
+                        Debug.WriteLine($"获取瓦片 {tileInfo.Index.Level}_{tileInfo.Index.Col}_{tileInfo.Index.Row} 失败,{e}");
+                        catchedException = true;
                     }
                     if (data != null)
                     {
                         break;
+                    }
+                    else
+                    {
+                        if (!catchedException)
+                        {
+                            Debug.WriteLine($"第{i}次下载瓦片 {tileInfo.Index.Level}_{tileInfo.Index.Col}_{tileInfo.Index.Row} 超时");
+                        }
                     }
                 }
 
@@ -217,14 +207,10 @@ namespace EM.GIS.Data
                             ms.Close();
                         }
                     }
-                    else
-                    {
-                        Debug.WriteLine($"获取瓦片 {tileInfo.Index.Level}_{tileInfo.Index.Col}_{tileInfo.Index.Row} 失败");
-                    }
                 }
                 catch (Exception e)
                 {
-                    Debug.WriteLine($"获取瓦片 {tileInfo.Index.Level}_{tileInfo.Index.Col}_{tileInfo.Index.Row} 失败,{e}");
+                    Debug.WriteLine($"瓦片 {tileInfo.Index.Level}_{tileInfo.Index.Col}_{tileInfo.Index.Row} 生成位图失败,{e}");
                 }
             }
             if (bitmap == null)

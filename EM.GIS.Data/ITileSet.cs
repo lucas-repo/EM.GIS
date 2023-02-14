@@ -34,6 +34,7 @@ namespace EM.GIS.Data
         /// <param name="tileInfo">瓦片信息</param>
         /// <param name="tileBitmap">瓦片缓存</param>
         /// <param name="cancelFunc">取消委托</param>
-        void AddTileToTiles(TileInfo tileInfo, (Bitmap Bitmap, bool IsNodata) tileBitmap, Func<bool>? cancelFunc = null);
+        /// <returns>瓦片</returns>
+        IRasterSet? AddTileToTiles(TileInfo tileInfo, (Bitmap Bitmap, bool IsNodata) tileBitmap, Func<bool>? cancelFunc = null);
     }
 }

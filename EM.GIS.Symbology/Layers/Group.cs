@@ -96,7 +96,7 @@ namespace EM.GIS.Symbology
                 return ret;
             }
             string progressStr = this.GetProgressString();
-            progressAction?.Invoke(progressStr, 0);
+            //progressAction?.Invoke(progressStr, 0);
             double increment = 100.0 / visibleItems.Count;
             double totalProgress = 0;
             Action<string, int> newProgressAction = (txt, progress) =>
@@ -126,7 +126,7 @@ namespace EM.GIS.Symbology
                 }
                 totalProgress += increment;
             }
-            progressAction?.Invoke(progressStr, 100);
+            //progressAction?.Invoke(progressStr, 100);
             return ret;
         }
         /// <inheritdoc/>

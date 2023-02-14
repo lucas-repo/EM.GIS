@@ -108,11 +108,14 @@ namespace EM.GIS.Symbology
             switch (e.PropertyName)
             {
                 case nameof(Frame):
-                    foreach (var item in Children)
+                    if (Children != null)
                     {
-                        if (item is ILegendItem legendItem)
+                        foreach (var item in Children)
                         {
-                            legendItem.Frame = Frame;
+                            if (item is ILegendItem legendItem)
+                            {
+                                legendItem.Frame = Frame;
+                            }
                         }
                     }
                     break;
