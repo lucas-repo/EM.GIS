@@ -67,10 +67,6 @@ namespace EM.GIS.Symbology
                 {
                     return;
                 }
-                if (rect != null && (rect.Value.Width != srcBmp.Width || rect.Value.Height != srcBmp.Height))
-                {
-                    return;
-                }
                 int w = srcBmp.Width, h = srcBmp.Height; PixelFormat format = srcBmp.PixelFormat;
                 // Lock the bitmap's bits.  锁定位图
                 Rectangle  destRect =rect?? new Rectangle(0, 0, w, h);

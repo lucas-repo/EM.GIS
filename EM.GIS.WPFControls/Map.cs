@@ -1,5 +1,6 @@
 ﻿using EM.Bases;
 using EM.GIS.Controls;
+using EM.GIS.Data;
 using EM.GIS.Geometries;
 using EM.GIS.Symbology;
 using EM.IOC;
@@ -146,7 +147,7 @@ namespace EM.GIS.WPFControls
         //    }
         //    base.OnRender(drawingContext);
         //}
-        private KeyValueClass<IExtent, BitmapSource?> bitmapCache = new KeyValueClass<IExtent, BitmapSource?>(null,null);
+        private KeyValueClass<ViewCache?, BitmapSource?> bitmapCache = new KeyValueClass<ViewCache?, BitmapSource?>(null,null);
         private BitmapSource? GetBitmapSource()
         {
             BitmapSource? ret = null;
@@ -163,23 +164,23 @@ namespace EM.GIS.WPFControls
             Stopwatch sw=new Stopwatch();
             sw.Start();
             base.OnRender(drawingContext);
-            if (!Equals(bitmapCache.Key,Frame.View.ViewExtent))
-            {
-                bitmapCache.Key = Frame.View.ViewExtent;
-                bitmapCache.Value = GetBitmapSource();
-            }
-            else
-            {
-                if (bitmapCache.Value == null)
-                {
-                    bitmapCache.Value = GetBitmapSource();
-                }
-            }
+            //if (!Equals(bitmapCache.Key,Frame.View.BackImage))
+            //{
+            //    bitmapCache.Key = Frame.View.BackImage;
+            //    bitmapCache.Value = GetBitmapSource();
+            //}
+            //else
+            //{
+            //    if (bitmapCache.Value == null)
+            //    {
+            //        bitmapCache.Value = GetBitmapSource();
+            //    }
+            //}
             //var bitmap = Frame.View.GetBitmap();
             //if (bitmap!=null)
             {
-                //var bitmapSource = bitmap.ToBitmapSource();
-                var bitmapSource = bitmapCache.Value;
+                var bitmapSource = Frame.View.BackImage?.Bitmap?.ToBitmapSource();
+                //var bitmapSource = bitmapCache.Value;
                 if (bitmapSource != null)
                 {
                     double offsetX = (ActualWidth - Frame.View.Width) / 2.0;
@@ -189,9 +190,7 @@ namespace EM.GIS.WPFControls
                         var transform = new TranslateTransform(offsetX, offsetY);
                         drawingContext.PushTransform(transform);
                     }
-                    //var rect1 = (Frame.View as View).GetSrcRectangleToView(Frame.View.Bound).ToRect();
-               
-                    Rect rect = Frame.View.GetDestRectangleToView(Frame.View.Bound).ToRect();
+                    Rect rect = Frame.View.GetDestRectangleOfView().ToRect();
                     drawingContext.DrawImage(bitmapSource, rect);
                 }
             }

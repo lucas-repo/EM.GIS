@@ -26,36 +26,65 @@ namespace EM.GIS.Symbology
                 {
                     if (bitmap != value)
                     {
-                        if (bitmap != null)
-                        {
-                            bitmap.Dispose();
-                        }
                         bitmap = value;
                     }
                 }
             }
         }
+        private IExtent extent;
+        /// <inheritdoc/>
+        public IExtent Extent
+        {
+            get { return extent; }
+            set
+            {
+                if (!Equals(extent,value))
+                {
+                    extent = value;
+                }
+            }
+        }
+        private Rectangle bound;
+        /// <inheritdoc/>
+        public Rectangle Bound
+        {
+            get { return bound; }
+            set 
+            {
+                if (bound != value)
+                {
+                    bound = value;
+                }
+            }
+        }
 
-        /// <inheritdoc/>
-        public IExtent Extent { get; set; }
-        /// <inheritdoc/>
-        public Rectangle Bound { get; set; }
+        private IExtent drawingExtent;
         /// <summary>
         /// 绘制的范围
         /// </summary>
-        public IExtent DrawingExtent { get; set; }
+        public IExtent DrawingExtent
+        {
+            get { return drawingExtent; }
+            set
+            {
+                if (!Equals(drawingExtent, value))
+                {
+                    drawingExtent = value;
+                }
+            }
+        }
         public ViewCache(Bitmap bitmap,Rectangle rectangle,IExtent extent,IExtent drawingExtent)
         {
-            Bitmap = bitmap??throw new NullReferenceException(nameof(bitmap));
-            Bound=rectangle;
-            Extent = extent;
-            DrawingExtent = drawingExtent;
+            bitmap = bitmap??throw new NullReferenceException(nameof(bitmap));
+            bound=rectangle;
+            this.extent = extent;
+            this.drawingExtent = drawingExtent;
         }
         public ViewCache(DrawingArgs drawingArgs)
         {
-            Bound = drawingArgs.Bound;
-            Extent=drawingArgs.Extent;
-            DrawingExtent=drawingArgs.Extent;
+            bound = drawingArgs.Bound;
+            extent = drawingArgs.Extent;
+            drawingExtent = drawingArgs.DrawingExtent;
         }
         public ViewCache(int imageWidth,int imageHeight, Rectangle rectangle, IExtent extent, IExtent drawingExtent)
         {
@@ -63,10 +92,10 @@ namespace EM.GIS.Symbology
             {
                 throw new ArgumentException($"{nameof(imageWidth)}和{nameof(imageHeight)}不能为0");
             }
-            Bitmap = new Bitmap(imageWidth,imageHeight);
-            Bound = rectangle;
-            Extent = extent;
-            DrawingExtent = drawingExtent;
+            bitmap = new Bitmap(imageWidth,imageHeight);
+            bound = rectangle;
+            this.extent = extent;
+            this.drawingExtent = drawingExtent;
         }
         /// <inheritdoc/>
         public void Dispose()
