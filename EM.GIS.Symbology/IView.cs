@@ -87,5 +87,11 @@ namespace EM.GIS.Symbology
         /// </summary>
         /// <returns>图片和原始矩形</returns>
         Bitmap?  GetBitmap();
+        /// <summary>
+        /// 获得相对于背景图像的目标矩形范围
+        /// </summary>
+        /// <param name="srcRect">原有矩形范围</param>
+        /// <returns>目标矩形范围</returns>
+        RectangleF GetDestRectangleToView(RectangleF srcRect);
     }
 }

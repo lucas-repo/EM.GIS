@@ -544,51 +544,51 @@ namespace EM.GIS.Symbology
            var layers = Frame.Children.GetAllLayers().Where(x => !x.IsDrawingInitialized(viewCache, viewCache.DrawingExtent));
             Task? initializeLayerTask = null;//初始化图层任务
             object lockObj = new object();
-            if (layers.Count() > 0)
-            {
-                //异步线程完成图层的初始化
-                initializeLayerTask = Task.Run(() =>
-                {
-                    #region 初始化图层绘制
-                    try
-                    {
-                        ParallelOptions parallelOptions = new ParallelOptions()
-                        {
-                            CancellationToken = parallelCts.Token
-                        };
-                        Parallel.ForEach(layers, parallelOptions, (layer) =>
-                        {
-                            layer.InitializeDrawing(viewCache, viewCache.DrawingExtent);
-                        });
-                    }
-                    catch (OperationCanceledException)
-                    {
-                        Debug.WriteLine($"已正常取消{nameof(ILayer.InitializeDrawing)}。"); // 不用管该异常
-                    }
-                    catch (Exception ex)
-                    {
-                        Debug.WriteLine($"{nameof(ILayer.InitializeDrawing)}失败，{ex}");
-                    }
-                    #endregion
-                }).ContinueWith((task) =>
-                {
-                    #region 再重新绘制所有图层
-                    if (!cancelFunc())
-                    {
-                        cancelDrawingInitializedLayers = true;//先取消绘制已准备好的图层
-                        lock (lockObj)
-                        {
-                            DrawToViewCache(viewCache,cancelFunc);
-                        }
-                    }
-                    #endregion
-                });
-                initializeLayerTask.ConfigureAwait(false);
-            }
+            //if (layers.Count() > 0)
+            //{
+            //    //异步线程完成图层的初始化
+            //    initializeLayerTask = Task.Run(() =>
+            //    {
+            //        #region 初始化图层绘制
+            //        try
+            //        {
+            //            ParallelOptions parallelOptions = new ParallelOptions()
+            //            {
+            //                CancellationToken = parallelCts.Token
+            //            };
+            //            Parallel.ForEach(layers, parallelOptions, (layer) =>
+            //            {
+            //                layer.InitializeDrawing(viewCache, viewCache.DrawingExtent);
+            //            });
+            //        }
+            //        catch (OperationCanceledException)
+            //        {
+            //            Debug.WriteLine($"已正常取消{nameof(ILayer.InitializeDrawing)}。"); // 不用管该异常
+            //        }
+            //        catch (Exception ex)
+            //        {
+            //            Debug.WriteLine($"{nameof(ILayer.InitializeDrawing)}失败，{ex}");
+            //        }
+            //        #endregion
+            //    }).ContinueWith((task) =>
+            //    {
+            //        #region 再重新绘制所有图层
+            //        if (!cancelFunc())
+            //        {
+            //            cancelDrawingInitializedLayers = true;//先取消绘制已准备好的图层
+            //            lock (lockObj)
+            //            {
+            //                DrawToViewCache(viewCache,cancelFunc);
+            //            }
+            //        }
+            //        #endregion
+            //    });
+            //    initializeLayerTask.ConfigureAwait(false);
+            //}
             #endregion
             lock (lockObj)
             {
-                DrawToViewCache(viewCache,drawingInitializedLayersCancelFunc);
+                DrawToViewCache(viewCache,false,drawingInitializedLayersCancelFunc);
             }
             if (!drawingInitializedLayersCancelFunc())//若取消绘制则释放图片
             {
@@ -609,8 +609,9 @@ namespace EM.GIS.Symbology
         /// 绘制地图至视图缓存
         /// </summary>
         /// <param name="viewCache">视图缓存</param>
+        /// <param name="onlyInitialized">是否只绘制已初始化的图层</param>
         /// <param name="cancelFunc">取消委托</param>
-        private void DrawToViewCache(ViewCache viewCache, Func<bool> cancelFunc)
+        private void DrawToViewCache(ViewCache viewCache, bool onlyInitialized, Func<bool> cancelFunc)
         {
             using Graphics g = Graphics.FromImage(viewCache.Bitmap);
             MapArgs mapArgs = new MapArgs(viewCache.Bound, viewCache.Extent, g, Frame.Projection, viewCache.DrawingExtent);
@@ -621,7 +622,7 @@ namespace EM.GIS.Symbology
                 CopyDrawingViewCacheToBackImage(viewCache, rect);
                 UpdateMapAction?.Invoke(rect);//更新地图控件
             };
-            DrawFrame(mapArgs, true, cancelFunc, newUpdateMapAction);//mapargs绘制冲突 
+            DrawFrame(mapArgs, onlyInitialized, cancelFunc, newUpdateMapAction);//mapargs绘制冲突 
         }
         /// <inheritdoc/>
         public void ResetBuffer(Rectangle rectangle, IExtent extent, IExtent drawingExtent)
@@ -702,42 +703,54 @@ namespace EM.GIS.Symbology
         /// <summary>
         /// 获得相对于背景图像的矩形范围
         /// </summary>
-        /// <param name="rectangle">矩形范围</param>
+        /// <param name="destRect">需要绘制的矩形范围</param>
         /// <returns>相对于背景图像的矩形范围</returns>
-        public RectangleF GetSrcRectangleToView(RectangleF rectangle)
+        public RectangleF GetSrcRectangleToView(RectangleF destRect)
         {
             var result = new RectangleF
             {
-                X = ViewBound.X + (rectangle.X * ViewBound.Width / Width),
-                Y = ViewBound.Y + (rectangle.Y * ViewBound.Height / Height),
-                Width = rectangle.Width * ViewBound.Width / Width,
-                Height = rectangle.Height * ViewBound.Height / Height
+                X = ViewBound.X + (destRect.X * ViewBound.Width / Width),
+                Y = ViewBound.Y + (destRect.Y * ViewBound.Height / Height),
+                Width = destRect.Width * ViewBound.Width / Width,
+                Height = destRect.Height * ViewBound.Height / Height
             };
             return result;
         }
         /// <summary>
-        /// 获得相对于背景图像的矩形范围
+        /// 获得相对于背景图像的原有矩形范围
         /// </summary>
-        /// <param name="rectangle">矩形范围</param>
-        /// <returns>相对于背景图像的矩形范围</returns>
-        public Rectangle GetSrcRectangleToView(Rectangle rectangle)
+        /// <param name="destRectangle">目标矩形范围</param>
+        /// <returns>原有矩形范围</returns>
+        public Rectangle GetSrcRectangleToView(Rectangle destRectangle)
         {
             var dx = ViewBound.Width / Width;
             var dy = ViewBound.Height / Height;
-            var left = (int)(ViewBound.Left + rectangle.Left * dx);
+            var left = (int)(ViewBound.Left + destRectangle.Left * dx);
             if (left < 0)
             {
                 //left = 0;
             }
-            var right = (int)(ViewBound.Left + rectangle.Right * dx);
-            var top = (int)(ViewBound.Top + rectangle.Top * dy);
+            var right = (int)(ViewBound.Left + destRectangle.Right * dx);
+            var top = (int)(ViewBound.Top + destRectangle.Top * dy);
             if (top < 0)
             {
                 //top = 0;
             }
-            var bottom = (int)(ViewBound.Top + rectangle.Bottom * dy);
+            var bottom = (int)(ViewBound.Top + destRectangle.Bottom * dy);
             var result = Rectangle.FromLTRB(left,top,right,bottom);
             return result;
+        }
+        /// <inheritdoc/>
+        public RectangleF GetDestRectangleToView(RectangleF srcRect)
+        {
+            var destRect = new RectangleF
+            {
+                X = (srcRect.X - ViewBound.X) * Width / ViewBound.Width,
+                Y = (srcRect.Y - ViewBound.Y) * Height / ViewBound.Height,
+                Width = srcRect.Width * Width / ViewBound.Width,
+                Height = srcRect.Height * Height / ViewBound.Height
+            };
+            return destRect;
         }
         /// <inheritdoc/>
         public void ResetViewExtent()

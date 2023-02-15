@@ -1,5 +1,6 @@
 ﻿using EM.Bases;
 using EM.GIS.Controls;
+using EM.GIS.Geometries;
 using EM.GIS.Symbology;
 using EM.IOC;
 using System;
@@ -145,13 +146,40 @@ namespace EM.GIS.WPFControls
         //    }
         //    base.OnRender(drawingContext);
         //}
+        private KeyValueClass<IExtent, BitmapSource?> bitmapCache = new KeyValueClass<IExtent, BitmapSource?>(null,null);
+        private BitmapSource? GetBitmapSource()
+        {
+            BitmapSource? ret = null;
+           var bitmap = Frame.View.GetBitmap();
+            if (bitmap != null)
+            {
+                ret = bitmap.ToBitmapSource();
+                bitmap.Dispose();
+            }
+            return ret;
+        }
         protected override void OnRender(DrawingContext drawingContext)
         {
+            Stopwatch sw=new Stopwatch();
+            sw.Start();
             base.OnRender(drawingContext);
-            var bitmap = Frame.View.GetBitmap();
-            if (bitmap!=null)
+            if (!Equals(bitmapCache.Key,Frame.View.ViewExtent))
             {
-                var bitmapSource = bitmap.ToBitmapSource();
+                bitmapCache.Key = Frame.View.ViewExtent;
+                bitmapCache.Value = GetBitmapSource();
+            }
+            else
+            {
+                if (bitmapCache.Value == null)
+                {
+                    bitmapCache.Value = GetBitmapSource();
+                }
+            }
+            //var bitmap = Frame.View.GetBitmap();
+            //if (bitmap!=null)
+            {
+                //var bitmapSource = bitmap.ToBitmapSource();
+                var bitmapSource = bitmapCache.Value;
                 if (bitmapSource != null)
                 {
                     double offsetX = (ActualWidth - Frame.View.Width) / 2.0;
@@ -161,22 +189,15 @@ namespace EM.GIS.WPFControls
                         var transform = new TranslateTransform(offsetX, offsetY);
                         drawingContext.PushTransform(transform);
                     }
-                    //var rect = (Frame.View as View).GetSrcRectangleToView(Frame.View.Bound).ToRect();
+                    //var rect1 = (Frame.View as View).GetSrcRectangleToView(Frame.View.Bound).ToRect();
                
-                    Rect rect1 = Frame.View.Bound.ToRect();
-                    drawingContext.DrawImage(bitmapSource, rect1);
+                    Rect rect = Frame.View.GetDestRectangleToView(Frame.View.Bound).ToRect();
+                    drawingContext.DrawImage(bitmapSource, rect);
                 }
-                bitmap.Dispose();
             }
+            sw.Stop();
+            Debug.WriteLine($"绘制背景图 {sw.ElapsedMilliseconds} 毫秒");
         }
-        private Rect GetDestRect()
-        {
-            var dx = Frame.View.Width / Frame.View.ViewBound.Width;
-            var dy = Frame.View.Height / Frame.View.ViewBound.Height;
-            Rect ret = new Rect(-Frame.View.ViewBound.X, -Frame.View.ViewBound.Y, Frame.View.Width * dx, Frame.View.Height * dy);
-            return ret;
-        }
-        /// <summary>
         /// 使地图控件无效，以重新绘制
         /// </summary>
         private void Invalidate()
