@@ -171,7 +171,7 @@ namespace EM.GIS.WPFControls.ViewModels
         /// <param name="percent">百分比</param>
         private void ReportProgress(string text,int percent)
         {
-            Dispatcher.CurrentDispatcher.Invoke(() =>
+            View.Dispatcher.BeginInvoke(() =>
             {
                 ProgressStr= text;
                 ProgressValue = percent;

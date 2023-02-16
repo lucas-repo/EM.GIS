@@ -102,7 +102,7 @@ namespace EM.GIS.WPFControls
             {
                 return;
             }
-            Dispatcher.Invoke(InvalidateVisual);
+            Dispatcher.BeginInvoke(InvalidateVisual);
         }
 
         private KeyValueClass<ViewCache?, BitmapSource?> bitmapCache = new KeyValueClass<ViewCache?, BitmapSource?>(null,null);

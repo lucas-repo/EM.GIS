@@ -26,7 +26,7 @@ namespace EM.GIS.Symbology
         /// <summary>
         /// 锁容器
         /// </summary>
-        public LockContainer LockContainer { get; } = new LockContainer();
+        private LockContainer LockContainer { get; } = new LockContainer();
         /// <summary>
         /// 视图范围改变次数
         /// </summary>
@@ -630,10 +630,11 @@ namespace EM.GIS.Symbology
             {
                 //BackImage = viewCache.Copy();
                 CopyDrawingViewCacheToBackImage(viewCache, rect, count == 0);
-                UpdateMapAction?.Invoke(rect);//更新地图控件
+                UpdateMapAction?.Invoke(rect);//更新局部地图控件
                 count++;
             };
             DrawFrame(mapArgs, onlyInitialized, cancelFunc, newUpdateMapAction);//mapargs绘制冲突 
+            //UpdateMapAction?.Invoke(Bound);//绘制完成后，更新整个地图控件
         }
         /// <inheritdoc/>
         public void ResetBuffer(Rectangle rectangle, IExtent extent, IExtent drawingExtent)
@@ -781,7 +782,7 @@ namespace EM.GIS.Symbology
             }
             IExtent env = IProjExtensions.PixelToProj(ViewBound, Bound, ViewExtent);
             SetViewExtent(env, false, true);
-            ViewBound = Bound;
+            SetViewBound(Bound, false);
         }
         /// <inheritdoc/>
         public void Resize(int width, int height)
