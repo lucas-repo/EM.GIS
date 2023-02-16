@@ -88,7 +88,7 @@ namespace EM.GIS.WPFControls
         /// <inheritdoc/>
         public override void DoMouseDown(GeoMouseButtonEventArgs e)
         {
-            if (e.MiddleButton ==  System.Windows.Input.MouseButtonState.Pressed && !_preventDrag)
+            if (e.MiddleButton ==  System.Windows.Input.MouseButtonState.Pressed && !_preventDrag&&!_isZooming)
             {
                 _dragStart = e.Location;
                 _source = e.Map.Frame.View.ViewBound;
@@ -134,9 +134,10 @@ namespace EM.GIS.WPFControls
             _source = Rectangle.Empty;
             base.DoMouseUp(e);
         }
-
+        private bool _isZooming;
         public override void DoMouseWheel(GeoMouseWheelEventArgs e)
         {
+            _isZooming = true;
             // Fix this
             _zoomTimer.Stop(); // if the timer was already started, stop it.
             var r = e.Map.Frame.View.ViewBound;
@@ -211,6 +212,7 @@ namespace EM.GIS.WPFControls
             Map.Frame.View.ResetViewExtent();
             Map.IsBusy = false;
             BusySet = false;
+            _isZooming = false;
         }
 
         #endregion
