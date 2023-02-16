@@ -135,6 +135,7 @@ namespace EM.GIS.WPFControls
                 IntPtr hBitmap = IntPtr.Zero;
                 try
                 {
+                    var width= bitmap.Width;//用于测试位图是否释放
                     hBitmap = bitmap.GetHbitmap();
                     source = System.Windows.Interop.Imaging.CreateBitmapSourceFromHBitmap(hBitmap, IntPtr.Zero, Int32Rect.Empty, BitmapSizeOptions.FromEmptyOptions());
                 }

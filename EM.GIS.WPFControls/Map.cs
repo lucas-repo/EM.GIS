@@ -102,51 +102,9 @@ namespace EM.GIS.WPFControls
             {
                 return;
             }
-            Dispatcher.Invoke(() =>
-            {
-                //var image = Frame.View.GetBitmap(rectangle);
-                //ImageCache.Key = rectangle.ToRect();
-                //var image = Frame.View.GetBitmap(Frame.View.Bound);
-                //if (imageCache.ViewCache != Frame.View.BackImage && Frame.View.BackImage.Image is Bitmap bitmap&& bitmap.PixelFormat!= System.Drawing.Imaging.PixelFormat.DontCare)
-                //{
-                //    imageCache.ViewCache = Frame.View.BackImage;
-                //    imageCache.BitmapSource = bitmap.ToBitmapSource(true);
-                //    imageCache.Rect = Frame.View.Bound.ToRect();
-                //    if (imageCache.BitmapSource != null)
-                //    {
-                //        InvalidateVisual();
-                //    }
-                //}
-                //ImageCache.Key = Frame.View.Bound.ToRect();
-                //ImageCache.Value = image.Bmp?.ToBitmapSource();
-                InvalidateVisual();
-            });
+            Dispatcher.Invoke(InvalidateVisual);
         }
 
-        //protected override void OnRender(DrawingContext drawingContext)
-        //{
-        //    if (imageCache.BitmapSource != null)
-        //    {
-        //        //double offsetX = (ActualWidth - Frame.View.Width) / 2.0;
-        //        //double offsetY = (ActualHeight - Frame.View.Height) / 2.0;
-        //        double scaleX = Frame.View.ViewBound.Width / Frame.View.Width;
-        //        double scaleY = Frame.View.ViewBound.Height / Frame.View.Height;
-        //        if (scaleX != 1 || scaleY != 1)
-        //        {
-        //            var transform = new ScaleTransform(scaleX, scaleY);
-        //            drawingContext.PushTransform(transform);
-        //        }
-        //        double offsetX = (ActualWidth - Frame.View.Width) / 2.0 + Frame.View.ViewBound.X / scaleX;
-        //        double offsetY = (ActualHeight - Frame.View.Height) / 2.0 + Frame.View.ViewBound.Y / scaleY;
-        //        if (offsetX != 0 || offsetY != 0)
-        //        {
-        //            var transform = new TranslateTransform(offsetX, offsetY);
-        //            drawingContext.PushTransform(transform);
-        //        }
-        //        drawingContext.DrawImage(imageCache.BitmapSource, imageCache.Rect);
-        //    }
-        //    base.OnRender(drawingContext);
-        //}
         private KeyValueClass<ViewCache?, BitmapSource?> bitmapCache = new KeyValueClass<ViewCache?, BitmapSource?>(null,null);
         private BitmapSource? GetBitmapSource()
         {
@@ -176,22 +134,25 @@ namespace EM.GIS.WPFControls
             //        bitmapCache.Value = GetBitmapSource();
             //    }
             //}
-            //var bitmap = Frame.View.GetBitmap();
             //if (bitmap!=null)
             {
-                var bitmapSource = Frame.View.BackImage?.Bitmap?.ToBitmapSource();
-                //var bitmapSource = bitmapCache.Value;
-                if (bitmapSource != null)
+                if (Frame.View is View view)
                 {
-                    double offsetX = (ActualWidth - Frame.View.Width) / 2.0;
-                    double offsetY = (ActualHeight - Frame.View.Height) / 2.0;
-                    if (offsetX != 0 || offsetY != 0)
+                    var bitmapSource = GetBitmapSource();
+                    //var bitmapSource = bitmapCache.Value;
+                    if (bitmapSource != null)
                     {
-                        var transform = new TranslateTransform(offsetX, offsetY);
-                        drawingContext.PushTransform(transform);
+                        double offsetX = (ActualWidth - Frame.View.Width) / 2.0;
+                        double offsetY = (ActualHeight - Frame.View.Height) / 2.0;
+                        if (offsetX != 0 || offsetY != 0)
+                        {
+                            var transform = new TranslateTransform(offsetX, offsetY);
+                            drawingContext.PushTransform(transform);
+                        }
+                        //Rect rect = Frame.View.GetDestRectangleOfView().ToRect();
+                        Rect rect = Frame.View.Bound.ToRect();
+                        drawingContext.DrawImage(bitmapSource, rect);
                     }
-                    Rect rect = Frame.View.GetDestRectangleOfView().ToRect();
-                    drawingContext.DrawImage(bitmapSource, rect);
                 }
             }
             sw.Stop();

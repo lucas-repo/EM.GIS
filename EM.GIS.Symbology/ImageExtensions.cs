@@ -17,7 +17,8 @@ namespace EM.GIS.Symbology
         /// </summary>
         /// <param name="srcBmp">源位图</param>
         /// <param name="destBmp">目标位图</param>
-        public static void CopyBitmapByPointer(this Bitmap srcBmp, Bitmap destBmp)
+        /// <param name="rect">要复制的范围</param>
+        public static void CopyBitmapByPointer(this Bitmap srcBmp, Bitmap destBmp,Rectangle? rect)
         {
             try
             {
@@ -30,19 +31,44 @@ namespace EM.GIS.Symbology
                 {
                     return;
                 }
-
-                var srcBitmapData = srcBmp.LockBits(new Rectangle(0, 0, srcBmp.Width, srcBmp.Height), ImageLockMode.ReadOnly,srcBmp.PixelFormat);
-                var destBitmapData = destBmp.LockBits(new Rectangle(0, 0, destBmp.Width, destBmp.Height), ImageLockMode.ReadWrite,destBmp.PixelFormat);
+                int byteCount = depth / 8;
+                Rectangle destRect;
+                if (rect == null)
+                {
+                    destRect= new Rectangle(0, 0, srcBmp.Width, srcBmp.Height);
+                }
+                else
+                {
+                    int left = Math.Max(0, rect.Value.Left);
+                    int top = Math.Max(0, rect.Value.Top);
+                    int right = Math.Min(srcBmp.Width, rect.Value.Right);
+                    int bottom = Math.Min(srcBmp.Height, rect.Value.Bottom);
+                    destRect =Rectangle.FromLTRB(left, top, right, bottom);
+                }
+                var srcBitmapData = srcBmp.LockBits(destRect, ImageLockMode.ReadOnly,srcBmp.PixelFormat);
+                var destBitmapData = destBmp.LockBits(destRect, ImageLockMode.ReadWrite,destBmp.PixelFormat);
                 unsafe
                 {
-                    byte* source_ptr = (byte*)srcBitmapData.Scan0;
-                    byte* destination_ptr = (byte*)destBitmapData.Scan0;
+                    byte* srcPtr = (byte*)srcBitmapData.Scan0;
+                    int srcStride = srcBitmapData.Stride;
+                    int srcDWidth = srcStride - (srcBmp.Width- destRect.Width)*byteCount;
+                    byte* destPtr = (byte*)destBitmapData.Scan0;
 
-                    for (int i = 0; i < (srcBmp.Width * srcBmp.Height * (depth / 8)); i++)
+                    srcPtr += destRect.Top* srcStride + destRect.Left;
+                    destPtr += destRect.Top * srcStride + destRect.Left;
+                    for (int row = destRect.Top; row <= destRect.Bottom; row++)
                     {
-                        *destination_ptr = *source_ptr;
-                        source_ptr++;
-                        destination_ptr++;
+                        for (int col = destRect.Left; col <= destRect.Right; col++)
+                        {
+                            for (int i = 0; i < byteCount; i++)
+                            {
+                                *destPtr = *srcPtr;
+                                srcPtr++;
+                                destPtr++;
+                            }
+                        }
+                        srcPtr += srcDWidth;
+                        destPtr += srcDWidth;
                     }
                 }
                 srcBmp.UnlockBits(srcBitmapData);
@@ -76,9 +102,9 @@ namespace EM.GIS.Symbology
                 BitmapData bmpDataDest = destBmp.LockBits(destRect, ImageLockMode.WriteOnly, format);
                 IntPtr ptrDest = bmpDataDest.Scan0;// Declare an array to hold the bytes of the bitmap.定义数组保存位图
                 int bytes = Math.Abs(bmpDataSrc.Stride) * h;
-                byte[] rgbValues = new byte[bytes];// Copy the RGB values into the array.复制RGB值到数组
-                System.Runtime.InteropServices.Marshal.Copy(ptrSrc, rgbValues, 0, bytes);//复制到新图
-                System.Runtime.InteropServices.Marshal.Copy(rgbValues, 0, ptrDest, bytes);// Unlock the bits.解锁
+                byte[] rgbValues = new byte[bytes];// Copy the RGB values into the array.
+                System.Runtime.InteropServices.Marshal.Copy(ptrSrc, rgbValues, 0, bytes);//复制RGB值到数组
+                System.Runtime.InteropServices.Marshal.Copy(rgbValues, 0, ptrDest, bytes);//复制到新图
                 srcBmp.UnlockBits(bmpDataSrc);
                 destBmp.UnlockBits(bmpDataDest);
             }

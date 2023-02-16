@@ -169,7 +169,7 @@ namespace EM.GIS.Symbology
                 #endregion
 
                 #region 超过缓存数后，移除多余的缓存图片
-                if (DataSet.Tiles.Count > 100)
+                if (DataSet.Tiles.Count > 1000)
                 {
                     for (int i = DataSet.Tiles.Count - 1; i >= 0; i--)
                     {

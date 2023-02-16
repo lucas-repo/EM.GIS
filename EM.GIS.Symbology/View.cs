@@ -26,7 +26,7 @@ namespace EM.GIS.Symbology
         /// <summary>
         /// 锁容器
         /// </summary>
-        private LockContainer lockContainer = new LockContainer();
+        public LockContainer LockContainer { get; } = new LockContainer();
         /// <summary>
         /// 视图范围改变次数
         /// </summary>
@@ -98,7 +98,7 @@ namespace EM.GIS.Symbology
             }
             set
             {
-                var lockObj = lockContainer.GetOrCreateLock(nameof(BackImage));
+                var lockObj = LockContainer.GetOrCreateLock(nameof(BackImage));
                 lock (lockObj)
                 {
                     if (backImage == value)
@@ -200,7 +200,7 @@ namespace EM.GIS.Symbology
             get => _busyCount > 0;
             private set
             {
-                var lockObj = lockContainer.GetOrCreateLock(nameof(IsWorking));
+                var lockObj = LockContainer.GetOrCreateLock(nameof(IsWorking));
                 lock (lockObj)
                 {
                     if (value)
@@ -458,13 +458,14 @@ namespace EM.GIS.Symbology
         /// </summary>
         /// <param name="viewCache">正在绘制的视图缓存</param>
         /// <param name="rectangle">复制矩形的范围</param>
-        private void CopyDrawingViewCacheToBackImage(ViewCache viewCache, Rectangle rectangle)
+        /// <param name="copyCache">是否整体复制缓存</param>
+        private void CopyDrawingViewCacheToBackImage(ViewCache viewCache, Rectangle rectangle,bool copyCache)
         {
             if (viewCache == null)
             {
                 return;
             }
-            if (BackImage == null)
+            if (BackImage == null|| copyCache)
             {
                 BackImage = viewCache.Copy();
             }
@@ -476,14 +477,13 @@ namespace EM.GIS.Symbology
                 }
                 try
                 {
-                    var lockObj = lockContainer.GetOrCreateLock(nameof(BackImage.Bitmap));
+                    var lockObj = LockContainer.GetOrCreateLock(nameof(BackImage));
                     lock (lockObj)
                     {
                         if (BackImage.Bitmap != null && BackImage.Bitmap.Width == viewCache.Bitmap.Width && BackImage.Bitmap.Height == viewCache.Bitmap.Height)
                         {
-                            //viewCache.Bitmap.CopyBitmapByMemory(BackImage.Bitmap, rectangle);
-                            using Graphics g = Graphics.FromImage(viewCache.Bitmap);
-                            g.DrawImage(BackImage.Bitmap, rectangle, rectangle, GraphicsUnit.Pixel);
+                            using Graphics g = Graphics.FromImage(BackImage.Bitmap);
+                            g.DrawImage(viewCache.Bitmap, rectangle, rectangle, GraphicsUnit.Pixel);//绘制有问题
                         }
                         else
                         {
@@ -625,11 +625,13 @@ namespace EM.GIS.Symbology
             MapArgs mapArgs = new MapArgs(viewCache.Bound, viewCache.Extent, g, Frame.Projection, viewCache.DrawingExtent);
             SetClip(mapArgs);
             //Action<Rectangle> newUpdateMapAction = GetNewUpdateMapAction(viewCache);//先设置缓存图片，再更新地图控件
+            int count = 0;
             Action<Rectangle> newUpdateMapAction = (rect) =>
             {
                 //BackImage = viewCache.Copy();
-                CopyDrawingViewCacheToBackImage(viewCache, rect);
+                CopyDrawingViewCacheToBackImage(viewCache, rect, count == 0);
                 UpdateMapAction?.Invoke(rect);//更新地图控件
+                count++;
             };
             DrawFrame(mapArgs, onlyInitialized, cancelFunc, newUpdateMapAction);//mapargs绘制冲突 
         }
@@ -697,7 +699,7 @@ namespace EM.GIS.Symbology
                 var srcRectangle = GetSrcRectangleToView(rectangle);
                 try
                 {
-                    var lockObj = lockContainer.GetOrCreateLock(nameof(BackImage.Bitmap));
+                    var lockObj = LockContainer.GetOrCreateLock(nameof(BackImage));
                     lock (lockObj)
                     {
                         g.DrawImage(BackImage.Bitmap, rectangle, srcRectangle, GraphicsUnit.Pixel);
@@ -861,7 +863,7 @@ namespace EM.GIS.Symbology
         public Bitmap? GetBitmap()
         {
             Bitmap? bmp = null;
-            var lockObj = lockContainer.GetOrCreateLock(nameof(BackImage.Bitmap));
+            var lockObj = LockContainer.GetOrCreateLock(nameof(BackImage));
             lock (lockObj)
             {
                 if (BackImage?.Bitmap == null)
