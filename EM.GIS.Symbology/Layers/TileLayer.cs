@@ -150,24 +150,6 @@ namespace EM.GIS.Symbology
                 }
                 #endregion
 
-                #region 移除级别不一致的瓦片
-                var firstTileInfo = tileInfos.FirstOrDefault();
-                if (firstTileInfo != null)
-                {
-                    for (int i = DataSet.Tiles.Count - 1; i >= 0; i--)
-                    {
-                        var existedTileInfo = DataSet.Tiles.ElementAt(i);
-                        if (existedTileInfo.Key.Level != firstTileInfo.Index.Level)
-                        {
-                            if (DataSet.Tiles.TryRemove(existedTileInfo.Key, out var tileInfo))
-                            {
-                                tileInfo.Tile?.Dispose();
-                            }
-                        }
-                    }
-                }
-                #endregion
-
                 #region 超过缓存数后，移除多余的缓存图片
                 if (DataSet.Tiles.Count > 1000)
                 {
