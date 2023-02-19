@@ -100,7 +100,7 @@ namespace EM.GIS.Symbology
         protected override Rectangle OnDraw(MapArgs mapArgs, bool selected = false, Action<string, int>? progressAction = null, Func<bool>? cancelFunc = null, Action<Rectangle>? invalidateMapFrameAction = null)
         {
             var ret = Rectangle.Empty;
-            if (selected && Selection.Count == 0 || cancelFunc?.Invoke() == true || DataSet == null)
+            if ((selected && Selection.Count == 0) || cancelFunc?.Invoke() == true || DataSet == null)
             {
                 return ret;
             }
