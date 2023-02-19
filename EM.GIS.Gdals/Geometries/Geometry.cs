@@ -13,8 +13,6 @@ namespace EM.GIS.Gdals
     [Serializable]
     public class Geometry : BaseCopy, IGeometry
     {
-        private bool _ignoreGeoChanged;
-        private bool _ignoreCoordChanged;
         private OSGeo.OGR.Geometry _ogrGeometry;
         private bool disposedValue;
 
@@ -23,46 +21,8 @@ namespace EM.GIS.Gdals
             get { return _ogrGeometry; }
             protected set
             {
-                if (SetProperty(ref _ogrGeometry, value))
-                {
-                    OnOgrGeometryChanged();
-                }
+                SetProperty(ref _ogrGeometry, value);
             }
-        }
-
-        private void OnOgrGeometryChanged()
-        {
-            _ignoreGeoChanged = true;
-            _ignoreCoordChanged = true;
-            Geometries.Clear();
-            Coordinates.Clear();
-            if (OgrGeometry != null)
-            {
-                var geometryCount = OgrGeometry.GetGeometryCount();
-                if (geometryCount == 0)
-                {
-                    var pointCount = OgrGeometry.GetPointCount();
-                    var dimension = OgrGeometry.GetCoordinateDimension();
-                    for (int i = 0; i < pointCount; i++)
-                    {
-                        double[] argout = new double[dimension];
-                        OgrGeometry.GetPoint(i, argout);
-                        var coordinate = new Coordinate(argout);
-                        Coordinates.Add(coordinate);
-                    }
-                }
-                else
-                {
-                    for (int i = 0; i < geometryCount; i++)
-                    {
-                        var ogrGeometry = OgrGeometry.GetGeometryRef(i);
-                        Geometry geometry = new Geometry(ogrGeometry);
-                        Geometries.Add(geometry);
-                    }
-                }
-            }
-            _ignoreGeoChanged = false;
-            _ignoreCoordChanged = false;
         }
 
         public IExtent GetExtent()
@@ -89,6 +49,13 @@ namespace EM.GIS.Gdals
                 return geometryType;
             }
         }
+
+        /// <inheritdoc/>
+        public int GeometryCount => OgrGeometry != null ? OgrGeometry.GetGeometryCount() : 0;
+
+        /// <inheritdoc/>
+        public int CoordinateCount => OgrGeometry != null ? OgrGeometry.GetPointCount() : 0;
+
         public Geometry(OSGeo.OGR.Geometry geometry)
         {
             if (geometry == null)
@@ -96,16 +63,10 @@ namespace EM.GIS.Gdals
                 throw new Exception("geometry不能为空");
             }
             OgrGeometry = geometry;
-            Geometries.CollectionChanged += Geometries_CollectionChanged;
-            Coordinates.CollectionChanged += Coordinates_CollectionChanged;
         }
 
         private void Coordinates_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
-            if (_ignoreCoordChanged)
-            {
-                return;
-            }
             switch (e.Action)
             {
                 case NotifyCollectionChangedAction.Add:
@@ -132,10 +93,6 @@ namespace EM.GIS.Gdals
 
         private void Geometries_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
-            if (_ignoreGeoChanged)
-            {
-                return;
-            }
             switch (e.Action)
             {
                 case NotifyCollectionChangedAction.Add:
@@ -152,10 +109,6 @@ namespace EM.GIS.Gdals
         public double Area() => OgrGeometry == null ? 0 : OgrGeometry.Area();
 
         public double Length() => OgrGeometry == null ? 0 : OgrGeometry.Length();
-
-        public ObservableCollection<IGeometry> Geometries { get; } = new ObservableCollection<IGeometry>();
-
-        public ObservableCollection<ICoordinate> Coordinates { get; } = new ObservableCollection<ICoordinate>();
 
         public bool IsEmpty() => OgrGeometry == null ? true : OgrGeometry.IsEmpty();
 
@@ -278,6 +231,31 @@ namespace EM.GIS.Gdals
             // 不要更改此代码。请将清理代码放入“Dispose(bool disposing)”方法中
             Dispose(disposing: true);
             GC.SuppressFinalize(this);
+        }
+        /// <inheritdoc/>
+        public IGeometry? GetGeometry(int index)
+        {
+            IGeometry? ret = null;
+            if (OgrGeometry != null && index >= 0 && OgrGeometry.GetGeometryCount() > index)
+            {
+                var osgGeo = OgrGeometry.GetGeometryRef(index);
+                ret = new Geometry(osgGeo);
+            }
+            return ret;
+        }
+
+        /// <inheritdoc/>
+        public ICoordinate? GetCoordinate(int index)
+        {
+            ICoordinate? ret = null;
+            if (OgrGeometry != null && index >= 0 && OgrGeometry.GetPointCount() > index)
+            {
+                var dimension = OgrGeometry.GetCoordinateDimension();
+                double[] argout = new double[dimension];
+                OgrGeometry.GetPoint(index, argout);
+                ret = new Coordinate(argout);
+            }
+            return ret;
         }
     }
 }

@@ -39,14 +39,12 @@ namespace EM.GIS.Symbology
         }
         private void DrawGeometry(MapArgs drawArgs, Graphics context, float scaleSize, IPolygonSymbolizer polygonSymbolizer, IGeometry geometry)
         {
-            int geoCount = geometry.Geometries.Count;
-            if (geoCount == 0)
+            if (geometry.GeometryCount == 0)
             {
-                int pointCount = geometry.Coordinates.Count;
-                PointF[] points = new PointF[pointCount];
-                for (int j = 0; j < pointCount; j++)
+                PointF[] points = new PointF[geometry.CoordinateCount];
+                for (int j = 0; j < geometry.CoordinateCount; j++)
                 {
-                    var coord = geometry.Coordinates[j];
+                    var coord = geometry.GetCoordinate(j);
                     PointF point = drawArgs.ProjToPixelF(coord);
                     points[j] = point;
                 }
@@ -54,50 +52,73 @@ namespace EM.GIS.Symbology
             }
             else
             {
-                for (int i = 0; i < geoCount; i++)
+                for (int i = 0; i < geometry.GeometryCount; i++)
                 {
-                    var partGeo = geometry.Geometries[i];
+                    var partGeo = geometry.GetGeometry(i);
                     DrawGeometry(drawArgs, context, scaleSize, polygonSymbolizer, partGeo);
                 }
             }
         }
         private void GetPolygons(IProj proj, IGeometry geometry, GraphicsPath path)
         {
-            switch (geometry.GeometryType)
+            if (geometry.GeometryCount > 0)
             {
-                case GeometryType.MultiPolygon:
-                    foreach (var partGeo in geometry.Geometries)
-                    {
-                        GetPolygons(proj, partGeo, path);
-                    }
-                    break;
-                case GeometryType.Polygon:
-                    foreach (var partGeo in geometry.Geometries)
-                    {
-                        path.StartFigure();
-                        GetPolygons(proj, partGeo, path);
-                    }
-                    break;
-                case GeometryType.LineString:
-                    int pointCount = geometry.Coordinates.Count;
-                    PointF[] points = new PointF[pointCount];
-                    for (int j = 0; j < pointCount; j++)
-                    {
-                        var coord = geometry.Coordinates[j];
-                        PointF point = proj.ProjToPixelF(coord);
-                        points[j] = point;
-                    }
-                    //去重
-                    var intPoints = DuplicationPreventer.Clean(points).ToArray();
-                    if (intPoints.Length >= 2)
-                    {
-                        path.AddLines(intPoints);
-                    }
-
-                    break;
-                default:
-                    throw new Exception("不支持的几何类型");
+                for (int i = 0; i < geometry.GeometryCount; i++)
+                {
+                    var childGeo= geometry.GetGeometry(i);
+                    GetPolygons(proj, childGeo, path);
+                }
             }
+            else
+            {
+                PointF[] points = new PointF[geometry.CoordinateCount];
+                for (int i = 0; i < geometry.CoordinateCount; i++)
+                {
+                    var coord = geometry.GetCoordinate(i);
+                    PointF point = proj.ProjToPixelF(coord);
+                    points[i] = point;
+                }
+                //去重
+                var intPoints = DuplicationPreventer.Clean(points).ToArray();
+                if (intPoints.Length >= 2)
+                {
+                    path.AddLines(intPoints);
+                }
+            }
+            //switch (geometry.GeometryType)
+            //{
+            //    case GeometryType.MultiPolygon:
+            //        foreach (var partGeo in geometry.Geometries)
+            //        {
+            //            GetPolygons(proj, partGeo, path);
+            //        }
+            //        break;
+            //    case GeometryType.Polygon:
+            //        foreach (var partGeo in geometry.Geometries)
+            //        {
+            //            path.StartFigure();
+            //            GetPolygons(proj, partGeo, path);
+            //        }
+            //        break;
+            //    case GeometryType.LineString:
+            //        PointF[] points = new PointF[geometry.CoordinateCount];
+            //        for (int i = 0; i < geometry.CoordinateCount; i++)
+            //        {
+            //            var coord = geometry.GetCoordinate(i);
+            //            PointF point = proj.ProjToPixelF(coord);
+            //            points[i] = point;
+            //        }
+            //        //去重
+            //        var intPoints = DuplicationPreventer.Clean(points).ToArray();
+            //        if (intPoints.Length >= 2)
+            //        {
+            //            path.AddLines(intPoints);
+            //        }
+
+            //        break;
+            //    default:
+            //        throw new Exception("不支持的几何类型");
+            //}
         }
     }
 }

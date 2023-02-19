@@ -26,6 +26,67 @@ namespace EM.GIS.Gdals
                 }
             }
         }
+
+        /// <summary>
+        /// 坐标转换
+        /// </summary>
+        /// <param name="coordinateTransformation">坐标转换器</param>
+        /// <param name="geometry">几何体</param>
+        public static void Transform(this CoordinateTransformation coordinateTransformation, OSGeo.OGR.Geometry geometry)
+        {
+            if (coordinateTransformation == null || geometry == null)
+            {
+                return;
+            }
+            var geometryCount= geometry.GetGeometryCount();
+            if (geometryCount > 0)
+            {
+                for (int i = 0; i < geometryCount; i++)
+                {
+                    var geoItem = geometry.GetGeometryRef(i);
+                    coordinateTransformation.Transform(geoItem);
+                }
+            }
+            else
+            {
+                var pointCount = geometry.GetPointCount();
+                var dimension = geometry.GetCoordinateDimension();
+                if (dimension < 2)
+                {
+                    return;
+                }
+
+                double[] xs = new double[pointCount];
+                double[] ys = new double[pointCount];
+                double[] zs = new double[pointCount];
+                for (int i = 0; i < pointCount; i++)
+                {
+                    double[] argout = new double[dimension];
+                    geometry.GetPoint(i, argout);
+                    xs[i] = argout[0];
+                    ys[i] = argout[1];
+                    if (dimension > 2)
+                    {
+                        zs[i] = argout[2];
+                    }
+                }
+                coordinateTransformation.TransformPoints(pointCount, xs, ys, zs);
+                if (dimension > 2)
+                {
+                    for (int i = 0; i < pointCount; i++)
+                    {
+                        geometry.SetPoint(i, xs[i], ys[i], zs[i]);
+                    }
+                }
+                else
+                {
+                    for (int i = 0; i < pointCount; i++)
+                    {
+                        geometry.SetPoint_2D(i, xs[i], ys[i]);
+                    }
+                }
+            }
+        }
         /// <summary>
         /// 坐标转换
         /// </summary>
@@ -33,30 +94,11 @@ namespace EM.GIS.Gdals
         /// <param name="geometry">几何体</param>
         public static void Transform(this CoordinateTransformation coordinateTransformation, IGeometry geometry)
         {
-            if (coordinateTransformation != null && geometry != null)
+            if (coordinateTransformation == null || !(geometry is Geometry destGeometry))
             {
-                if (geometry.Geometries.Count > 1)
-                {
-                    foreach (var item in geometry.Geometries)
-                    {
-                        Transform(coordinateTransformation, item);
-                    }
-                }
-                else
-                {
-                    switch (geometry.GeometryType)
-                    {
-                        case GeometryType.Polygon:
-                        case GeometryType.PolygonM:
-                        case GeometryType.PolygonZM:
-                            Transform(coordinateTransformation, geometry.Coordinates, geometry.Coordinates.Count - 1);
-                            break;
-                        default:
-                            Transform(coordinateTransformation, geometry.Coordinates, geometry.Coordinates.Count);
-                            break;
-                    }
-                }
+                return;
             }
+            coordinateTransformation.Transform(destGeometry.OgrGeometry);
         }
         /// <summary>
         /// 坐标转换

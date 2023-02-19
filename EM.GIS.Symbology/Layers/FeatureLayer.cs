@@ -1,10 +1,13 @@
-﻿using EM.GIS.Data;
+﻿using EM.Bases;
+using EM.GIS.Data;
 using EM.GIS.Geometries;
+using EM.GIS.Projections;
 using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Drawing;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading;
 
 namespace EM.GIS.Symbology
@@ -104,7 +107,14 @@ namespace EM.GIS.Symbology
             {
                 return ret;
             }
-            DataSet.SetSpatialExtentFilter(mapArgs.DestExtent);
+            IExtent filter = mapArgs.DestExtent;
+            if (mapArgs.Projection != null && DataSet.Projection != null && !mapArgs.Projection.Equals(DataSet.Projection))
+            {
+                filter = mapArgs.DestExtent.Copy();
+                mapArgs.Projection.ReProject(DataSet.Projection, filter);
+            }
+
+            DataSet.SetSpatialExtentFilter(filter);
             long featureCount = DataSet.FeatureCount;
             progressAction?.Invoke(ProgressMessage, 5);
             var features = new List<IFeature>();
@@ -120,7 +130,7 @@ namespace EM.GIS.Symbology
                     {
                         percent = (int)(drawnFeatureCount * 90 / featureCount);
                         progressAction?.Invoke(ProgressMessage, percent);
-                        DrawFeatures(mapArgs, mapArgs.Graphics, features, selected, progressAction, cancelFunc);
+                        DrawFeatures(mapArgs,  features, selected, progressAction, cancelFunc);
                         drawnFeatureCount += features.Count;
                         if (features.Count > 0)
                         {
@@ -161,17 +171,16 @@ namespace EM.GIS.Symbology
                     }
                 }
                 features.Add(feature);
-                if (feature.Geometry.Geometries.Count == 0)
+                if (feature.Geometry.GeometryCount == 0)
                 {
-                    int pointCount = feature.Geometry.Coordinates.Count;
-                    totalPointCount += pointCount;
+                    totalPointCount += feature.Geometry.CoordinateCount;
                 }
                 else
                 {
-                    foreach (var geometry in feature.Geometry.Geometries)
+                    for (int i = 0; i < feature.Geometry.GeometryCount; i++)
                     {
-                        int pointCount = geometry.Coordinates.Count;
-                        totalPointCount += pointCount;
+                       var geometry= feature.Geometry.GetGeometry(i);
+                        totalPointCount += geometry.CoordinateCount;
                     }
                 }
                 if (totalPointCount >= threshold)
@@ -235,13 +244,23 @@ namespace EM.GIS.Symbology
         /// <param name="symbolizer">要素符号</param>
         /// <param name="geometry">几何体</param>
         protected abstract void DrawGeometry(IProj proj, Graphics graphics, IFeatureSymbolizer symbolizer, IGeometry geometry);
-        private void DrawFeatures(IProj proj, Graphics graphics, List<IFeature> features, bool selected, Action<string, int>? progressAction = null, Func<bool>? cancelFunc = null)
+        private void DrawFeatures(MapArgs mapArgs, List<IFeature> features, bool selected, Action<string, int>? progressAction = null, Func<bool>? cancelFunc = null)
         {
-            if (proj == null || proj.Bound.IsEmpty || proj.Extent == null || proj.Extent.IsEmpty() || graphics == null || features == null || cancelFunc?.Invoke() == true)
+            if ( features == null || cancelFunc?.Invoke() == true)
             {
                 return;
             }
             var featureCategoryDic = GetFeatureAndCategoryDic(features);
+            Func<IGeometry, IGeometry> getGeometryFunc = (geometry) =>
+            {
+                IGeometry ret = geometry;
+                if (mapArgs.Projection != null && DataSet?.Projection != null && !mapArgs.Projection.Equals(DataSet.Projection))
+                {
+                    ret = geometry.Copy();
+                    DataSet.Projection.ReProject(mapArgs.Projection, ret);
+                }
+                return ret;
+            };
             foreach (var item in featureCategoryDic)
             {
                 if (cancelFunc?.Invoke() == true)
@@ -259,7 +278,8 @@ namespace EM.GIS.Symbology
                 {
                     continue;
                 }
-                DrawGeometry(proj, graphics, symbolizer, feature.Geometry);
+                var geometry = getGeometryFunc(feature.Geometry);
+                DrawGeometry(mapArgs, mapArgs.Graphics, symbolizer, geometry);
             }
         }
 

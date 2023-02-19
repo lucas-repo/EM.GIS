@@ -19,13 +19,25 @@ namespace EM.GIS.Geometries
         /// </summary>
         bool IsEmpty();
         /// <summary>
-        /// 几何集合
+        /// 获取几何体个数
         /// </summary>
-        ObservableCollection<IGeometry> Geometries { get; }
+        int GeometryCount { get; }
         /// <summary>
-        /// 几何集合
+        /// 获取指定的几何体
         /// </summary>
-        ObservableCollection<ICoordinate> Coordinates { get; }
+        /// <param name="index">索引</param>
+        /// <returns>几何体</returns>
+        IGeometry GetGeometry(int index);
+        /// <summary>
+        /// 获取点个数
+        /// </summary>
+        int CoordinateCount { get; }
+        /// <summary>
+        /// 获取指定点坐标
+        /// </summary>
+        /// <param name="index">索引</param>
+        /// <returns>点坐标</returns>
+        ICoordinate GetCoordinate(int index);
 
         /// <summary>
         /// 范围

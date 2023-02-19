@@ -30,23 +30,21 @@ namespace EM.GIS.Symbology
         }
         private void DrawPoint(IProj proj, Graphics graphics, IPointSymbolizer symbolizer, IGeometry geometry)
         {
-            if (geometry.Geometries.Count == 0)
+            if (geometry.GeometryCount == 0)
             {
                 float scaleSize = (float)symbolizer.GetScale(proj);
-                int pointCount = geometry.Coordinates.Count;
-                for (int j = 0; j < pointCount; j++)
+                for (int i = 0; i < geometry.CoordinateCount; i++)
                 {
-                    var coord = geometry.Coordinates[j];
+                    var coord = geometry.GetCoordinate(i);
                     PointF point = proj.ProjToPixelF(coord);
                     symbolizer.DrawPoint(graphics, scaleSize, point);
                 }
             }
             else
             {
-                int geoCount = geometry.Geometries.Count;
-                for (int i = 0; i < geoCount; i++)
+                for (int i = 0; i < geometry.GeometryCount; i++)
                 {
-                    var partGeo = geometry.Geometries[i];
+                    var partGeo = geometry.GetGeometry(i);
                     DrawPoint(proj, graphics, symbolizer, partGeo);
                 }
             }

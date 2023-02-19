@@ -39,13 +39,12 @@ namespace EM.GIS.Symbology
         }
         private void GetLines(IProj proj, IGeometry geometry, GraphicsPath path)
         {
-            if (geometry.Geometries.Count == 0)
+            if (geometry.CoordinateCount == 0)
             {
-                int pointCount = geometry.Coordinates.Count;
-                PointF[] points = new PointF[pointCount];
-                for (int j = 0; j < pointCount; j++)
+                PointF[] points = new PointF[geometry.CoordinateCount];
+                for (int j = 0; j < geometry.CoordinateCount; j++)
                 {
-                    var coord = geometry.Coordinates[j];
+                    var coord = geometry.GetCoordinate(j);
                     PointF point = proj.ProjToPixelF(coord);
                     points[j] = point;
                 }
@@ -59,10 +58,9 @@ namespace EM.GIS.Symbology
             }
             else
             {
-                int geoCount = geometry.Geometries.Count;
-                for (int i = 0; i < geoCount; i++)
+                for (int i = 0; i < geometry.GeometryCount; i++)
                 {
-                    var partGeo = geometry.Geometries[i];
+                    var partGeo = geometry.GetGeometry(i);
                     path.StartFigure();
                     GetLines(proj, partGeo, path);
                 }

@@ -88,14 +88,14 @@ namespace EM.GIS.Symbology
             }
             progressAction?.Invoke(ProgressMessage, 0);
             MapArgs destMapArgs = mapArgs;
-            if (mapArgs.Projection != null && DataSet?.Projection != null && !mapArgs.Projection.Equals(DataSet.Projection))
-            {
-                destMapArgs = mapArgs.Copy();
-                destMapArgs.Extent = mapArgs.DestExtent.Copy();
-                mapArgs.Projection.ReProject(DataSet.Projection, destMapArgs.Extent);
-                destMapArgs.DestExtent = mapArgs.DestExtent.Copy();
-                mapArgs.Projection.ReProject(DataSet.Projection, destMapArgs.DestExtent);
-            }
+            //if (mapArgs.Projection != null && DataSet?.Projection != null && !mapArgs.Projection.Equals(DataSet.Projection))
+            //{
+            //    destMapArgs = mapArgs.Copy();
+            //    destMapArgs.Extent = mapArgs.DestExtent.Copy();
+            //    mapArgs.Projection.ReProject(DataSet.Projection, destMapArgs.Extent);
+            //    destMapArgs.DestExtent = mapArgs.DestExtent.Copy();
+            //    mapArgs.Projection.ReProject(DataSet.Projection, destMapArgs.DestExtent);
+            //}
             ret = OnDraw(destMapArgs, selected, progressAction, cancelFunc, invalidateMapFrameAction);
             progressAction?.Invoke(ProgressMessage, 100);
             return ret;
