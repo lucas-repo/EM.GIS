@@ -10,10 +10,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="EM.Bases" Version="1.0.5-pre20221112-1" />
-  </ItemGroup>
-
-  <ItemGroup>
+    <ProjectReference Include="..\..\..\EM.Bases\EM.Bases\EM.Bases.csproj" />
     <ProjectReference Include="..\EM.GIS.Geometries\EM.GIS.Geometries.csproj" />
     <ProjectReference Include="..\EM.GIS\EM.GIS.csproj">
       <Private>False</Private>

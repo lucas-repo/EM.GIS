@@ -1,22 +1,14 @@
-﻿using BruTile.Tms;
-using EM.Bases;
-using EM.GIS.Controls;
+﻿using EM.GIS.Controls;
 using EM.GIS.Data;
 using EM.GIS.Symbology;
 using EM.IOC;
 using EM.WpfBases;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Win32;
 using System;
 using System.Collections.ObjectModel;
-using System.Configuration;
 using System.Linq;
-using System.Windows;
-using System.Windows.Controls.Primitives;
-using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Threading;
-using EM.GIS.Gdals;
 
 namespace EM.GIS.WPFControls.ViewModels
 {

@@ -1,4 +1,5 @@
 ﻿using EM.GIS.Geometries;
+using EM.IOC;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -124,6 +125,41 @@ namespace EM.GIS.Data
         public static IExtent ToExtent(this BruTile.Extent extent)
         {
             return new Extent(extent.MinX, extent.MinY, extent.MaxX, extent.MaxY);
+        }
+        /// <summary>
+        /// 将<see cref="IExtent"/>转为<see cref="BruTile.Extent"/>
+        /// </summary>
+        /// <param name="extent"><see cref="IExtent"/></param>
+        /// <returns><see cref="BruTile.Extent"/></returns>
+        public static  BruTile.Extent ToExtent(this IExtent extent)
+        {
+            return new BruTile.Extent(extent.MinX, extent.MinY, extent.MaxX, extent.MaxY);
+        }
+        /// <summary>
+        /// 将范围转为面
+        /// </summary>
+        /// <param name="extent">范围</param>
+        /// <returns>面</returns>
+        public static IGeometry? ToPolygon(this BruTile.Extent extent)
+        {
+            IGeometry? ret = null;
+            if (extent == null)
+            {
+                return ret;
+            }
+            var geometryFactory = IocManager.Default.GetService<IGeometryFactory>();
+            if (geometryFactory != null)
+            {
+                List<ICoordinate> coordinates =new List<ICoordinate>() { 
+                    new Coordinate(extent.MinX,extent.MinY),
+                    new Coordinate(extent.MaxX,extent.MinY),
+                    new Coordinate(extent.MaxX,extent.MaxY),
+                    new Coordinate(extent.MinX,extent.MaxY)
+                };
+                coordinates.Add(coordinates[0]);
+                ret = geometryFactory.GetPolygon(coordinates);
+            }
+            return ret;
         }
     }
 }

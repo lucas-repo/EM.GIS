@@ -7,17 +7,20 @@ namespace EM.GIS.Tools
     /// </summary>
     public class CityInfo:TreeItem
     {
-        public int Item { get;  }
-        public CityInfo(int value)
-        {
-            Item = value;
-            Text = value.ToString();
-        }
+        /// <summary>
+        /// 行政区划编号
+        /// </summary>
+        public int Adcode { get;  }
 
-        public CityInfo(int value, string text)
+        /// <summary>
+        /// 实例化<see cref="CityInfo"/>
+        /// </summary>
+        /// <param name="adcode">行政区划编号</param>
+        /// <param name="name">名称</param>
+        public CityInfo(int adcode, string name)
         {
-            Item = value;
-            Text = text;
+            Adcode = adcode;
+            Text = name;
         }
 
         private int _childrenNum;

@@ -2,12 +2,7 @@
 using EM.GIS.Controls;
 using EM.GIS.Symbology;
 using EM.IOC;
-using EM.WpfBases;
-using System;
 using System.Collections.ObjectModel;
-using System.Collections.Specialized;
-using System.ComponentModel;
-using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;

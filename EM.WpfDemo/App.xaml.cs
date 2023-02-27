@@ -54,7 +54,14 @@ namespace EM.WpfDemo
             ShutdownMode = ShutdownMode.OnExplicitShutdown;
             IocOptions iocOptions = new IocOptions();//ioc参数
             iocOptions.ServiceDirectories.AddRange(_privatePathes);
-            var iocManager = new MsIocManager(iocOptions);
+            if (IocManager.Default is MsIocManager iocManager)
+            {
+                iocManager.Initialize(iocOptions);
+            }
+            else
+            {
+                throw new Exception("容器管理器不能为空");
+            }
             //此处可设置优先启动登录窗体
             MainWindow window = new MainWindow(iocManager);//在主窗体中加载插件
             if (!(window.ShowDialog() ?? false))

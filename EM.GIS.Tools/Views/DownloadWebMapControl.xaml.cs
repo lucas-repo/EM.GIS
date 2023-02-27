@@ -1,4 +1,5 @@
-﻿using System;
+﻿using EM.GIS.Symbology;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -23,7 +24,17 @@ namespace EM.GIS.Tools
         public DownloadWebMapControl()
         {
             InitializeComponent();
-            DataContext=new DownloadWebMapViewModel(this);
+        }
+        /// <summary>
+        /// 初始化
+        /// </summary>
+        /// <param name="frame">地图框架</param>
+        public void Initialize(IFrame frame)
+        {
+            if (DataContext == null)
+            {
+                DataContext = new DownloadWebMapViewModel(this, frame);
+            }
         }
     }
 }

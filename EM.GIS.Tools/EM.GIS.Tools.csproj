@@ -17,13 +17,14 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="EM.WpfBases" Version="1.0.0" />
+		<PackageReference Include="HtmlAgilityPack" Version="1.11.46" />
 		<PackageReference Include="MaterialDesignThemes" Version="4.7.0" />
 		<PackageReference Include="NPOI" Version="2.6.0" />
 		<PackageReference Include="WindowsAPICodePack" Version="7.0.1" />
 	</ItemGroup>
 
 	<ItemGroup>
+		<ProjectReference Include="..\..\..\EM.Bases\EM.WpfBases\EM.WpfBases.csproj" />
 		<ProjectReference Include="..\..\..\EM.IOC\EM.IOC\EM.IOC.csproj" />
 		<ProjectReference Include="..\EM.GIS.CoordinateTransformation\EM.GIS.CoordinateTransformation.csproj" />
 		<ProjectReference Include="..\EM.GIS.GdalExtensions\EM.GIS.GdalExtensions.csproj" />

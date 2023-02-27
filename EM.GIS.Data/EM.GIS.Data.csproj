@@ -18,6 +18,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\..\EM.Bases\EM.Bases\EM.Bases.csproj" />
     <ProjectReference Include="..\..\..\EM.IOC\EM.IOC\EM.IOC.csproj" />
     <ProjectReference Include="..\EM.GIS.Geometries\EM.GIS.Geometries.csproj">
       <Private>false</Private>

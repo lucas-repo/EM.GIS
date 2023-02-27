@@ -19,11 +19,6 @@ namespace EM.GIS.Tools
     public class DownloadBoundariesViewModel : ViewModel<DownloadBoundariesControl>
     {
         /// <summary>
-        /// 域名
-        /// </summary>
-        private const string Domain = "https://geo.datav.aliyun.com";
-
-        /// <summary>
         /// 版本
         /// </summary>
         public ObservableCollection<string> Versions { get; }
@@ -242,7 +237,7 @@ namespace EM.GIS.Tools
             if (ds!=null)
             {
                 var layer = ds.GetLayerByIndex(0);
-                var url = GetUrl(Country?.Item, Province?.Item, City?.Item, District?.Item);
+                var url = GetUrl(Country?.Adcode, Province?.Adcode, City?.Adcode, District?.Adcode);
                 DownLoad(layer, jsonPath, url, false);
                 ds.FlushCache();
             }
@@ -347,7 +342,7 @@ namespace EM.GIS.Tools
                 case nameof(Country):
                     if (Country!=null)
                     {
-                        url=GetUrl(Country.Item, null, null, null);
+                        url=GetUrl(Country.Adcode, null, null, null);
                         jsonPath = GetJsonPath(Country.Text, null, null, null);
                         DownloadJson(url, jsonPath);
                         AddTreeItems(jsonPath,Provinces);
@@ -359,7 +354,7 @@ namespace EM.GIS.Tools
                     if (Province!=null)
                     {
                         IncludeChildrenVisible=Province.ChildrenNum>0;
-                        url=   GetUrl(Country?.Item, Province.Item, null, null);
+                        url=   GetUrl(Country?.Adcode, Province.Adcode, null, null);
                         jsonPath = GetJsonPath(Country?.Text, Province.Text, null, null);
                         DownloadJson(url, jsonPath);
                         AddTreeItems(jsonPath, Cities);
@@ -369,7 +364,7 @@ namespace EM.GIS.Tools
                     if (City!=null)
                     {
                         IncludeChildrenVisible=City.ChildrenNum>0;
-                        url=   GetUrl(Country?.Item, Province?.Item, City.Item, null);
+                        url=   GetUrl(Country?.Adcode, Province?.Adcode, City.Adcode, null);
                         jsonPath = GetJsonPath(Country?.Text, Province?.Text, City.Text, null);
                         DownloadJson(url, jsonPath);
                         AddTreeItems(jsonPath, Districts);
@@ -379,7 +374,7 @@ namespace EM.GIS.Tools
                     if (District!=null)
                     {
                         IncludeChildrenVisible=District.ChildrenNum>0;
-                        url=   GetUrl(Country?.Item, Province?.Item, City?.Item, District.Item);
+                        url=   GetUrl(Country?.Adcode, Province?.Adcode, City?.Adcode, District.Adcode);
                         jsonPath = GetJsonPath(Country?.Text, Province?.Text, City?.Text, District.Text);
                         DownloadJson(url, jsonPath);
                     }
@@ -389,9 +384,9 @@ namespace EM.GIS.Tools
         private string GetUrl(int adcode)
         {
             bool includeChildren = IncludeChildren&&IncludeChildrenVisible;
-            string extension = includeChildren ? $"_full.json" : ".json";
-            return $"{Domain}/{Version}/bound/{adcode}{extension}";
+            return BoundaryHelper.GetBoundaryUrl(adcode, includeChildren);
         }
+
         private string GetUrl(int? countryCode, int? provinceCode, int? cityCode, int? districtCode)
         {
             string url = string.Empty;

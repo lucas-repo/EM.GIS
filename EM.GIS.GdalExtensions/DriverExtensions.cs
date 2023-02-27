@@ -5,6 +5,9 @@ using System.Linq;
 
 namespace EM.GIS.GdalExtensions
 {
+    /// <summary>
+    /// 驱动扩展
+    /// </summary>
     public static class DriverExtensions
     {
         /// <summary>
@@ -92,6 +95,27 @@ namespace EM.GIS.GdalExtensions
                     }
                 }
             }
+        }
+        /// <summary>
+        /// 根据扩展名获取驱动
+        /// </summary>
+        /// <param name="extensions">扩展名</param>
+        /// <returns>驱动</returns>
+        public static OSGeo.GDAL.Driver GetGdalDriverByExtensions(this string extensions)
+        {
+            var driverName = extensions.ToUpper().Replace(".", "");
+            switch (driverName)
+            {
+                case "JPG":
+                    driverName = "JPEG";
+                    break;
+                case "TIF":
+                case "TIFF":
+                    driverName = "GTiff";
+                    break;
+            }
+            var ret = OSGeo.GDAL.Gdal.GetDriverByName(driverName);
+            return ret;
         }
 
     }

@@ -60,7 +60,7 @@ namespace EM.GIS.Tools
 
         private void OpenTools(object? obj)
         {
-            MainWindow window = new MainWindow();
+            MainWindow window = new MainWindow(WpfAppManager.Map.Frame);
             window.ShowDialog();
         }
 

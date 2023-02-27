@@ -1,4 +1,5 @@
 ﻿using EM.GIS.GdalExtensions;
+using EM.GIS.Symbology;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -9,7 +10,7 @@ namespace EM.GIS.Tools
     /// </summary>
     public partial class MainWindow : Window
     {
-        public MainWindow()
+        public MainWindow(IFrame frame)
         {
             InitializeComponent();
             GdalConfiguration.ConfigureOgr();
@@ -23,8 +24,8 @@ namespace EM.GIS.Tools
                     }
                 }
             }
+            downloadWebMapControl.Initialize(frame);
         }
-
         private void ReportProgress(string message, int percent)
         {
             Dispatcher.Invoke(() =>

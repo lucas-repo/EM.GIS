@@ -4,30 +4,65 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:EM.GIS.Tools"
-             xmlns:bases="em.ba"
+             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
              mc:Ignorable="d" 
-               d:DesignHeight="450" d:DesignWidth="800">
+             d:DesignHeight="600" d:DesignWidth="450">
     <UserControl.Resources>
         <local:BoolToStartString x:Key="boolToStartString"/>
+        <local:BoundTypeToVisibility x:Key="boundTypeToVisibility"/>
+        <Thickness x:Key="topMargin">0,10,0,0</Thickness>
     </UserControl.Resources>
     <Grid  Margin="20">
         <DockPanel IsEnabled="{Binding IsFree}">
-            <DockPanel Margin="0,20,0,0" DockPanel.Dock="Top">
-                <Label Content="边界：" DockPanel.Dock="Left" VerticalAlignment="Center"/>
-                <Button Content="浏览" DockPanel.Dock="Right" Command="{Binding BrowseCmd}" CommandParameter="BoundPath"/>
-                <TextBox Text="{Binding BoundPath}" Margin="5,0"/>
-            </DockPanel>
-            <WrapPanel Margin="0,20,0,0" DockPanel.Dock="Top">
-                <Label Content="地图：" />
-                <ComboBox Width="200" ItemsSource="{Binding WebMaps}" SelectedItem="{Binding WebMap}" DisplayMemberPath="Name"/>
-                <CheckBox Content="整个下载" IsChecked="{Binding IsEntire}" Margin="10,0,0,0"/>
-            </WrapPanel>
-            <DockPanel Margin="0,20,0,0" DockPanel.Dock="Top">
-                <Label Content="输出：" DockPanel.Dock="Left" VerticalAlignment="Center"/>
-                <Button Content="浏览" DockPanel.Dock="Right" Command="{Binding BrowseCmd}" CommandParameter="DestPath"/>
-                <TextBox Text="{Binding DestPath}" Margin="5,0"/>
-            </DockPanel>
-            <ScrollViewer VerticalScrollBarVisibility="Auto">
+            <StackPanel DockPanel.Dock="Top">
+                <DockPanel >
+                    <Label Content="任务名称："  DockPanel.Dock="Left"/>
+                    <TextBox Text="{Binding Name}" />
+                </DockPanel>
+                <DockPanel Margin="{StaticResource topMargin}">
+                    
+                    <Label Content="地图类型："  DockPanel.Dock="Left"/>
+                    <ComboBox ItemsSource="{Binding TileSets}" SelectedItem="{Binding TileSet}" DisplayMemberPath="Name"/>
+                </DockPanel>
+                <DockPanel  Margin="{StaticResource topMargin}">
+                    <Label Content="下载范围："  />
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition/>
+                            <ColumnDefinition Width="255"/>
+                        </Grid.ColumnDefinitions>
+                        <ComboBox ItemsSource="{Binding BoundTypes}" SelectedItem="{Binding BoundType}"/>
+                        <TextBox IsReadOnly="True" Grid.Column="1" Text="{Binding SelectedFeaturesStr}" Visibility="{Binding BoundType,Converter={StaticResource boundTypeToVisibility}}"/>
+                        <Grid Grid.Column="1" Visibility="{Binding BoundType,Converter={StaticResource boundTypeToVisibility},ConverterParameter=true}">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <ComboBox materialDesign:HintAssist.Hint="省" ItemsSource="{Binding Provinces}" SelectedItem="{Binding Province}"/>
+                            <ComboBox Grid.Column="1" materialDesign:HintAssist.Hint="市" ItemsSource="{Binding Cities}" SelectedItem="{Binding City}"/>
+                            <ComboBox Grid.Column="2" materialDesign:HintAssist.Hint="县" ItemsSource="{Binding Counties}" SelectedItem="{Binding County}"/>
+                        </Grid>
+                    </Grid>
+                </DockPanel>
+                <DockPanel  Margin="{StaticResource topMargin}">
+                    <Label Content="存储选项："  DockPanel.Dock="Left"/>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <ComboBox ItemsSource="{Binding OutTypes}" SelectedItem="{Binding OutType}" DisplayMemberPath="Name"/>
+                        <ComboBox Grid.Column="1" ItemsSource="{Binding Formats}" SelectedItem="{Binding Format}" />
+                    </Grid>
+                </DockPanel>
+                <DockPanel Margin="{StaticResource topMargin}">
+                    <Label Content="存储目录：" DockPanel.Dock="Left" VerticalAlignment="Center"/>
+                    <Button Content="浏览" DockPanel.Dock="Right" Command="{Binding BrowseCmd}" />
+                    <TextBox Text="{Binding OutDirectory}" Margin="0,0,5,0"/>
+                </DockPanel>
+            </StackPanel>
+            <ScrollViewer VerticalScrollBarVisibility="Auto" Margin="{StaticResource topMargin}">
                 <ItemsControl ItemsSource="{Binding Levels}" Grid.IsSharedSizeScope="True" Margin="12 0 12 0"  >
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
@@ -53,8 +88,8 @@
                 </ItemsControl>
 
             </ScrollViewer>
-            
+
         </DockPanel>
-        <Button Content="{Binding IsFree,Converter={StaticResource boolToStartString}}" Command="{Binding StartOrCancelCmd}" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="20"/>
+        <Button Content="{Binding IsFree,Converter={StaticResource boolToStartString},FallbackValue=开始}" Command="{Binding StartOrCancelCmd}" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="20"/>
     </Grid>
 </UserControl>

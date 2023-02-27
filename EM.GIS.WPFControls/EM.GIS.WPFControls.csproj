@@ -14,14 +14,13 @@
 	<ItemGroup>
 		<PackageReference Include="Dirkster.AvalonDock" Version="4.70.3" />
 		<PackageReference Include="Dirkster.AvalonDock.Themes.Metro" Version="4.70.3" />
-		<PackageReference Include="EM.Bases" Version="1.0.5-pre20221112-1" />
-		<PackageReference Include="EM.WpfBases" Version="1.0.0" />
 		<PackageReference Include="Microsoft.Extensions.Configuration" Version="7.0.0" />
 		<PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="7.0.0" />
 		<PackageReference Include="System.Drawing.Common" Version="7.0.0" />
 	</ItemGroup>
 
 	<ItemGroup>
+	  <ProjectReference Include="..\..\..\EM.Bases\EM.WpfBases\EM.WpfBases.csproj" />
 	  <ProjectReference Include="..\EM.GIS.Controls\EM.GIS.Controls.csproj">
 	    <Private>False</Private>
 	    <CopyLocalSatelliteAssemblies>False</CopyLocalSatelliteAssemblies>

@@ -24,7 +24,7 @@
                     <local:DownloadBoundariesControl/>
                 </TabItem>
                 <TabItem Header="下载在线地图">
-                    <local:DownloadWebMapControl/>
+                    <local:DownloadWebMapControl x:Name="downloadWebMapControl"/>
                 </TabItem>
                 <TabItem Header="修改Landsat8元数据">
                     <local:ModifyLandsatMtlControl/>

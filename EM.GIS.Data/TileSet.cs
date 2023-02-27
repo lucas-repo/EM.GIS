@@ -13,8 +13,6 @@ using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Xml.Linq;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace EM.GIS.Data
 {
@@ -34,13 +32,13 @@ namespace EM.GIS.Data
         private readonly PixelFormat[] IndexedPixelFormats =
             { PixelFormat.Undefined, PixelFormat.DontCare, PixelFormat.Format16bppArgb1555, PixelFormat.Format1bppIndexed, PixelFormat.Format4bppIndexed, PixelFormat.Format8bppIndexed };
         /// <inheritdoc/>
-        public override IEnumerable<IRasterSet> Rasters => Tiles.Values.Select(x=>x.Tile);
+        public override IEnumerable<IRasterSet> Rasters => Tiles.Values.Select(x => x.Tile);
         private IExtent extent;
         /// <inheritdoc/>
-        public override IExtent Extent 
+        public override IExtent Extent
         {
             get => extent;
-            set => extent = value; 
+            set => extent = value;
         }
         /// <summary>
         /// 初始化<seealso cref="Tiles"/>
@@ -64,7 +62,7 @@ namespace EM.GIS.Data
                     {
                         foreach (var item in Tiles)
                         {
-                            item.Value.Tile?.Dispose(); 
+                            item.Value.Tile?.Dispose();
                         }
                         Tiles.Clear();
                     }
@@ -164,20 +162,20 @@ namespace EM.GIS.Data
                     bool catchedException = false;//是否已捕捉异常
                     try
                     {
-                        data = httpTileSource.PersistentCache?.Find(tileInfo.Index);
-                        if (data == null)
-                        {
-                            data = await httpTileSource.GetTileAsync(tileInfo);
-                            if (data != null)
-                            {
-                                httpTileSource.PersistentCache?.Add(tileInfo.Index, data);
-                            }
-                        }
+                        //data = httpTileSource.PersistentCache?.Find(tileInfo.Index);
+                        //if (data == null)
+                        //{
+                        data = await httpTileSource.GetTileAsync(tileInfo);
+                        //if (data != null)
+                        //{
+                        //    httpTileSource.PersistentCache?.Add(tileInfo.Index, data);
+                        //}
+                        //}
                     }
                     catch (TaskCanceledException)
                     {
                         Debug.WriteLine($"已取消第{i}次下载瓦片 {tileInfo.Index.Level}_{tileInfo.Index.Col}_{tileInfo.Index.Row} ");
-                        catchedException=true;
+                        catchedException = true;
                     }
                     catch (Exception e)
                     {
@@ -258,9 +256,76 @@ namespace EM.GIS.Data
                 }
 
                 var zoom = TileCalculator.DetermineZoomLevel(geoExtent, rectangle, minZoom, maxZoom);
-                ret.AddRange(httpTileSource.Schema.GetTileInfos(new BruTile.Extent(extent.MinX, extent.MinY, extent.MaxX, extent.MaxY), zoom));
+                ret.AddRange(httpTileSource.Schema.GetTileInfos(extent.ToExtent(), zoom));
             }
-
+            return ret;
+        }
+        /// <inheritdoc/>
+        public List<TileInfo> GetTileInfos(IProj proj, IExtent extent)
+        {
+            if (proj == null || extent == null)
+            {
+                return new List<TileInfo>();
+            }
+            // 若为投影坐标系，记录投影坐标范围
+            IExtent geogExtent = extent.Copy();//地理范围
+            IExtent destExtent = extent.Copy();//要下载的地图范围
+            var destRectangle = proj.ProjToPixel(extent);
+            switch (Projection.EPSG)
+            {
+                case 3857:
+                    destExtent.MinX = TileCalculator.Clip(destExtent.MinX, TileCalculator.MinWebMercX, TileCalculator.MaxWebMercX);
+                    destExtent.MaxX = TileCalculator.Clip(destExtent.MaxX, TileCalculator.MinWebMercX, TileCalculator.MaxWebMercX);
+                    destExtent.MinY = TileCalculator.Clip(destExtent.MinY, TileCalculator.MinWebMercY, TileCalculator.MaxWebMercY);
+                    destExtent.MaxY = TileCalculator.Clip(destExtent.MaxY, TileCalculator.MinWebMercY, TileCalculator.MaxWebMercY);
+                    destRectangle = proj.ProjToPixel(destExtent);
+                    geogExtent = destExtent.Copy();
+                    Projection.ReProject(4326, geogExtent);
+                    break;
+                case 4326:
+                    destExtent.MinX = TileCalculator.Clip(destExtent.MinX, TileCalculator.MinLongitude, TileCalculator.MaxLongitude);
+                    destExtent.MinX = TileCalculator.Clip(destExtent.MaxX, TileCalculator.MinLongitude, TileCalculator.MaxLongitude);
+                    destExtent.MinY = TileCalculator.Clip(destExtent.MinY, TileCalculator.MinLatitude, TileCalculator.MaxLatitude);
+                    destExtent.MaxY = TileCalculator.Clip(destExtent.MaxY, TileCalculator.MinLatitude, TileCalculator.MaxLatitude);
+                    destRectangle = proj.ProjToPixel(destExtent);
+                    geogExtent = destExtent.Copy();
+                    break;
+                default:
+                    throw new Exception($"不支持的坐标系 {Projection.EPSG}");
+            }
+            var tileInfos = GetTileInfos(geogExtent, destExtent, destRectangle); // 计算要下载的瓦片
+            return tileInfos;
+        }
+        /// <inheritdoc/>
+        public List<TileInfo> GetTileInfos(int level, IExtent extent)
+        {
+            List<TileInfo> ret = new List<TileInfo>();
+            if (level < 0 || extent == null)
+            {
+                return ret;
+            }
+            var destExtent = extent.ToExtent();
+            ret.AddRange(TileSource.Schema.GetTileInfos(destExtent, level));
+            return ret;
+        }
+        /// <inheritdoc/>
+        public List<TileInfo> GetTileInfos(int level, IGeometry geometry)
+        {
+            List<TileInfo> ret = new List<TileInfo>();
+            if (level < 0 || geometry == null)
+            {
+                return ret;
+            }
+            var destExtent = geometry.GetExtent().ToExtent();
+            var tileInfos = TileSource.Schema.GetTileInfos(destExtent, level);
+            foreach (var tileInfo in tileInfos)
+            {
+                var tileGeo = tileInfo.Extent.ToPolygon();
+                if (geometry.Intersects(tileGeo))
+                {
+                    ret.Add(tileInfo);
+                }
+            }
             return ret;
         }
     }

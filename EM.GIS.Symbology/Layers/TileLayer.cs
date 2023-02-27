@@ -98,7 +98,7 @@ namespace EM.GIS.Symbology
             
                 if (cancelFunc?.Invoke() == true) return ret;
 
-                var tileInfos = GetTileInfos(mapArgs, mapArgs.DestExtent); // 计算要下载的瓦片
+                var tileInfos = DataSet.GetTileInfos(mapArgs, mapArgs.DestExtent); // 计算要下载的瓦片
                 progressAction?.Invoke(ProgressMessage, 5);
                 #region 绘制瓦片
                 if (tileInfos.Count > 0)
@@ -177,44 +177,6 @@ namespace EM.GIS.Symbology
             }
             return ret;
         }
-        private List<TileInfo> GetTileInfos(IProj proj,IExtent extent)
-        {
-            if (DataSet == null)
-            {
-                return new List<TileInfo>();
-            }
-            else
-            {
-                // 若为投影坐标系，记录投影坐标范围
-                IExtent geogExtent = extent.Copy();//地理范围
-                IExtent destExtent = extent.Copy();//要下载的地图范围
-                var destRectangle = proj.ProjToPixel(extent);
-                switch (DataSet.Projection.EPSG)
-                {
-                    case 3857:
-                        destExtent.MinX = TileCalculator.Clip(destExtent.MinX, TileCalculator.MinWebMercX, TileCalculator.MaxWebMercX);
-                        destExtent.MaxX = TileCalculator.Clip(destExtent.MaxX, TileCalculator.MinWebMercX, TileCalculator.MaxWebMercX);
-                        destExtent.MinY = TileCalculator.Clip(destExtent.MinY, TileCalculator.MinWebMercY, TileCalculator.MaxWebMercY);
-                        destExtent.MaxY = TileCalculator.Clip(destExtent.MaxY, TileCalculator.MinWebMercY, TileCalculator.MaxWebMercY);
-                        destRectangle = proj.ProjToPixel(destExtent);
-                        geogExtent = destExtent.Copy();
-                        DataSet.Projection.ReProject(4326, geogExtent);
-                        break;
-                    case 4326:
-                        destExtent.MinX = TileCalculator.Clip(destExtent.MinX, TileCalculator.MinLongitude, TileCalculator.MaxLongitude);
-                        destExtent.MinX = TileCalculator.Clip(destExtent.MaxX, TileCalculator.MinLongitude, TileCalculator.MaxLongitude);
-                        destExtent.MinY = TileCalculator.Clip(destExtent.MinY, TileCalculator.MinLatitude, TileCalculator.MaxLatitude);
-                        destExtent.MaxY = TileCalculator.Clip(destExtent.MaxY, TileCalculator.MinLatitude, TileCalculator.MaxLatitude);
-                        destRectangle = proj.ProjToPixel(destExtent);
-                        geogExtent = destExtent.Copy();
-                        break;
-                    default:
-                        throw new Exception($"不支持的坐标系 {DataSet.Projection.EPSG}");
-                }
-                var tileInfos = GetTileInfos(geogExtent, destExtent, destRectangle); // 计算要下载的瓦片
-                return tileInfos;
-            }
-        }
         /// <inheritdoc/>
         public override bool IsDrawingInitialized(IProj proj, IExtent extent)
         {
@@ -223,7 +185,7 @@ namespace EM.GIS.Symbology
             {
                 return ret;
             }
-            var tileInfos = GetTileInfos( proj,  extent); // 计算要下载的瓦片
+            var tileInfos = DataSet.GetTileInfos( proj,  extent); // 计算要下载的瓦片
             if (tileInfos.Count == 0)
             {
                 ret = true;
@@ -258,7 +220,7 @@ namespace EM.GIS.Symbology
                 progressAction?.Invoke(10);
                 if (cancelFunc?.Invoke() == true) return;
 
-                var tileInfos = GetTileInfos(proj, extent); // 计算要下载的瓦片
+                var tileInfos =DataSet.GetTileInfos(proj, extent); // 计算要下载的瓦片
                 if (tileInfos.Count > 0)
                 {
                     progressAction?.Invoke(30);
@@ -371,32 +333,5 @@ namespace EM.GIS.Symbology
                 Debug.WriteLine($"{nameof(InitializeDrawing)}失败，{ex}");
             }
         }
-        /// <summary>
-        /// 根据范围获取范围内所有的瓦片信息集合
-        /// </summary>
-        /// <param name="geoExtent">所需下载的地理坐标系范围</param>
-        /// <param name="extent">所需下载的范围</param>
-        /// <param name="rectangle">窗口大小</param>
-        /// <returns>瓦片信息集合</returns>
-        public List<TileInfo> GetTileInfos(IExtent geoExtent, IExtent extent, RectangleF rectangle)
-        {
-            var ret = new List<TileInfo>();
-            int minZoom = 0, maxZoom = 18;
-            if (DataSet?.TileSource is HttpTileSource httpTileSource)
-            {
-                var levels = httpTileSource.Schema.Resolutions.Keys;
-                if (levels.Count > 0)
-                {
-                    minZoom = levels.First();
-                    maxZoom = levels.Last();
-                }
-
-                var zoom = TileCalculator.DetermineZoomLevel(geoExtent, rectangle, minZoom, maxZoom);
-                ret.AddRange(httpTileSource.Schema.GetTileInfos(new BruTile.Extent(extent.MinX, extent.MinY, extent.MaxX, extent.MaxY), zoom));
-            }
-
-            return ret;
-        }
-       
     }
 }

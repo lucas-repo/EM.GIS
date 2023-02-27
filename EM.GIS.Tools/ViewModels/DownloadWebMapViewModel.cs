@@ -3,23 +3,22 @@ using BruTile.Cache;
 using BruTile.Predefined;
 using BruTile.Web;
 using EM.Bases;
+using EM.GIS.Data;
 using EM.GIS.GdalExtensions;
-using EM.WpfBases;
-using Microsoft.Win32;
+using EM.GIS.Geometries;
+using EM.GIS.Symbology;
+using Microsoft.WindowsAPICodePack.Dialogs;
 using OSGeo.GDAL;
 using OSGeo.OGR;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
-using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Shell;
-using System.Windows.Threading;
 
 namespace EM.GIS.Tools
 {
@@ -29,116 +28,297 @@ namespace EM.GIS.Tools
     public class DownloadWebMapViewModel : ReportableViewModel<DownloadWebMapControl>
     {
         private readonly string _wkt;
-        private string _boundPath;
+        private string name;
         /// <summary>
-        /// 边界路径
+        /// 名称
         /// </summary>
-        public string BoundPath
+        public string Name
         {
-            get { return _boundPath; }
-            set { SetProperty(ref _boundPath, value); }
+            get { return name; }
+            set { SetProperty(ref name, value); }
         }
-        private bool _isEntire = true;
+
         /// <summary>
-        /// 是否输出整体
+        /// 瓦片数据集集合
         /// </summary>
-        public bool IsEntire
+        public ObservableCollection<ITileSet> TileSets { get; }
+        private ITileSet tileSet;
+        /// <summary>
+        /// 瓦片数据集
+        /// </summary>
+        public ITileSet TileSet
         {
-            get { return _isEntire; }
-            set { SetProperty(ref _isEntire, value); }
+            get { return tileSet; }
+            set { SetProperty(ref tileSet, value); }
         }
+
+        /// <summary>
+        /// 输出类型集合
+        /// </summary>
+        public ObservableCollection<OutType> OutTypes { get; }
+        private OutType outType;
+        /// <summary>
+        /// 输出类型
+        /// </summary>
+        public OutType OutType
+        {
+            get { return outType; }
+            set { SetProperty(ref outType, value); }
+        }
+        /// <summary>
+        /// 输出格式集合
+        /// </summary>
+        public ObservableCollection<ImageFormat> Formats { get; }
+        private ImageFormat format;
+        /// <summary>
+        /// 输出格式
+        /// </summary>
+        public ImageFormat Format
+        {
+            get { return format; }
+            set { SetProperty(ref format, value); }
+        }
+        /// <summary>
+        /// 范围类型集合
+        /// </summary>
+        public ObservableCollection<BoundType> BoundTypes { get; }
+        private BoundType boundType;
+        /// <summary>
+        /// 范围类型
+        /// </summary>
+        public BoundType BoundType
+        {
+            get { return boundType; }
+            set { SetProperty(ref boundType, value); }
+        }
+        private string selectedFeaturesStr;
+        /// <summary>
+        /// 已选择的要素字符串
+        /// </summary>
+        public string SelectedFeaturesStr
+        {
+            get { return selectedFeaturesStr; }
+            set { SetProperty(ref selectedFeaturesStr, value); }
+        }
+        /// <summary>
+        /// 省集合
+        /// </summary>
+        public ObservableCollection<CityInfo> Provinces { get; }
+        private CityInfo province;
+        /// <summary>
+        /// 省
+        /// </summary>
+        public CityInfo Province
+        {
+            get { return province; }
+            set { SetProperty(ref province, value); }
+        }
+        /// <summary>
+        /// 市集合
+        /// </summary>
+        public ObservableCollection<CityInfo> Cities { get; }
+        private CityInfo city;
+        /// <summary>
+        /// 市
+        /// </summary>
+        public CityInfo City
+        {
+            get { return city; }
+            set { SetProperty(ref city, value); }
+        }
+        /// <summary>
+        /// 县集合
+        /// </summary>
+        public ObservableCollection<CityInfo> Counties { get; }
+        private CityInfo county;
+        /// <summary>
+        /// 县
+        /// </summary>
+        public CityInfo County
+        {
+            get { return county; }
+            set { SetProperty(ref county, value); }
+        }
+
         /// <summary>
         /// 级别
         /// </summary>
         public ObservableCollection<SelectableItem<int>> Levels { get; }
 
+        private string outDirectory;
         /// <summary>
-        /// 在线地图集合
+        /// 输出目录
         /// </summary>
-        public ObservableCollection<WebMapInfo> WebMaps { get; }
-        private WebMapInfo _webMap;
-        /// <summary>
-        /// 在线地图
-        /// </summary>
-        public WebMapInfo WebMap
+        public string OutDirectory
         {
-            get { return _webMap; }
-            set { SetProperty(ref _webMap, value); }
-        }
-
-        private string _destPath;
-        /// <summary>
-        /// 输出路径
-        /// </summary>
-        public string DestPath
-        {
-            get { return _destPath; }
-            set { SetProperty(ref _destPath, value); }
+            get { return outDirectory; }
+            set { SetProperty(ref outDirectory, value); }
         }
         /// <summary>
         /// 下载或取消
         /// </summary>
         public DelegateCommand StartOrCancelCmd { get; }
-        public DelegateCommand<string> BrowseCmd { get; }
+        /// <summary>
+        /// 浏览命令
+        /// </summary>
+        public DelegateCommand BrowseCmd { get; }
 
         private object _lockObj = new object();
-        public DownloadWebMapViewModel(DownloadWebMapControl t) : base(t)
-        {
-            _wkt = @"PROJCS[\”WGS_1984_Web_Mercator_Auxiliary_Sphere\”,GEOGCS[\”GCS_WGS_1984\”,DATUM[\”D_WGS_1984\”,SPHEROID[\”WGS_1984\”,6378137.0,298.257223563]],PRIMEM[\”Greenwich\”,0.0],UNIT[\”Degree\”,0.0174532925199433]],PROJECTION[\”Mercator_Auxiliary_Sphere\”],PARAMETER[\”False_Easting\”,0.0],PARAMETER[\”False_Northing\”,0.0],PARAMETER[\”Central_Meridian\”,0.0],PARAMETER[\”Standard_Parallel_1\”,0.0],PARAMETER[\”Auxiliary_Sphere_Type\”,0.0],UNIT[\”Meter\”,1.0],AUTHORITY[\”EPSG\”,3857]]";
-            WebMaps = new ObservableCollection<WebMapInfo>()
-            {
-                new  WebMapInfo("谷歌影像",0,19,"https://mt{s}.s02.bygczhyunone.com/vt/lyrs=s&hl=zh-CN&x={x}&y={y}&z={z}&s=Galileo",new string[]{ "0", "1", "2", "3"})
-            };
+        /// <summary>
+        /// 空白地区信息
+        /// </summary>
+        private readonly CityInfo BlankCityInfo = new CityInfo(0, "");
 
+        public DownloadWebMapViewModel(DownloadWebMapControl t, IFrame frame) : base(t)
+        {
+            Frame = frame ?? throw new ArgumentNullException(nameof(frame));
+            TileSets = new ObservableCollection<ITileSet>();
+            var tileLayers = frame.Children.GetAllItems<ITileLayer>();
+            foreach (var tileLayer in tileLayers)
+            {
+                if (tileLayer.DataSet != null)
+                {
+                    TileSets.Add(tileLayer.DataSet);
+                }
+            }
+            _wkt = @"PROJCS[\”WGS_1984_Web_Mercator_Auxiliary_Sphere\”,GEOGCS[\”GCS_WGS_1984\”,DATUM[\”D_WGS_1984\”,SPHEROID[\”WGS_1984\”,6378137.0,298.257223563]],PRIMEM[\”Greenwich\”,0.0],UNIT[\”Degree\”,0.0174532925199433]],PROJECTION[\”Mercator_Auxiliary_Sphere\”],PARAMETER[\”False_Easting\”,0.0],PARAMETER[\”False_Northing\”,0.0],PARAMETER[\”Central_Meridian\”,0.0],PARAMETER[\”Standard_Parallel_1\”,0.0],PARAMETER[\”Auxiliary_Sphere_Type\”,0.0],UNIT[\”Meter\”,1.0],AUTHORITY[\”EPSG\”,3857]]";
+            OutTypes = new ObservableCollection<OutType>();
+            OutTypes.AddEnums();
+            OutType = OutTypes.FirstOrDefault();
+            Formats = new ObservableCollection<ImageFormat>();
+            BoundTypes = new ObservableCollection<BoundType>();
+            BoundTypes.AddEnums();
+
+            Provinces = new ObservableCollection<CityInfo>(BoundaryHelper.GetCityInfos());
+            Provinces.Insert(0, BlankCityInfo);
+            Cities = new ObservableCollection<CityInfo>();
+            Counties = new ObservableCollection<CityInfo>();
             Levels = new ObservableCollection<SelectableItem<int>>();
             StartOrCancelCmd = new DelegateCommand(StartOrCancel, CanDownload);
-            BrowseCmd = new DelegateCommand<string>(Browse);
+            BrowseCmd = new DelegateCommand(Browse);
 
             PropertyChanged += DownloadWebMapViewModel_PropertyChanged;
-            WebMap = WebMaps.First();
+            var tileset = TileSets.FirstOrDefault();
+            if (tileset != null)
+            {
+                TileSet = tileset;
+            }
+            BoundType = BoundTypes.FirstOrDefault();
         }
 
-        private void Browse(string name)
+        private void Browse()
         {
-            switch (name)
+            var dg = new CommonOpenFileDialog()
             {
-                case nameof(BoundPath):
-                    OpenFileDialog dg = new OpenFileDialog()
-                    {
-                        Filter = "*.shp|*.shp"
-                    };
-                    if (dg.ShowDialog() == true)
-                    {
-                        BoundPath = dg.FileName;
-                    }
-                    break;
-                case nameof(DestPath):
-                    SaveFileDialog saveFileDialog = new SaveFileDialog()
-                    {
-                        Filter = "*.tif|*.tif"
-                    };
-                    if (saveFileDialog.ShowDialog() == true)
-                    {
-                        DestPath = saveFileDialog.FileName;
-                    }
-                    break;
+                IsFolderPicker = true
+            };
+            if (dg.ShowDialog() == CommonFileDialogResult.Ok)
+            {
+                OutDirectory = dg.FileName;
             }
         }
-
+        private void ResetCollection(ObservableCollection<CityInfo> cityInfos, CityInfo parent)
+        {
+            cityInfos.Clear();
+            if (parent != null)
+            {
+                cityInfos.Add(BlankCityInfo);
+                foreach (var city in parent.Children)
+                {
+                    if (city is CityInfo cityInfo)
+                    {
+                        cityInfos.Add(cityInfo);
+                    }
+                }
+            }
+        }
+        private IFrame Frame { get; }
+        private IEnumerable<IGeometry> GetSelectedPolygons()
+        {
+            if (Frame != null)
+            {
+                foreach (var item in Frame.Children)
+                {
+                    if (item is IFeatureLayer layer && layer.GetVisible() && layer.DataSet?.FeatureType == FeatureType.Polygon && layer.Selection.Count > 0)
+                    {
+                        foreach (var feature in layer.Selection)
+                        {
+                            yield return feature.Geometry;
+                        }
+                    }
+                }
+            }
+        }
         private void DownloadWebMapViewModel_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
             switch (e.PropertyName)
             {
-                case nameof(WebMap):
+                case nameof(TileSet):
                     Levels.Clear();
-                    for (int i = WebMap.MinLevel; i <= WebMap.MaxLevel; i++)
+                    var minLevel = TileSet.TileSource.Schema.Resolutions.Min(x => x.Key);
+                    var maxLevel = TileSet.TileSource.Schema.Resolutions.Min(x => x.Key);
+                    for (int i = minLevel; i <= maxLevel; i++)
                     {
                         Levels.Add(new SelectableItem<int>() { Item = i, Text = $"第{i}级", IsSelected = true });
                     }
                     StartOrCancelCmd.RaiseCanExecuteChanged();
                     break;
-                case nameof(BoundPath):
-                case nameof(DestPath):
+                case nameof(OutType):
+                    Formats.Clear();
+                    switch (OutType)
+                    {
+                        case OutType.Splice:
+                            Formats.Add(ImageFormat.TIF);
+                            break;
+                        case OutType.GoogleTiles:
+                            Formats.Add(ImageFormat.JPG);
+                            Formats.Add(ImageFormat.PNG);
+                            break;
+                        case OutType.MBTiles:
+                            Formats.Add(ImageFormat.JPG);
+                            Formats.Add(ImageFormat.PNG);
+                            break;
+                    }
+                    if (Formats.Count > 0)
+                    {
+                        Format = Formats.First();
+                    }
+                    break;
+                case nameof(BoundType):
+                    switch (BoundType)
+                    {
+                        case BoundType.SelectedFeatures:
+                            SelectedFeaturesStr = $"已选择 {GetSelectedPolygons().Count()} 个面";
+                            break;
+                        case BoundType.China:
+                            if (Province == null)
+                            {
+                                var firstProvince = Provinces.FirstOrDefault();
+                                if (firstProvince != null)
+                                {
+                                    Province = firstProvince;
+                                }
+                            }
+                            break;
+                    }
+                    break;
+                case nameof(Province):
+                    ResetCollection(Cities, Province);
+                    var firstCity = Cities.FirstOrDefault();
+                    if (firstCity != null)
+                    {
+                        City = firstCity;
+                    }
+                    break;
+                case nameof(City):
+                    ResetCollection(Counties, City);
+                    var firstCounty = Counties.FirstOrDefault();
+                    if (firstCounty != null)
+                    {
+                        County = firstCounty;
+                    }
+                    break;
+                case nameof(OutDirectory):
                     StartOrCancelCmd.RaiseCanExecuteChanged();
                     break;
             }
@@ -146,128 +326,145 @@ namespace EM.GIS.Tools
 
         private bool CanDownload()
         {
-            return File.Exists(BoundPath) && WebMap != null && !string.IsNullOrEmpty(DestPath);
+            return true;
+            //return File.Exists(BoundPath) && WebMap != null && !string.IsNullOrEmpty(DestPath);
         }
-        public static Extent ToExtent(Envelope envelope)
+        public static BruTile.Extent ToExtent(Envelope envelope)
         {
-            Extent extent = new(envelope.MinX, envelope.MinY, envelope.MaxX, envelope.MaxY);
+            var extent = new BruTile.Extent(envelope.MinX, envelope.MinY, envelope.MaxX, envelope.MaxY);
             return extent;
         }
-        private void Download(HttpTileSource tileSource, Extent extent, string path)
+        private void DownloadSplice(Dictionary<int, List<TileInfo>> levelAndTileInfos)
         {
-            var directory = Path.GetDirectoryName(path);
-            if (directory == null)
+            if (!(TileSet?.TileSource is HttpTileSource httpTileSource))
             {
                 return;
             }
-            var name = Path.GetFileNameWithoutExtension(path);
-            var extension = Path.GetExtension(path);
-            using var driver = Gdal.GetDriverByName("GTiff");
-            IEnumerable<TileInfo>? tileInfos;
-            int tileWidth = 256, tileHeight = 256;
-            int bandCount = 3;
-            int[] bandMap = { 3, 2, 1 };
-            string[] option = { "TILED=YES", "COMPRESS=DEFLATE", "BIGTIFF=YES" };
-            foreach (var level in Levels)
+            foreach (var item in levelAndTileInfos)
             {
-                if (!level.IsSelected)
+                var level = item.Key;
+                var tileInfos = item.Value;
+                DownloadTiles(tileInfos);
+                int tileWidth = 256, tileHeight = 256;
+                int bandCount = 3;
+                int[] bandMap = { 3, 2, 1 };
+                using var dataset = CreateDataset(level, tileInfos);
+                if (dataset == null)
                 {
-                    continue;
+                    return;
                 }
-                tileInfos = tileSource.Schema.GetTileInfos(extent, level.Item);
-                if (tileInfos != null)
+                if (httpTileSource.PersistentCache is FileCache fileCache)
                 {
-                    if (tileInfos.Count() < 16)
-                    {
-                        continue;
-                    }
                     var minCol = tileInfos.Min(x => x.Index.Col);
                     var minRow = tileInfos.Min(x => x.Index.Row);
-                    var maxCol = tileInfos.Max(x => x.Index.Col);
-                    var maxRow = tileInfos.Max(x => x.Index.Row);
-                    var minX = tileInfos.Min(x => x.Extent.MinX);
-                    var minY = tileInfos.Min(x => x.Extent.MinY);
-                    var maxX = tileInfos.Max(x => x.Extent.MaxX);
-                    var maxY = tileInfos.Max(x => x.Extent.MaxY);
-                    int imgWidth = tileWidth * (maxCol - minCol + 1);
-                    int imgHeight = tileHeight * (maxRow - minRow + 1);
-                    var destPath = Path.Combine(directory, $"{name}{level.Item}{extension}");
-                    DriverExtensions.DeleteDataSource(destPath);
-                    using var dataset = driver.Create(destPath, imgWidth, imgHeight, bandCount, DataType.GDT_Byte, option);
-                    double destXResolution = (maxX - minX) / imgWidth;
-                    double destYResolution = (maxY - minY) / imgHeight;
-                    double[] affine = { minX, destXResolution, 0, maxY, 0, -destYResolution };
-                    dataset.SetGeoTransform(affine);
-                    var err = dataset.SetProjection(_wkt);
-                    var pj = dataset.GetProjection();
-                    int pixelSpace = bandCount;
-                    int lineSpace = bandCount * tileWidth;
-                    if (tileSource.PersistentCache is FileCache fileCache)
+                    int totalCount = tileInfos.Count();
+                    int successCount = 0;
+                    int cacheCount = 0;
+                    byte[] bytes;
+                    Parallel.ForEach(tileInfos, (tileInfo) =>
                     {
-                        int totalCount = tileInfos.Count();
-                        int successCount = 0;
-                        int cacheCount = 0;
-                        byte[] bytes;
-                        Parallel.ForEach(tileInfos, (tileInfo) =>
+                        if (Cancellation.IsCancellationRequested)
                         {
-                            if (Cancellation.IsCancellationRequested)
-                            {
-                                return;
-                            }
-                            var filename = fileCache.GetFileName(tileInfo.Index);
-                            if (!File.Exists(filename))
-                            {
-                                try
-                                {
-                                    var task = tileSource.GetTileAsync(tileInfo);
-                                    task.ConfigureAwait(false);
-                                    bytes = task.Result;
-                                }
-                                catch (Exception e)
-                                {
-                                    Console.WriteLine(e);
-                                }
-                                if (!File.Exists(filename))
-                                {
-                                    return;
-                                }
-                            }
-                            var xOff = (tileInfo.Index.Col - minCol) * tileWidth;
-                            var yOff = (tileInfo.Index.Row - minRow) * tileHeight;
+                            return;
+                        }
+                        var filename = fileCache.GetFileName(tileInfo.Index);
+                        if (!File.Exists(filename))
+                        {
                             try
                             {
-                                lock (_lockObj)
-                                {
-                                    byte[] buffer = new byte[tileWidth * tileHeight * bandCount];
-                                    using (var tileDataset = Gdal.Open(filename, Access.GA_ReadOnly))
-                                    {
-                                        tileDataset.ReadRaster(0, 0, tileWidth, tileHeight, buffer, tileWidth, tileHeight, bandCount, bandMap, 0, 0, 0);
-                                    }
-                                    dataset.WriteRaster(xOff, yOff, tileWidth, tileHeight, buffer, tileWidth, tileHeight, bandCount, bandMap, 0, 0, 0);
-                                    cacheCount++;
-                                    successCount++;
-                                    if (cacheCount == 500)
-                                    {
-                                        dataset.FlushCache();
-                                        cacheCount = 0;
-                                    }
-                                }
-                                ProgressAction?.Invoke($"第{level.Item}级下载中", successCount * 100 / totalCount);
+                                var task = httpTileSource.GetTileAsync(tileInfo);
+                                task.ConfigureAwait(false);
+                                bytes = task.Result;
                             }
                             catch (Exception e)
                             {
-                                Console.WriteLine($"{tileInfo.Index.Level}_{tileInfo.Index.Col}_{tileInfo.Index.Row}下载失败：{e}");
+                                Console.WriteLine(e);
                             }
-                        });
+                            if (!File.Exists(filename))
+                            {
+                                return;
+                            }
+                        }
+                        var xOff = (tileInfo.Index.Col - minCol) * tileWidth;
+                        var yOff = (tileInfo.Index.Row - minRow) * tileHeight;
+                        try
+                        {
+                            lock (_lockObj)
+                            {
+                                byte[] buffer = new byte[tileWidth * tileHeight * bandCount];
+                                using (var tileDataset = Gdal.Open(filename, Access.GA_ReadOnly))
+                                {
+                                    tileDataset.ReadRaster(0, 0, tileWidth, tileHeight, buffer, tileWidth, tileHeight, bandCount, bandMap, 0, 0, 0);
+                                }
+                                dataset.WriteRaster(xOff, yOff, tileWidth, tileHeight, buffer, tileWidth, tileHeight, bandCount, bandMap, 0, 0, 0);
+                                cacheCount++;
+                                successCount++;
+                                if (cacheCount == 500)
+                                {
+                                    dataset.FlushCache();
+                                    cacheCount = 0;
+                                }
+                            }
+                            ProgressAction?.Invoke($"第{level}级下载中", successCount * 100 / totalCount);
+                        }
+                        catch (Exception e)
+                        {
+                            Console.WriteLine($"{tileInfo.Index.Level}_{tileInfo.Index.Col}_{tileInfo.Index.Row}下载失败：{e}");
+                        }
+                    });
 
-                        ProgressAction?.Invoke($"第{level.Item}级写入缓存中", 99);
-                        dataset.FlushCache();
-                        ProgressAction?.Invoke($"第{level.Item}级创建金字塔中", 99);
-                        dataset.BuildOverviews(); //创建金字塔
-                    }
+                    ProgressAction?.Invoke($"第{level}级写入缓存中", 99);
+                    dataset.FlushCache();
+                    //ProgressAction?.Invoke($"第{level.Item}级创建金字塔中", 99);
+                    //dataset.BuildOverviews(); //创建金字塔
                 }
             }
         }
+        private Dataset? CreateDataset(int level, IEnumerable<TileInfo> tileInfos, int tileWidth = 256, int tileHeight = 256, int bandCount = 3)
+        {
+            Dataset? dataset = null;
+            if (TileSet == null || string.IsNullOrEmpty(OutDirectory) || string.IsNullOrEmpty(Name))
+            {
+                return dataset;
+            }
+            using var driver = Format.ToString().GetGdalDriverByExtensions();
+            if (driver == null)
+            {
+                return dataset;
+            }
+
+            var minCol = tileInfos.Min(x => x.Index.Col);
+            var minRow = tileInfos.Min(x => x.Index.Row);
+            var maxCol = tileInfos.Max(x => x.Index.Col);
+            var maxRow = tileInfos.Max(x => x.Index.Row);
+            var minX = tileInfos.Min(x => x.Extent.MinX);
+            var minY = tileInfos.Min(x => x.Extent.MinY);
+            var maxX = tileInfos.Max(x => x.Extent.MaxX);
+            var maxY = tileInfos.Max(x => x.Extent.MaxY);
+            int imgWidth = tileWidth * (maxCol - minCol + 1);
+            int imgHeight = tileHeight * (maxRow - minRow + 1);
+            if (imgWidth == 0 || imgHeight == 0)
+            {
+                return dataset;
+            }
+
+            if (!Directory.Exists(OutDirectory))
+            {
+                Directory.CreateDirectory(OutDirectory);
+            }
+            string destPath = Path.Combine(OutDirectory, $"{Name}_{level}.{format.ToString().ToLower()}");
+            DriverExtensions.DeleteDataSource(destPath);
+            string[] option = { "TILED=YES", "COMPRESS=DEFLATE", "BIGTIFF=YES" };
+            dataset = driver.Create(destPath, imgWidth, imgHeight, bandCount, DataType.GDT_Byte, option);
+            double destXResolution = (maxX - minX) / imgWidth;
+            double destYResolution = (maxY - minY) / imgHeight;
+            double[] affine = { minX, destXResolution, 0, maxY, 0, -destYResolution };
+            var err = dataset.SetGeoTransform(affine);
+            var wkt = TileSet.Projection.ExportToWkt();
+            err = dataset.SetProjection(wkt);
+            return dataset;
+        }
+
         private CancellationTokenSource _cancellation;
 
         private CancellationTokenSource Cancellation
@@ -293,6 +490,11 @@ namespace EM.GIS.Tools
             }
             Cancellation.Cancel();
         }
+        private void ShowMessage(string text)
+        {
+            MessageBox.Show(Window.GetWindow(View), text);
+        }
+
         private void StartOrCancel()
         {
             if (!IsFree)
@@ -303,6 +505,22 @@ namespace EM.GIS.Tools
                 }
                 return;
             }
+            if (string.IsNullOrEmpty(Name))
+            {
+                ShowMessage("名称不能为空");
+                return;
+            }
+            if (TileSet == null)
+            {
+                ShowMessage("请选择地图");
+                return;
+            }
+            if (string.IsNullOrEmpty(OutDirectory))
+            {
+                ShowMessage("目录不能为空");
+                return;
+            }
+
             Stopwatch sw = new Stopwatch();
             sw.Start();
             IsFree = false;
@@ -311,59 +529,41 @@ namespace EM.GIS.Tools
             {
                 try
                 {
-                    using var ds = Ogr.Open(BoundPath, 0);
-                    var layer = ds?.GetLayerByIndex(0);
-                    if (layer == null)
+                    var polygons = GetSelectedPolygons();
+                    Action<Dictionary<int, List<TileInfo>>> downloadAction ;
+                    switch (OutType)
                     {
-                        return;
+                        case OutType.Splice:
+                            downloadAction = DownloadSplice;
+                            break;
+                        //case OutType.GoogleTiles:
+                        //    downloadAction = (level, tileInfos) => DownloadTiles(tileInfos);
+                        //    break;
+                        case OutType.MBTiles:
+                            downloadAction = DownloadMBTiles;
+                            break;
+                        default:
+                            return;
                     }
-                    var tileSource = GetHttpTileSource(WebMap);
-                    if (tileSource == null)
+                    var levelAndTileInfos = new Dictionary<int, List<TileInfo>>();
+                    foreach (var level in Levels)
                     {
-                        return;
-                    }
-                    if (IsEntire)
-                    {
-                        string extension = Path.GetExtension(DestPath);
-                        switch (extension)
+                        if (Cancellation.IsCancellationRequested)
                         {
-                            case ".tif":
-                                Envelope envelope = new();
-                                var ret = layer.GetExtent(envelope, 1);
-                                //var level = levels.Last();
-                                var featureCount = layer.GetFeatureCount(1);
-                                var name = Path.GetFileNameWithoutExtension(DestPath);
-                                var featureIndexes = new int[] { 5, 8 };
-                                //var result = Parallel.ForEach(featureIndexes, new ParallelOptions() { MaxDegreeOfParallelism=Environment.ProcessorCount }, i =>
-                                //var result = Parallel.For(2, featureCount, new ParallelOptions() { MaxDegreeOfParallelism=Environment.ProcessorCount }, i =>
-                                {
-                                    int i = 0;
-                                    //var destpath = DestPath.Replace(name, $"{name}{i}");
-                                    var destpath = DestPath.Replace(name, $"{name}");
-                                    Extent extent;
-                                    lock (_lockObj)
-                                    {
-                                        //using var feature = layer.GetFeature(i);
-                                        //var geometry = feature.GetGeometryRef();
-                                        //using Envelope envelope = new();
-                                        //geometry.GetEnvelope(envelope);
-                                        extent = ToExtent(envelope);
-                                    }
-                                    Download(tileSource, extent, destpath);
-                                }/*);*/
-
-                                //for (long i = 15; i <featureCount; i++)
-                                //{
-                                //    using var feature = layer.GetFeature(i);
-                                //    var geometry = feature.GetGeometryRef();
-                                //    geometry.GetEnvelope(envelope);
-                                //    extent=ToExtent(envelope);
-                                //    var destpath = DestPath.Replace(name, $"{name}{i}");
-                                //    Download(tileSource, extent, destpath);
-                                //}
-                                break;
+                            break;
                         }
+                        if (!level.IsSelected)
+                        {
+                            continue;
+                        }
+                        List<TileInfo> tileInfos = new List<TileInfo>();
+                        foreach (var polygon in polygons)
+                        {
+                            tileInfos.AddRange(TileSet.GetTileInfos(level.Item, polygon));
+                        }
+                        levelAndTileInfos[level.Item] = tileInfos;
                     }
+                    downloadAction.Invoke(levelAndTileInfos);
                 }
                 catch (Exception e)
                 {
@@ -383,6 +583,26 @@ namespace EM.GIS.Tools
                 ProgressAction?.Invoke(string.Empty, 0);
             });
         }
+
+        private void DownloadMBTiles(Dictionary<int, List<TileInfo>> levelAndTileInfos)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void DownloadTiles(IEnumerable<TileInfo> tileInfos)
+        {
+            ParallelOptions parallelOptions = new ParallelOptions()
+            {
+                CancellationToken = Cancellation.Token
+            };
+            Parallel.ForEach(tileInfos, parallelOptions, (tileInfo) =>
+            {
+                var task = TileSet.TileSource.GetTileAsync(tileInfo);
+                task.ConfigureAwait(false);
+                task.Wait();
+            });
+        }
+
         public static HttpTileSource? GetHttpTileSource(WebMapInfo webMapInfo)
         {
             HttpTileSource? httpTileSource = null;
