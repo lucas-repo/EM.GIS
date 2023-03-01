@@ -60,11 +60,11 @@ namespace EM.GIS.Gdals
         /// <returns></returns>
         public static byte[] ReadBand(this Band band, int xOffset, int yOffset, int xSize, int ySize, int width, int height)
         {
-            byte[] buffer = null;
             if (band == null || width == 0 || height == 0)
             {
-                return buffer;
+                return new byte[0];
             }
+            byte[] buffer;
             int length = width * height;
             DataType dataType = band.DataType;
             IntPtr bufferPtr;
@@ -82,8 +82,6 @@ namespace EM.GIS.Gdals
             {
                 switch (dataType)
                 {
-                    case DataType.GDT_Unknown:
-                        throw new Exception("Unknown datatype");
                     case DataType.GDT_Byte:
                         {
                             buffer = new byte[length];
@@ -167,15 +165,19 @@ namespace EM.GIS.Gdals
                             }
                         }
                         break;
-                    case DataType.GDT_CInt16:
-                    case DataType.GDT_CInt32:
-                    case DataType.GDT_CFloat32:
-                    case DataType.GDT_CFloat64:
-                    case DataType.GDT_TypeCount:
+                    default:
                         throw new NotImplementedException();
                 }
             }
             return buffer;
+        }
+
+        public static void WriteBand(this Band band, int xOffset, int yOffset, int xSize, int ySize, int width, int height)
+        {
+            if (band == null ||)
+            {
+                return;
+            }
         }
         /// <summary>
         /// 计算读取块大小

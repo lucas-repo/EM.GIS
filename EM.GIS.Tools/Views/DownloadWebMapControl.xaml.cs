@@ -24,17 +24,7 @@ namespace EM.GIS.Tools
         public DownloadWebMapControl()
         {
             InitializeComponent();
-        }
-        /// <summary>
-        /// 初始化
-        /// </summary>
-        /// <param name="frame">地图框架</param>
-        public void Initialize(IFrame frame)
-        {
-            if (DataContext == null)
-            {
-                DataContext = new DownloadWebMapViewModel(this, frame);
-            }
+            DataContext = new DownloadWebMapViewModel(this);
         }
     }
 }

@@ -26,18 +26,19 @@ namespace EM.GIS.Gdals
                 OSGeo.GDAL.Gdal.SetConfigOption("GDAL_FILENAME_IS_UTF8", "NO");
             }
         }
-        public IRasterSet Create(string fileName, int xsize, int ysize, int bands, RasterType eType)
+        /// <inheritdoc/>
+        public IRasterSet? Create(string filename, int width, int height, int bandCount, RasterType rasterType, string[]? options = null)
         {
-            IRasterSet rasterSet = null;
+            IRasterSet? rasterSet = null;
             var driverCount = OSGeo.GDAL.Gdal.GetDriverCount();
             for (int i = 0; i < driverCount; i++)
             {
                 using (var driver = OSGeo.GDAL.Gdal.GetDriver(i))
                 {
-                    var dataset = driver.Create(fileName, xsize, ysize, bands, eType.ToRasterType(), null);
+                    var dataset = driver.Create(filename,  width,  height,  bandCount,  rasterType.ToRasterType(),options);
                     if (dataset != null)
                     {
-                        rasterSet = GetRasterSet(fileName, dataset);
+                        rasterSet = GetRasterSet(filename, dataset);
                     }
                 }
             }

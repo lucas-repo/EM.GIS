@@ -13,7 +13,6 @@ namespace EM.GIS.Data
     [Serializable]
     public abstract class DataSet : BaseCopy, IDataSet
     {
-
         #region Properties
 
         public virtual IExtent Extent { get;  set; }
@@ -42,12 +41,17 @@ namespace EM.GIS.Data
 
         #endregion
 
+        /// <inheritdoc/>
         public virtual string RelativeFilename { get; protected set; }
 
+        /// <inheritdoc/>
         public Projection Projection { get; set; }
 
         #region IDisposable Support
-
+        /// <summary>
+        /// 释放资源
+        /// </summary>
+        /// <param name="disposing">释放托管资源</param>
         protected virtual void Dispose(bool disposing)
         {
             if (!IsDisposed)

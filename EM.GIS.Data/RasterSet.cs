@@ -90,7 +90,11 @@ namespace EM.GIS.Data
         {
             throw new NotImplementedException();
         }
-
+        /// <inheritdoc/>
+        public virtual void SetGeoTransform(double[] affine)
+        {
+            throw new NotImplementedException();
+        }
         /// <summary>
         /// 获取字节大小
         /// </summary>

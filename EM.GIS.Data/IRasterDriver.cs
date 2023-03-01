@@ -13,19 +13,20 @@ namespace EM.GIS.Data
         /// <summary>
         /// 打开栅格
         /// </summary>
-        /// <param name="fileName"></param>
-        /// <param name="update"></param>
-        /// <returns></returns>
-        new IRasterSet Open(string fileName, bool update);
+        /// <param name="fileName">文件名</param>
+        /// <param name="update">是否更新</param>
+        /// <returns>栅格</returns>
+        IRasterSet? Open(string fileName, bool update);
         /// <summary>
         /// 创建栅格
         /// </summary>
-        /// <param name="utf8_path"></param>
-        /// <param name="xsize"></param>
-        /// <param name="ysize"></param>
-        /// <param name="bands"></param>
-        /// <param name="eType"></param>
-        /// <returns></returns>
-        IRasterSet Create(string utf8_path, int xsize, int ysize, int bands, RasterType eType);
+        /// <param name="filename">文件名</param>
+        /// <param name="width">宽度</param>
+        /// <param name="height">高度</param>
+        /// <param name="bandCount">波段数</param>
+        /// <param name="rasterType">类型</param>
+        /// <param name="options">可选项</param>
+        /// <returns>栅格</returns>
+        IRasterSet? Create(string filename, int width, int height, int bandCount, RasterType rasterType, string[]? options = null);
     }
 }

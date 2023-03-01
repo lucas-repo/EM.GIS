@@ -1,4 +1,5 @@
 ﻿using EM.GIS.Data;
+using EM.GIS.GdalExtensions;
 using EM.GIS.Geometries;
 using OSGeo.GDAL;
 using System;
@@ -92,7 +93,9 @@ namespace EM.GIS.Gdals
         /// <inheritdoc/>
         public override int Width => _dataset.RasterXSize;
         #region Fields
-
+        /// <summary>
+        /// 当前波段
+        /// </summary>
         private Band _band;
         private int _overviewCount;
         private ColorInterp _colorInterp;
@@ -110,7 +113,7 @@ namespace EM.GIS.Gdals
             _ignoreChangeDataset = true;
             Filename = fileName;
             _ignoreChangeDataset = false;
-            Name = Path.GetFileNameWithoutExtension(fileName);
+            Name = Path.GetFileNameWithoutExtension(fileName); fromDataset.WriteRaster()
             _dataset = fromDataset;
             OnDatasetChanged();
         }
@@ -794,7 +797,7 @@ namespace EM.GIS.Gdals
                 if (_overviewCount <= 0 && Width * Height > maxPixels)
                 {
                     int ret = _dataset.CreateOverview();
-                    _overviewCount = _band.GetOverviewCount();
+                    _overviewCount = _band.GetOverviewCount(); 
                 }
             }
 
@@ -807,7 +810,11 @@ namespace EM.GIS.Gdals
             Bounds = new RasterBounds(Height, Width, affine);
             PixelSpace = Marshal.SizeOf(typeof(T));
         }
-
+        /// <inheritdoc/>
+        public override void SetGeoTransform(double[] affine)
+        {
+            _dataset.SetGeoTransform(affine);
+        }
         #endregion
     }
 }

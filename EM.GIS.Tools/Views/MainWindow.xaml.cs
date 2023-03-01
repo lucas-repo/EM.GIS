@@ -24,7 +24,6 @@ namespace EM.GIS.Tools
                     }
                 }
             }
-            downloadWebMapControl.Initialize(frame);
         }
         private void ReportProgress(string message, int percent)
         {

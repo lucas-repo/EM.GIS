@@ -38,5 +38,10 @@ namespace EM.GIS.Data
         /// </summary>
         /// <returns>统计值</returns>
         Statistics GetStatistics();
+        /// <summary>
+        /// 设置几何变换矩阵
+        /// </summary>
+        /// <param name="affine">仿射六参数</param>
+        void SetGeoTransform(double[] affine);
     }
 }
