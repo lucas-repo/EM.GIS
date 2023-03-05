@@ -4,6 +4,7 @@ using EM.GIS.Geometries;
 using OSGeo.GDAL;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Drawing2D;
@@ -113,7 +114,7 @@ namespace EM.GIS.Gdals
             _ignoreChangeDataset = true;
             Filename = fileName;
             _ignoreChangeDataset = false;
-            Name = Path.GetFileNameWithoutExtension(fileName); fromDataset.WriteRaster()
+            Name = Path.GetFileNameWithoutExtension(fileName);
             _dataset = fromDataset;
             OnDatasetChanged();
         }
@@ -361,7 +362,7 @@ namespace EM.GIS.Gdals
             progressAction?.Invoke(100);
             if (mapArgs.DestExtent.Intersects(Extent))
             {
-                var destExtent= mapArgs.DestExtent.Intersection(Extent);//TODO 待测试
+                var destExtent = mapArgs.DestExtent.Intersection(Extent);//TODO 待测试
                 ret = mapArgs.ProjToPixel(destExtent);
             }
             return ret;
@@ -797,7 +798,7 @@ namespace EM.GIS.Gdals
                 if (_overviewCount <= 0 && Width * Height > maxPixels)
                 {
                     int ret = _dataset.CreateOverview();
-                    _overviewCount = _band.GetOverviewCount(); 
+                    _overviewCount = _band.GetOverviewCount();
                 }
             }
 
@@ -816,5 +817,28 @@ namespace EM.GIS.Gdals
             _dataset.SetGeoTransform(affine);
         }
         #endregion
+        /// <inheritdoc/>
+        public override void WriteRaster(string filename, int srcXOff, int srcYOff, int srcWidth, int srcHeight, int destXOff, int destYOff, int destWidth, int destHeight, int bandCount, int[] bandMap)
+        {
+            try
+            {
+                using var dataset = Gdal.Open(filename, Access.GA_ReadOnly);
+                if (dataset == null)
+                {
+                    return;
+                }
+                byte[] buffer = new byte[srcWidth * srcHeight * bandCount];
+                for (int i = 0; i < bandMap.Length; i++)
+                {
+                    bandMap[i] = i + 1;
+                }
+                dataset.ReadRaster(srcXOff, srcYOff, srcWidth, srcHeight, buffer, srcWidth, srcHeight, bandCount, bandMap, 0, 0, 0);
+                _dataset.WriteRaster(destXOff, destYOff, destWidth, destHeight, buffer, srcWidth, srcHeight, bandCount, bandMap, 0, 0, 0);
+            }
+            catch (Exception e)
+            {
+                Debug.WriteLine($"{nameof(WriteRaster)} 失败，{e}");
+            }
+        }
     }
 }

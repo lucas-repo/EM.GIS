@@ -126,5 +126,11 @@ namespace EM.GIS.Data
         {
             return Rectangle.Empty;
         }
+
+        /// <inheritdoc/>
+        public virtual void WriteRaster(string filename, int srcXOff, int srcYOff, int srcWidth, int srcHeight, int destXOff, int destYOff, int destWidth, int destHeight, int bandCount, int[] bandMap)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

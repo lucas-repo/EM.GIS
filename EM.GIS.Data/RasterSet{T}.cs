@@ -46,22 +46,6 @@ namespace EM.GIS.Data
         {
             throw new NotImplementedException("This should be overridden by classes that specify a file format.");
         }
-
-        /// <summary>
-        /// 写入栅格
-        /// </summary>
-        /// <param name="buffer"></param>
-        /// <param name="xOff"></param>
-        /// <param name="yOff"></param>
-        /// <param name="xSize"></param>
-        /// <param name="ySize"></param>
-        /// <exception cref="NotImplementedException"></exception>
-        public virtual void WriteRaster(T[][] buffer, int xOff, int yOff, int xSize, int ySize)
-        {
-            throw new NotImplementedException("This should be overridden by classes that specify a file format.");
-        }
-
-
         #endregion
     }
 }
