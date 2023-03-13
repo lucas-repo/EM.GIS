@@ -1,13 +1,8 @@
-﻿using EM.Bases;
-using HtmlAgilityPack;
+﻿using HtmlAgilityPack;
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.DirectoryServices.ActiveDirectory;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace EM.GIS.Tools
 {
@@ -93,7 +88,7 @@ namespace EM.GIS.Tools
                     else
                     {
                         CityInfo itemInfo = new CityInfo(adcode, item);
-                        if (adcode % 10000 == 0)//省
+                        if (adcode % 10000 == 0)//省级
                         {
                             provinceInfo = itemInfo;
                             cityInfo = null;
@@ -114,6 +109,10 @@ namespace EM.GIS.Tools
                             if (cityInfo != null)
                             {
                                 cityInfo.Children.Add(itemInfo);
+                            }
+                            else if (provinceInfo != null)
+                            {
+                                provinceInfo.Children.Add(itemInfo);
                             }
                             else
                             { }

@@ -1,4 +1,5 @@
 ﻿using EM.Bases;
+using System.Collections.ObjectModel;
 
 namespace EM.GIS.Tools
 {
@@ -21,6 +22,7 @@ namespace EM.GIS.Tools
         {
             Adcode = adcode;
             Text = name;
+            Children = new ItemCollection<IBaseItem>();
         }
 
         private int _childrenNum;

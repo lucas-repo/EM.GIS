@@ -174,7 +174,7 @@ namespace EM.GIS.Gdals
 
         public static void WriteBand(this Band band, int xOffset, int yOffset, int xSize, int ySize, int width, int height)
         {
-            if (band == null ||)
+            if (band == null)
             {
                 return;
             }

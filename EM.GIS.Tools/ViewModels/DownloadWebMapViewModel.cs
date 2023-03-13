@@ -203,12 +203,16 @@ namespace EM.GIS.Tools
             BrowseCmd = new DelegateCommand(Browse);
 
             PropertyChanged += DownloadWebMapViewModel_PropertyChanged;
-            var tileset = TileSets.FirstOrDefault();
-            if (tileset != null)
+            if (TileSets.Count>0)
             {
-                TileSet = tileset;
+                TileSet = TileSets.First();
             }
-            BoundType = BoundTypes.FirstOrDefault();
+            boundType = BoundTypes.FirstOrDefault();
+            OnPropertyChanged(nameof(BoundType));
+            if (Provinces.Count > 0)
+            {
+                Province = Provinces.First();
+            }
         }
 
         private void Browse()
@@ -228,9 +232,9 @@ namespace EM.GIS.Tools
             if (parent != null)
             {
                 cityInfos.Add(BlankCityInfo);
-                foreach (var city in parent.Children)
+                foreach (var item in parent.Children)
                 {
-                    if (city is CityInfo cityInfo)
+                    if (item is CityInfo cityInfo)
                     {
                         cityInfos.Add(cityInfo);
                     }
