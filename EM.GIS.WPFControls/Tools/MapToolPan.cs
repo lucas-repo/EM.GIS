@@ -2,6 +2,7 @@
 using EM.GIS.Controls;
 using EM.GIS.Data;
 using EM.GIS.Geometries;
+using EM.IOC;
 using System.Drawing;
 
 namespace EM.GIS.WPFControls
@@ -9,6 +10,7 @@ namespace EM.GIS.WPFControls
     /// <summary>
     /// 拖动地图工具
     /// </summary>
+    [Injectable(ServiceLifetime = ServiceLifetime.Singleton, ServiceType = typeof(IMapTool))]
     public class MapToolPan : MapTool
     {
         #region Fields

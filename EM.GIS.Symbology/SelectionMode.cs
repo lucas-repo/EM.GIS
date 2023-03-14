@@ -5,71 +5,65 @@ using System.Text;
 namespace EM.GIS.Symbology
 {
     /// <summary>
-    /// The selection mode that can be used when selecting things.
+    /// 选择模式
     /// </summary>
     public enum SelectionMode
     {
         /// <summary>
-        /// The vertices of the feature are all inside (and not touching the boundary of) the region.
+        /// 要素的顶点都在区域内(且不触及区域边界)
         /// </summary>
         /// <remarks>
-        /// Use ContainsExtent for faster selections.
+        /// 使用ContainsExtent进行更快的选择
         /// </remarks>
         Contains,
 
         /// <summary>
-        /// *Faster, the item to be selected must be completely contained by the extent
+        /// 更快的选择方式，要选择的要素必须完全包含在范围中
         /// </summary>
         ContainsExtent,
 
         /// <summary>
-        /// The entire region is inside the feature and not touching the border.
+        /// 整个区域都在范围内，不触及边界
         /// </summary>
         CoveredBy,
 
         /// <summary>
-        /// The feature is completely inside the region, but touching the edges is ok (unlike Contains).
+        /// 整个区域都在范围内，可触及边界
         /// </summary>
         Covers,
 
         /// <summary>
-        /// For this to be true the feature must be a point or a curve and must cross
-        /// the specified
+        /// 穿过指定范围
         /// </summary>
         Crosses,
 
         /// <summary>
-        /// The interiors and boundaries don't intersect, touch, or overlap, so they are
-        /// completely separate.
+        /// 无相交
         /// </summary>
         Disjoint,
 
         /// <summary>
-        /// *Faster, the item will be selected if any part of that item is visible in the extent
+        /// *更快的方法，如果该项的任何部分在范围中可见，则该项将被选中
         /// </summary>
         IntersectsExtent,
 
         /// <summary>
-        /// The most inclusive possible. If any element is touching or overlapping the region in any
-        /// way, then this will be true.
+        /// 相交.
         /// </summary>
         Intersects,
 
         /// <summary>
-        /// Like intersects, specifically requires that part of the feature is inside
-        /// and part of the feature is outside of the region.
+        /// 交叉.
         /// </summary>
         Overlaps,
 
         /// <summary>
-        /// The feature has borders or edges in common, but otherwise does not fall inside
-        /// the region.
+        /// 有相同边
         /// </summary>
         Touches,
 
         /// <summary>
-        /// The region is found completely inside the specified region to the extent
-        /// that no borders come in contact with the outside edge of the region.
+        /// 范围在指定要素内
         /// </summary>
         Within
     }
