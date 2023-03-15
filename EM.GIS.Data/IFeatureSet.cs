@@ -59,12 +59,12 @@ namespace EM.GIS.Data
         /// <summary>
         /// 设置空间范围过滤
         /// </summary>
-        /// <param name="extent"></param>
-        void SetSpatialExtentFilter(IExtent extent);
+        /// <param name="extent">范围</param>
+        void SetSpatialExtentFilter(IExtent? extent);
         /// <summary>
         /// 设置属性过滤
         /// </summary>
-        /// <param name="expression"></param>
+        /// <param name="expression">表达式</param>
         void SetAttributeFilter(string expression);
     }
 }

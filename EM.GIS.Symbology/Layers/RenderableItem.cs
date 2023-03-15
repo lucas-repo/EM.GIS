@@ -27,6 +27,9 @@ namespace EM.GIS.Symbology
         /// <inheritdoc/>
         public double MinInverseScale { get; set; }
         private string _progressMessage = string.Empty;
+        /// <inheritdoc/>
+        public event EventHandler? SelectionChanged;
+
         /// <summary>
         /// 进度消息文字
         /// </summary>
@@ -41,6 +44,18 @@ namespace EM.GIS.Symbology
                 return _progressMessage;
             }
         }
+        /// <summary>
+        /// 触发选择改变事件
+        /// </summary>
+        protected virtual void OnSelectionChanged()
+        {
+            SelectionChanged?.Invoke(this, EventArgs.Empty);
+        }
+        /// <inheritdoc/>
+        public bool SelectionEnabled { get; set; }
+        /// <inheritdoc/>
+        public virtual bool SelectionChangesIsSuspended => false;
+
         /// <inheritdoc/>
         public bool GetVisible(IExtent extent, Rectangle rectangle)
         {
@@ -74,5 +89,43 @@ namespace EM.GIS.Symbology
         public virtual bool IsDrawingInitialized(IProj proj, IExtent extent) => true;
         /// <inheritdoc/>
         public virtual void InitializeDrawing(IProj proj, IExtent extent, Func<bool>? cancelFunc = null) { }
+
+        /// <inheritdoc/>
+        public virtual bool ClearSelection(out IExtent affectedArea, bool force)
+        {
+            affectedArea = new Extent();
+            return false;
+        }
+
+        /// <inheritdoc/>
+        public virtual bool InvertSelection(IExtent tolerant, IExtent strict, SelectionMode mode, out IExtent affectedArea)
+        {
+            affectedArea = new Extent();
+            return false;
+        }
+
+        /// <inheritdoc/>
+        public virtual bool Select(IExtent tolerant, IExtent strict, SelectionMode mode, out IExtent affectedArea, ClearStates clear)
+        {
+            affectedArea = new Extent();
+            return false;
+        }
+
+        /// <inheritdoc/>
+        public virtual bool UnSelect(IExtent tolerant, IExtent strict, SelectionMode mode, out IExtent affectedArea)
+        {
+            affectedArea = new Extent();
+            return false;
+        }
+
+        /// <inheritdoc/>
+        public virtual void ResumeSelectionChanges()
+        {
+        }
+
+        /// <inheritdoc/>
+        public virtual void SuspendSelectionChanges()
+        {
+        }
     }
 }

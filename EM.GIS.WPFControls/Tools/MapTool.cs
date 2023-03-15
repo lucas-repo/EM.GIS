@@ -1,4 +1,5 @@
 ﻿using EM.GIS.Controls;
+using EM.IOC;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -18,8 +19,21 @@ namespace EM.GIS.WPFControls
         public event EventHandler<GeoMouseEventArgs> MouseMove;
         public event EventHandler<GeoMouseButtonEventArgs> MouseUp;
         public event EventHandler<GeoMouseWheelEventArgs> MouseWheel;
-        public MapTool(IMap map) : base(map)
-        { }
+        private IMap? map;
+        /// <inheritdoc/>
+        public IMap? Map
+        {
+            get
+            {
+                if (map == null)
+                {
+                    map = IocManager.Default.GetService<IMap>();
+                }
+                return map;
+            }
+            set => map = value;
+        }
+
         public virtual void DoKeyDown(KeyEventArgs e)
         {
             KeyDown?.Invoke(this, e);

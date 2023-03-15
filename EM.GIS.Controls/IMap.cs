@@ -39,6 +39,11 @@ namespace EM.GIS.Controls
         /// 使所有地图工具无效
         /// </summary>
         void DeactivateAllMapTools();
+        /// <summary>
+        /// 使控件指定区域无效，在UI线程可用时进行重绘
+        /// </summary>
+        /// <param name="rectangle">屏幕范围</param>
+        void Invalidate(RectangleF rectangle);
         #region 事件
         /// <summary>
         /// 鼠标移动事件

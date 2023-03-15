@@ -11,7 +11,7 @@ namespace EM.GIS.Symbology
     /// <summary>
     /// 可渲染元素接口
     /// </summary>
-    public interface IRenderableItem: ILegendItem, IDynamicVisibility
+    public interface IRenderableItem: ILegendItem, IDynamicVisibility, ISelectable
     {
         /// <summary>
         /// 父图层组

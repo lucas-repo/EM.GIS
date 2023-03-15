@@ -6,13 +6,24 @@ using System.Linq;
 
 namespace EM.GIS.Symbology
 {
+    /// <summary>
+    /// 要素选择
+    /// </summary>
     public class FeatureSelection : Selection, IFeatureSelection
     {
+        /// <summary>
+        /// 要素集
+        /// </summary>
         private IFeatureSet FeatureSet { get; }
+        /// <summary>
+        /// 选择的要素集合
+        /// </summary>
         private List<IFeature> Features { get; }
+        /// <inheritdoc/>
         public IFeature this[int index] { get => Features[index]; set => Features[index] = value; }
 
-        public override IExtent IExtent
+        /// <inheritdoc/>
+        public override IExtent Extent
         {
             get
             {
@@ -24,23 +35,27 @@ namespace EM.GIS.Symbology
                 return extent;
             }
         }
-
+        /// <inheritdoc/>
         public int Count => Features.Count;
 
+        /// <inheritdoc/>
         public bool IsReadOnly => false;
 
-        public new IFeatureCategory Category { get => base.Category as IFeatureCategory; set => base.Category = value; }
+        /// <inheritdoc/>
+        public new IFeatureCategory? Category { get => base.Category as IFeatureCategory; set => base.Category = value; }
+    
         public FeatureSelection(IFeatureSet featureSet)
         {
             FeatureSet = featureSet;
             Features = new List<IFeature>();
         }
+        /// <inheritdoc/>
         public void Add(IFeature item)
         {
             Features.Add(item);
         }
-
-        public bool AddRegion(IExtent extent, out IExtent affectedExtent)
+        /// <inheritdoc/>
+        public override bool AddRegion(IExtent extent, out IExtent affectedExtent)
         {
             bool ret = false;
             affectedExtent = extent;
@@ -59,11 +74,13 @@ namespace EM.GIS.Symbology
             return ret;
         }
 
+        /// <inheritdoc/>
         public void Clear()
         {
             Features.Clear();
         }
 
+        /// <inheritdoc/>
         public bool Contains(IFeature item)
         {
             bool ret = Features.Contains(item);
@@ -74,27 +91,32 @@ namespace EM.GIS.Symbology
             return ret;
         }
 
+        /// <inheritdoc/>
         public void CopyTo(IFeature[] array, int arrayIndex)
         {
             Features.CopyTo(array, arrayIndex);
         }
 
+        /// <inheritdoc/>
         public IEnumerator<IFeature> GetEnumerator()
         {
             return Features.GetEnumerator();
         }
 
+        /// <inheritdoc/>
         public int IndexOf(IFeature item)
         {
             return Features.IndexOf(item);
         }
 
+        /// <inheritdoc/>
         public void Insert(int index, IFeature item)
         {
             Features.Insert(index, item);
         }
 
-        public bool InvertSelection(IExtent extent, out IExtent affectedExtent)
+        /// <inheritdoc/>
+        public override bool InvertSelection(IExtent extent, out IExtent affectedExtent)
         {
             bool ret = false;
             affectedExtent = extent;
@@ -120,17 +142,29 @@ namespace EM.GIS.Symbology
             return ret;
         }
 
+        /// <inheritdoc/>
         public bool Remove(IFeature item)
         {
             return Features.Remove(item);
         }
-
+        /// <inheritdoc/>
+        public void RemoveRange( IEnumerable<IFeature> features)
+        {
+            SuspendChanges();
+            foreach (IFeature f in features)
+            {
+                Remove(f);
+            }
+            ResumeChanges();
+        }
+        /// <inheritdoc/>
         public void RemoveAt(int index)
         {
             Features.RemoveAt(index);
         }
 
-        public bool RemoveRegion(IExtent extent, out IExtent affectedExtent)
+        /// <inheritdoc/>
+        public override bool RemoveRegion(IExtent extent, out IExtent affectedExtent)
         {
             bool ret = false;
             affectedExtent = extent;

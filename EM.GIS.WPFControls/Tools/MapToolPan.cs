@@ -24,8 +24,7 @@ namespace EM.GIS.WPFControls
 
         #region  Constructors
 
-        public MapToolPan(IMap map)
-            : base(map)
+        public MapToolPan()
         {
             MapToolMode = MapToolMode.LeftButton;
             Name = "拖动";
@@ -54,7 +53,7 @@ namespace EM.GIS.WPFControls
             {
                 if (!BusySet)
                 {
-                    Map.IsBusy = true;
+                    e.Map.IsBusy = true;
                     BusySet = true;
                 }
 
@@ -76,7 +75,7 @@ namespace EM.GIS.WPFControls
                 _preventDrag = true;
                 e.Map.Frame.View.ResetViewExtent();
                 _preventDrag = false;
-                Map.IsBusy = false;
+                e.Map.IsBusy = false;
                 BusySet = false;
             }
             _startPoint.X = double.NaN;

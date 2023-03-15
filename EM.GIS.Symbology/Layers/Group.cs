@@ -135,13 +135,144 @@ namespace EM.GIS.Symbology
             bool ret = true;
             foreach (var item in Children)
             {
-                if (item is IRenderableItem renderableItem && !renderableItem.IsDrawingInitialized(proj,extent))
+                if (item is IRenderableItem renderableItem && !renderableItem.IsDrawingInitialized(proj, extent))
                 {
                     ret = false;
                     break;
                 }
             }
             return ret;
+        }
+
+        private int _suspendLevel;
+        private bool _changed;
+        /// <inheritdoc/>
+        public override bool SelectionChangesIsSuspended => _suspendLevel > 0;
+        /// <inheritdoc/>
+        public override void SuspendSelectionChanges()
+        {
+            if (_suspendLevel == 0)
+            {
+                _changed = false;
+            }
+
+            _suspendLevel += 1;
+
+            // using an integer allows many nested levels of suspension to exist,
+            // resuming events only once all the nested resumes are called.
+        }
+        /// <inheritdoc />
+        public override bool ClearSelection(out IExtent affectedAreas, bool force = false)
+        {
+            affectedAreas = new Extent();
+            bool changed = false;
+            SuspendSelectionChanges();
+
+            foreach (var item in Children)
+            {
+                if (item is IRenderableItem renderableItem)
+                {
+                    if (renderableItem.ClearSelection(out var layerArea, force))
+                    {
+                        changed = true;
+                        affectedAreas.ExpandToInclude(layerArea);
+                    }
+                }
+            }
+
+            ResumeSelectionChanges();
+            return changed;
+        }
+
+        /// <inheritdoc />
+        public override bool InvertSelection(IExtent tolerant, IExtent strict, SelectionMode mode, out IExtent affectedArea)
+        {
+            affectedArea = new Extent();
+            bool somethingChanged = false;
+
+            foreach (var item in Children)
+            {
+                if (item is IRenderableItem renderableItem && renderableItem.SelectionEnabled && renderableItem.IsVisible)
+                {
+                    if (renderableItem.InvertSelection(tolerant, strict, mode, out var layerArea))
+                    {
+                        somethingChanged = true;
+                        affectedArea.ExpandToInclude(layerArea);
+                    }
+                }
+
+                OnSelectionChanged(); // fires only AFTER the individual layers have fired their events.
+            }
+            return somethingChanged;
+        }
+        /// <inheritdoc />
+        public override bool Select(IExtent tolerant, IExtent strict, SelectionMode mode, out IExtent affectedArea, ClearStates clear)
+        {
+            affectedArea = new Extent();
+            bool somethingChanged = false;
+            SuspendSelectionChanges();
+            foreach (var item in Children)
+            {
+                if (item is IRenderableItem renderableItem && renderableItem.SelectionEnabled && renderableItem.GetVisible())
+                {
+                    IExtent layerArea;
+                    if (renderableItem.Select(tolerant, strict, mode, out layerArea, clear))
+                    {
+                        somethingChanged = true;
+                        affectedArea.ExpandToInclude(layerArea);
+                    }
+                }
+            }
+            ResumeSelectionChanges(); // fires only AFTER the individual layers have fired their events.
+            return somethingChanged;
+        }
+
+
+        /// <inheritdoc />
+        public override bool UnSelect(IExtent tolerant, IExtent strict, SelectionMode mode, out IExtent affectedArea)
+        {
+            affectedArea = new Extent();
+            bool somethingChanged = false;
+            foreach (var item in Children)
+            {
+                if (item is IRenderableItem renderableItem && renderableItem.SelectionEnabled && renderableItem.GetVisible())
+                {
+                    IExtent layerArea;
+                    if (renderableItem.UnSelect(tolerant, strict, mode, out layerArea))
+                    {
+                        somethingChanged = true;
+                        affectedArea.ExpandToInclude(layerArea);
+                    }
+                }
+            }
+            OnSelectionChanged(); // fires only AFTER the individual layers have fired their events.
+            return somethingChanged;
+        }
+        /// <inheritdoc/>
+        public override void ResumeSelectionChanges()
+        {
+            _suspendLevel -= 1;
+            if (SelectionChangesIsSuspended == false)
+            {
+                if (_changed)
+                {
+                    OnSelectionChanged();
+                }
+            }
+
+            if (_suspendLevel < 0) _suspendLevel = 0;
+        }
+
+        /// <inheritdoc/>
+        protected override void OnSelectionChanged()
+        {
+            if (SelectionChangesIsSuspended)
+            {
+                _changed = true;
+                return;
+            }
+
+            base.OnSelectionChanged();
         }
     }
 }

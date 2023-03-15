@@ -1,6 +1,7 @@
 ﻿using EM.GIS.Controls;
 using EM.GIS.Data;
 using EM.GIS.Symbology;
+using EM.IOC;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -12,6 +13,7 @@ namespace EM.GIS.WPFControls
     /// <summary>
     /// 缩放地图工具
     /// </summary>
+    [Injectable(ServiceLifetime = ServiceLifetime.Singleton, ServiceType = typeof(IMapTool))]
     public class MapToolZoom : MapTool
     {
         #region Fields
@@ -29,8 +31,7 @@ namespace EM.GIS.WPFControls
 
         #region  Constructors
 
-        public MapToolZoom(IMap map)
-            : base(map)
+        public MapToolZoom()
         {
             Configure();
         }
@@ -105,7 +106,7 @@ namespace EM.GIS.WPFControls
             {
                 if (!BusySet)
                 {
-                    Map.IsBusy = true;
+                    e.Map.IsBusy = true;
                     BusySet = true;
                 }
 
@@ -126,7 +127,7 @@ namespace EM.GIS.WPFControls
                 _preventDrag = true;
                 e.Map.Frame.View.ResetViewExtent();
                 _preventDrag = false;
-                Map.IsBusy = false;
+                e.Map.IsBusy = false;
                 BusySet = false;
             }
 
@@ -181,11 +182,11 @@ namespace EM.GIS.WPFControls
                 r.Y += yOff;
             }
 
-            Map.Frame.View.ViewBound = r;
+            e.Map.Frame.View.ViewBound = r;
             _zoomTimer.Start();
             if (!BusySet)
             {
-                Map.IsBusy = true;
+                e.Map.IsBusy = true;
                 BusySet = true;
             }
 

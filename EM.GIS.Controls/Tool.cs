@@ -1,8 +1,10 @@
-﻿using System;
+﻿using EM.IOC;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 
 namespace EM.GIS.Controls
@@ -12,20 +14,6 @@ namespace EM.GIS.Controls
     /// </summary>
     public abstract class Tool : ITool
     {
-        #region  Constructors
-
-        public Tool()
-        {
-
-        }
-
-        public Tool(IMap map)
-        {
-            Map = map;
-        }
-
-        #endregion
-
         #region Events
 
         public event EventHandler Activated;
@@ -39,20 +27,19 @@ namespace EM.GIS.Controls
 
         public bool IsActivated { get; protected set; }
 
-        public IMap Map { get; set; }
         public bool BusySet { get; set; }
         private string _name;
 
         public string Name
         {
             get => _name;
-            set => _name = GetAvailableName(value);
+            set => _name =value;
         }
 
         public MapToolMode MapToolMode { get; set; }
         public Image Image { get; set; }
         public Stream Cursor { get; set; }
-
+       
         #endregion
 
         #region Methods
@@ -74,22 +61,23 @@ namespace EM.GIS.Controls
             Drawn?.Invoke(this, e);
         }
 
-        public string GetAvailableName(string baseName)
+        public string GetAvailableName(IEnumerable<ITool> tools,  string baseName)
         {
             string newName = baseName;
             int i = 1;
-            if (Map?.MapTools != null)
+            if (tools == null)
             {
+                return newName;
+            }
                 string name = newName;
-                bool found = Map.MapTools.Any(function => function.Name == name);
+                bool found = tools.Any(function => function.Name == name);
                 while (found)
                 {
                     newName = baseName + i;
                     i++;
                     string name1 = newName;
-                    found = Map.MapTools.Any(function => function.Name == name1);
+                    found = tools.Any(function => function.Name == name1);
                 }
-            }
 
             return newName;
         }

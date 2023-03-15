@@ -80,8 +80,8 @@ namespace EM.GIS.WPFControls
             Frame = frame;
             Frame.View.PropertyChanged += View_PropertyChanged;
             Frame.View.UpdateMapAction = Invalidate;
-            var pan = new MapToolPan(this);
-            var zoom = new MapToolZoom(this);
+            var pan = new MapToolPan();
+            var zoom = new MapToolZoom();
             ITool[] mapTools = { pan, zoom };
             MapTools = new List<ITool>();
             MapTools.AddRange(mapTools);
@@ -91,12 +91,16 @@ namespace EM.GIS.WPFControls
             }
             ActivateMapToolWithZoom(pan);
         }
-        private (ViewCache? ViewCache, BitmapSource? BitmapSource, Rect Rect) imageCache = new(null, null, Rect.Empty);
         /// <summary>
         /// 使地图控件无效，以重新绘制
         /// </summary>
         /// <param name="rectangle">范围</param>
         private void Invalidate(Rectangle rectangle)
+        {
+            Invalidate((RectangleF)rectangle);
+        }
+        /// <inheritdoc/>
+        public void Invalidate(RectangleF rectangle)
         {
             if (rectangle.IsEmpty)
             {
@@ -104,8 +108,13 @@ namespace EM.GIS.WPFControls
             }
             Dispatcher.BeginInvoke(InvalidateVisual);
         }
+        /// 使地图控件无效，以重新绘制
+        /// </summary>
+        private void Invalidate()
+        {
+            Invalidate(Frame.View.Bound);
+        }
 
-        private KeyValueClass<ViewCache?, BitmapSource?> bitmapCache = new KeyValueClass<ViewCache?, BitmapSource?>(null,null);
         private BitmapSource? GetBitmapSource()
         {
             BitmapSource? ret = null;
@@ -158,12 +167,6 @@ namespace EM.GIS.WPFControls
             sw.Stop();
             Debug.WriteLine($"绘制背景图 {sw.ElapsedMilliseconds} 毫秒");
         }
-        /// 使地图控件无效，以重新绘制
-        /// </summary>
-        private void Invalidate()
-        {
-            Invalidate(Frame.View.Bound);
-        }
 
         private void Map_PropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
@@ -205,7 +208,6 @@ namespace EM.GIS.WPFControls
                 }
             }
         }
-        private KeyValueClass<ViewCache?, BitmapSource?> catchBitmap = new KeyValueClass<ViewCache?, BitmapSource?>(null, null);
 
         /// <inheritdoc/>
         public void ActivateMapToolWithZoom(ITool tool)
@@ -430,5 +432,6 @@ namespace EM.GIS.WPFControls
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
+
     }
 }

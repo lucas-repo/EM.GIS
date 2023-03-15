@@ -12,6 +12,10 @@ namespace EM.GIS.WPFControls
     public interface IMapTool:ITool
     {
         /// <summary>
+        /// 地图
+        /// </summary>
+        IMap? Map { get; set; }
+        /// <summary>
         /// 按键按下事件
         /// </summary>
         event EventHandler<KeyEventArgs> KeyDown;

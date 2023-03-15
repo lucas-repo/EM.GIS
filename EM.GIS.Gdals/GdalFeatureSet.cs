@@ -211,11 +211,13 @@ namespace EM.GIS.Gdals
         }
 
 
+        /// <inheritdoc/>
         public override IGeometry GetSpatialFilter()
         {
             return Layer.GetSpatialFilter()?.ToGeometry();
         }
 
+        /// <inheritdoc/>
         public override void SetAttributeFilter(string expression)
         {
             if (Layer != null)
@@ -224,7 +226,8 @@ namespace EM.GIS.Gdals
             }
         }
 
-        public override void SetSpatialExtentFilter(IExtent extent)
+        /// <inheritdoc/>
+        public override void SetSpatialExtentFilter(IExtent? extent)
         {
             if (Layer != null)
             {

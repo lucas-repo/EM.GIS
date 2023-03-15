@@ -36,10 +36,6 @@ namespace EM.GIS.Controls
         /// </summary>
         bool IsActivated { get; }
         /// <summary>
-        /// 地图
-        /// </summary>
-        IMap Map { get; set; }
-        /// <summary>
         /// 名称
         /// </summary>
         string Name { get; set; }

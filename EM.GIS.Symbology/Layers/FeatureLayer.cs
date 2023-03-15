@@ -9,6 +9,7 @@ using System.Drawing;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
+using System.Xml.Serialization;
 
 namespace EM.GIS.Symbology
 {
@@ -130,7 +131,7 @@ namespace EM.GIS.Symbology
                     {
                         percent = (int)(drawnFeatureCount * 90 / featureCount);
                         progressAction?.Invoke(ProgressMessage, percent);
-                        DrawFeatures(mapArgs,  features, selected, progressAction, cancelFunc);
+                        DrawFeatures(mapArgs, features, selected, progressAction, cancelFunc);
                         drawnFeatureCount += features.Count;
                         if (features.Count > 0)
                         {
@@ -179,7 +180,7 @@ namespace EM.GIS.Symbology
                 {
                     for (int i = 0; i < feature.Geometry.GeometryCount; i++)
                     {
-                       var geometry= feature.Geometry.GetGeometry(i);
+                        var geometry = feature.Geometry.GetGeometry(i);
                         totalPointCount += geometry.CoordinateCount;
                     }
                 }
@@ -246,7 +247,7 @@ namespace EM.GIS.Symbology
         protected abstract void DrawGeometry(IProj proj, Graphics graphics, IFeatureSymbolizer symbolizer, IGeometry geometry);
         private void DrawFeatures(MapArgs mapArgs, List<IFeature> features, bool selected, Action<string, int>? progressAction = null, Func<bool>? cancelFunc = null)
         {
-            if ( features == null || cancelFunc?.Invoke() == true)
+            if (features == null || cancelFunc?.Invoke() == true)
             {
                 return;
             }
@@ -375,6 +376,150 @@ namespace EM.GIS.Symbology
             dataTable.EndLoadData();
             return dataTable;
         }
+        /// <inheritdoc/>
+        public override bool ClearSelection(out IExtent? affectedArea, bool force)
+        {
+            if (!force && !SelectionEnabled)
+            {
+                affectedArea = new Extent();
+                return false;
+            }
 
+            affectedArea = Selection.Extent;
+            //if (!_drawnStatesNeeded)
+            //{
+            //    return false;
+            //}
+
+            Selection.SuspendChanges();
+
+            bool changed = false;
+            // we're clearing by force or all categorys are selection enabled, so a simple clear of the list is enough
+            if (force || Children.All(x => x is IFeatureCategory category && category.SelectionEnabled))
+            {
+                if (Selection.Count > 0)
+                {
+                    changed = true;
+                }
+
+                Selection.Clear();
+            }
+            else
+            {
+                // we're clearing only the categories that are selection enabled
+                var area = new Extent();
+                foreach (var item in Children)
+                {
+                    if (item is IFeatureCategory category && category.SelectionEnabled)
+                    {
+                        IExtent categoryArea;
+                        Selection.Category = category;
+                        if (Selection.RemoveRegion(affectedArea, out categoryArea))
+                        {
+                            changed = true;
+                            area.ExpandToInclude(categoryArea);
+                        }
+                        Selection.Category = null;
+                    }
+                }
+                affectedArea = area;
+            }
+            Selection.ResumeChanges();
+            return changed;
+        }
+        /// <inheritdoc/>
+        public override bool InvertSelection(IExtent tolerant, IExtent strict, SelectionMode mode, out IExtent? affectedArea)
+        {
+            SelectAction action = (ISelection selection, IExtent region, out IExtent affectedRegion) => selection.InvertSelection(region, out affectedRegion);
+            return DoSelectAction(tolerant, strict, mode, ClearStates.False, out affectedArea, action);
+        }
+        private bool DoSelectAction(IExtent tolerant, IExtent strict, SelectionMode selectionMode, ClearStates clear, out IExtent affectedArea, SelectAction action)
+        {
+            if ((!SelectionEnabled && clear != ClearStates.Force) || !GetVisible(Extent))
+            {
+                affectedArea = new Extent();
+                return false;
+            }
+
+            Selection.SuspendChanges();
+
+            if (clear != ClearStates.False)
+            {
+                if (Selection.Count > 0)
+                {
+                    Selection.Clear();
+                }
+            }
+
+            var region = DataSet?.FeatureType == FeatureType.Polygon ? strict : tolerant;
+            bool changed = false;
+            Selection.SelectionMode = selectionMode;
+
+            // all categories are selection enabled, so a category independent action is enough
+            if (Children.All(x => x is IFeatureCategory category && category.SelectionEnabled))
+            {
+                changed = action(Selection, region, out affectedArea);
+            }
+            else
+            {
+                var area = new Extent();
+
+                foreach (IFeatureCategory cat in Children.Where(x => x is IFeatureCategory category && category.SelectionEnabled))
+                {
+                    IExtent categoryArea;
+                    Selection.Category = cat;
+                    if (action(Selection, region, out categoryArea))
+                    {
+                        changed = true;
+                        area.ExpandToInclude(categoryArea);
+                    }
+
+                    Selection.Category = null;
+                }
+
+                affectedArea = area;
+            }
+
+            Selection.ResumeChanges();
+
+            return changed;
+        }
+        /// <inheritdoc/>
+        public override bool Select(IExtent tolerant, IExtent strict, SelectionMode selectionMode, out IExtent affectedArea, ClearStates clear)
+        {
+            SelectAction action = (ISelection selection, IExtent region, out IExtent affectedRegion) => selection.AddRegion(region, out affectedRegion);
+            return DoSelectAction(tolerant, strict, selectionMode, clear, out affectedArea, action);
+        }
+        /// <summary>
+        /// 取消选择
+        /// </summary>
+        /// <param name="featureIndices">索引</param>
+        public void UnSelect(IEnumerable<int> featureIndices)
+        {
+            if (DataSet == null)
+            {
+                return;
+            }
+            var features = featureIndices.Select(index => DataSet.GetFeature(index));
+            Selection.RemoveRange(features);
+        }
+        /// <inheritdoc/>
+        public override bool UnSelect(IExtent tolerant, IExtent strict, SelectionMode selectionMode, out IExtent affectedArea)
+        {
+            SelectAction action = (ISelection selection, IExtent region, out IExtent affectedRegion) => selection.RemoveRegion(region, out affectedRegion);
+            return DoSelectAction(tolerant, strict, selectionMode, ClearStates.False, out affectedArea, action);
+        }
+        /// <inheritdoc/>
+        public override void SuspendSelectionChanges()
+        {
+            Selection.SuspendChanges();
+        }
+
+        /// <inheritdoc/>
+        public override void ResumeSelectionChanges()
+        {
+            Selection.ResumeChanges();
+        }
+        private delegate bool SelectAction(ISelection selection, IExtent region, out IExtent affectedRegion);
     }
 }

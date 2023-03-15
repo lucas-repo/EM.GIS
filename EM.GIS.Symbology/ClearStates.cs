@@ -1,22 +1,20 @@
 ﻿namespace EM.GIS.Symbology
 {
     /// <summary>
-    /// Indicates which kind of clear operation should be used.
+    /// 清空状态
     /// </summary>
     public enum ClearStates
     {
         /// <summary>
-        /// The selected features won't be cleared.
+        /// 所选要素不会被清除
         /// </summary>
         False = 0,
-
         /// <summary>
-        /// The selected features will only be cleared if SelectionEnabled is true.
+        /// 选中的特性只有在SelectionEnabled为true时才会被清除
         /// </summary>
         True = 1,
-
         /// <summary>
-        /// The selected features will be cleared even if SelectionEnabled is false.
+        /// 即使SelectionEnabled为false，所选特性也将被清除
         /// </summary>
         Force = 2
     }
