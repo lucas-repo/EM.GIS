@@ -1,4 +1,5 @@
-﻿using EM.GIS.WPFControls;
+﻿using EM.GIS.Controls;
+using EM.GIS.WPFControls;
 using EM.IOC;
 using System;
 using System.Collections.Generic;
@@ -15,13 +16,9 @@ namespace EM.GIS.Tools
     [Injectable(ServiceLifetime = ServiceLifetime.Singleton, ServiceType = typeof(IPlugin))]
     public class ToolPlugin : Plugin
     {
-        IWpfAppManager WpfAppManager { get; }
+        IWpfAppManager WpfAppManager => IocManager.Default.GetService<IAppManager, IWpfAppManager>();
         RibbonGroup RibbonGroup { get; set; }
         RibbonButton RibbonButton { get; set; }
-        public ToolPlugin(IWpfAppManager appManager)
-        {
-            WpfAppManager = appManager ?? throw new ArgumentNullException(nameof(appManager));
-        }
         public override bool OnLoad()
         {
             if (RibbonGroup == null)

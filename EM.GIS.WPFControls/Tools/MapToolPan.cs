@@ -10,7 +10,7 @@ namespace EM.GIS.WPFControls
     /// <summary>
     /// 拖动地图工具
     /// </summary>
-    [Injectable(ServiceLifetime = ServiceLifetime.Singleton, ServiceType = typeof(IMapTool))]
+    [Injectable(ServiceLifetime = ServiceLifetime.Singleton, ServiceType = typeof(ITool))]
     public class MapToolPan : MapTool
     {
         #region Fields

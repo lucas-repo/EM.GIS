@@ -35,6 +35,7 @@
                 <RibbonGroup Header="导航">
                     <RibbonButton Label="平移" ToolTip="平移" SmallImageSource="pack://application:,,,/EM.GIS.Resources;Component/Images/Pan16.png" LargeImageSource="pack://application:,,,/EM.GIS.Resources;Component/Images/Pan32.png" Command="{Binding PanCmd}"/>
                     <RibbonButton Label="居中" ToolTip="居中" SmallImageSource="pack://application:,,,/EM.GIS.Resources;Component/Images/Global16.png" LargeImageSource="pack://application:,,,/EM.GIS.Resources;Component/Images/Global32.png" Command="{Binding ZoomToMaxExtentCmd}"/>
+                    <RibbonButton Label="选择" ToolTip="选择" SmallImageSource="pack://application:,,,/EM.GIS.Resources;Component/Images/Select16.png" LargeImageSource="pack://application:,,,/EM.GIS.Resources;Component/Images/Select32.png" Command="{Binding SelectCmd}"/>
                     <RibbonButton Label="识别" ToolTip="识别" SmallImageSource="pack://application:,,,/EM.GIS.Resources;Component/Images/Identify16.png" LargeImageSource="pack://application:,,,/EM.GIS.Resources;Component/Images/Identify32.png" Command="{Binding IdentifyCmd}"/>
                 </RibbonGroup>
                 <RibbonGroup Header="图层">

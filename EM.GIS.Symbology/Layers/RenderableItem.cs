@@ -52,7 +52,7 @@ namespace EM.GIS.Symbology
             SelectionChanged?.Invoke(this, EventArgs.Empty);
         }
         /// <inheritdoc/>
-        public bool SelectionEnabled { get; set; }
+        public bool SelectionEnabled { get; set; } = true;
         /// <inheritdoc/>
         public virtual bool SelectionChangesIsSuspended => false;
 

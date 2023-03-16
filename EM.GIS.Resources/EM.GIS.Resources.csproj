@@ -54,6 +54,8 @@
 	  <None Remove="Images\Remove32.png" />
 	  <None Remove="Images\Save16.png" />
 	  <None Remove="Images\Save32.png" />
+	  <None Remove="Images\Select16.png" />
+	  <None Remove="Images\Select32.png" />
 	  <None Remove="Images\Undo16.png" />
 	  <None Remove="Images\Undo32.png" />
 	  <None Remove="Images\ZoomIn16.png" />
@@ -180,6 +182,8 @@
 	  <Resource Include="Images\Save32.png">
 	    <CopyToOutputDirectory>Never</CopyToOutputDirectory>
 	  </Resource>
+	  <Resource Include="Images\Select16.png" />
+	  <Resource Include="Images\Select32.png" />
 	  <Resource Include="Images\Undo16.png">
 	    <CopyToOutputDirectory>Never</CopyToOutputDirectory>
 	  </Resource>

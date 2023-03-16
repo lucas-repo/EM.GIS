@@ -156,7 +156,6 @@ namespace EM.GIS.Symbology
                 }
                 totalPointCount = 0;
             };
-            List<IFeature> ignoreFeatures = new List<IFeature>();
             foreach (var feature in DataSet.GetFeatures())
             {
                 if (cancelFunc?.Invoke() == true)
@@ -167,7 +166,15 @@ namespace EM.GIS.Symbology
                 {
                     if (!Selection.Contains(feature))
                     {
-                        ignoreFeatures.Add(feature);
+                        feature.Dispose();
+                        continue;
+                    }
+                }
+                else
+                {
+                    if (Selection.Contains(feature))
+                    {
+                        feature.Dispose();
                         continue;
                     }
                 }
@@ -192,10 +199,6 @@ namespace EM.GIS.Symbology
             if (totalPointCount > 0)
             {
                 drawFeatuesAction();
-            }
-            foreach (var item in ignoreFeatures)
-            {
-                item.Dispose();
             }
             DataSet.SetSpatialFilter(null);
             return ret;

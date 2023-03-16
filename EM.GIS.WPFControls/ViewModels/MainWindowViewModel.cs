@@ -25,14 +25,7 @@ namespace EM.GIS.WPFControls.ViewModels
         /// 地图框架
         /// </summary>
         public IFrame? Frame => Map?.Frame;
-        private IDriverFactory? DriverFactory
-        {
-            get
-            {
-                var driverFactory = IocManager.GetService<IDriverFactory>();
-                return driverFactory;
-            }
-        }
+        private IDriverFactory? DriverFactory=>IocManager.Default.GetService<IDriverFactory>();
         private string _coordStr=string.Empty;
         /// <summary>
         /// 坐标字符串
@@ -46,11 +39,7 @@ namespace EM.GIS.WPFControls.ViewModels
         /// <summary>
         /// app管理器
         /// </summary>
-        public IWpfAppManager AppManager { get; }
-        /// <summary>
-        /// 容器管理器
-        /// </summary>
-        public IIocManager IocManager { get; }
+        public IAppManager AppManager { get; }
         /// <summary>
         /// 清空地图
         /// </summary>
@@ -87,9 +76,13 @@ namespace EM.GIS.WPFControls.ViewModels
         public Command RemoveSelectedLayersCmd { get; }
 
         /// <summary>
-        /// 添加图层
+        /// 平移
         /// </summary>
         public Command PanCmd { get; }
+        /// <summary>
+        /// 选择
+        /// </summary>
+        public Command SelectCmd { get; }
         /// <summary>
         /// 缩放至全图
         /// </summary>
@@ -130,11 +123,15 @@ namespace EM.GIS.WPFControls.ViewModels
             set { SetProperty(ref _progressValue, value); }
         }
 
-        public MainWindowViewModel(MainWindow t, IWpfAppManager appManager, IIocManager iocManager) : base(t)
+        public MainWindowViewModel(MainWindow t) : base(t)
         {
-            AppManager = appManager ?? throw new NullReferenceException(nameof(appManager));
+            var iocManager = IocManager.Default;
+            var AppManager = iocManager.GetService<IAppManager>();
+            if (AppManager == null)
+            {
+                throw new Exception($"未注册{nameof(IAppManager)}");
+            }
             AppManager.Progress = ReportProgress;
-            IocManager = iocManager ?? throw new NullReferenceException(nameof(iocManager));
             NewCmd = iocManager.GetService<ICommand,NewMapCommand>();
             OpenCmd = iocManager.GetService<ICommand, OpenMapCommand>();
             SaveCmd = iocManager.GetService<ICommand, SaveMapCommand>();
@@ -142,14 +139,15 @@ namespace EM.GIS.WPFControls.ViewModels
             AddLayersCmd = iocManager.GetService<ICommand, AddLayersCommand>();
             RemoveSelectedLayersCmd = iocManager.GetService<ICommand, RemoveSelectedLayersCommand>();
             PanCmd = iocManager.GetService<ICommand, PanCommand>();
+            SelectCmd = iocManager.GetService<ICommand, SelectCommand>();
             UndoCmd = iocManager.GetService<ICommand, UndoCommand>();
             RedoCmd = iocManager.GetService<ICommand, RedoCommand>();
             ZoomToMaxExtentCmd = iocManager.GetService<ICommand, ZoomToMaxExtentCommand>();
             IdentifyCmd = iocManager.GetService<ICommand, IdentifyCommand>();
-            if (appManager?.Map != null)
+            if (AppManager.Map != null)
             {
-                appManager.Map.GeoMouseMove += Map_GeoMouseMove;
-                appManager.Map.Frame.View.Progress = ReportProgress;
+                AppManager.Map.GeoMouseMove += Map_GeoMouseMove;
+                AppManager.Map.Frame.View.Progress = ReportProgress;
             }
 
             LoadTileMaps();

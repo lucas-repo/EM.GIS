@@ -117,7 +117,7 @@ namespace EM.GIS.Symbology
             get => new Rectangle(0, 0, Width, Height);
         }
         /// <inheritdoc/>
-        public IExtent Extent => Frame.Extent;
+        public IExtent Extent => ViewExtent;
         private RectangleF viewBound;
         /// <inheritdoc/>
         public RectangleF ViewBound

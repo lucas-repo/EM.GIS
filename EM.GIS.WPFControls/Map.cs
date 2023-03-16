@@ -14,6 +14,7 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Media;
@@ -80,16 +81,17 @@ namespace EM.GIS.WPFControls
             Frame = frame;
             Frame.View.PropertyChanged += View_PropertyChanged;
             Frame.View.UpdateMapAction = Invalidate;
-            var pan = new MapToolPan();
-            var zoom = new MapToolZoom();
-            ITool[] mapTools = { pan, zoom };
-            MapTools = new List<ITool>();
-            MapTools.AddRange(mapTools);
+            var tools= IocManager.Default.GetServices<ITool>();
+            MapTools = new List<ITool>(tools);
             foreach (var mapTool in MapTools)
             {
                 mapTool.Activated += MapTool_Activated;
             }
-            ActivateMapToolWithZoom(pan);
+            var panTool= tools .FirstOrDefault(x=>x is MapToolPan);
+            if (panTool != null)
+            {
+                ActivateMapToolWithZoom(panTool);
+            }
         }
         /// <summary>
         /// 使地图控件无效，以重新绘制
@@ -121,6 +123,12 @@ namespace EM.GIS.WPFControls
            var bitmap = Frame.View.GetBitmap();
             if (bitmap != null)
             {
+                foreach (var mapTool in MapTools)
+                {
+                    using Graphics g=Graphics.FromImage(bitmap);
+                    MapEventArgs args = new MapEventArgs(Frame.View.Bound, Frame.View.Extent, g);
+                    mapTool.DoDraw(args);
+                }
                 ret = bitmap.ToBitmapSource();
                 bitmap.Dispose();
             }

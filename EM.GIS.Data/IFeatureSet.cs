@@ -50,7 +50,7 @@ namespace EM.GIS.Data
         /// 获取空间过滤
         /// </summary>
         /// <returns></returns>
-        IGeometry GetSpatialFilter( );
+        IGeometry? GetSpatialFilter();
         /// <summary>
         /// 设置空间过滤
         /// </summary>

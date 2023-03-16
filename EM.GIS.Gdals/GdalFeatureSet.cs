@@ -26,6 +26,9 @@ namespace EM.GIS.Gdals
             }
         }
         private Layer _layer;
+        /// <summary>
+        /// 要素图层
+        /// </summary>
         public Layer Layer
         {
             get { return _layer; }
@@ -120,7 +123,7 @@ namespace EM.GIS.Gdals
         }
         public override void Save()
         {
-            DataSource.FlushCache(); 
+            DataSource.FlushCache();
         }
         public override void SaveAs(string filename, bool overwrite)
         {
@@ -184,18 +187,27 @@ namespace EM.GIS.Gdals
             return feature;
         }
 
+        /// <inheritdoc/>
         public override bool RemoveFeature(int index)
         {
             return Layer.DeleteFeature(index) == 1;
         }
-
+        /// <inheritdoc/>
         public override IEnumerable<IFeature> GetFeatures()
         {
-            var feature = Layer.GetNextFeature()?.ToFeature();
-            while (feature != null)
+            var ogrFeature = Layer.GetNextFeature();
+            while (ogrFeature != null)
             {
-                yield return feature;
-                feature = Layer.GetNextFeature()?.ToFeature();
+                var feature = ogrFeature.ToFeature();
+                if (feature != null)
+                {
+                    yield return feature;
+                }
+                else
+                {
+                    Debug.WriteLine($"获取第 {ogrFeature.GetFID()} 个要素失败！");
+                }
+                ogrFeature = Layer.GetNextFeature();
             }
         }
 
@@ -212,7 +224,7 @@ namespace EM.GIS.Gdals
 
 
         /// <inheritdoc/>
-        public override IGeometry GetSpatialFilter()
+        public override IGeometry? GetSpatialFilter()
         {
             return Layer.GetSpatialFilter()?.ToGeometry();
         }
@@ -244,9 +256,9 @@ namespace EM.GIS.Gdals
 
         public override void SetSpatialFilter(IGeometry geometry)
         {
-            if (Layer != null)
+            if (Layer != null && geometry != null)
             {
-                Layer.SetSpatialFilter(geometry?.ToGeometry());
+                Layer.SetSpatialFilter(geometry.ToGeometry());
             }
         }
     }

@@ -15,12 +15,12 @@ using System.Windows.Input;
 namespace EM.GIS.WPFControls
 {
     /// <summary>
-    /// 平移命令
+    /// 选择命令
     /// </summary>
     [Injectable(ServiceLifetime = ServiceLifetime.Singleton, ServiceType = typeof(ICommand))]
-    public class PanCommand : MapToolCommand<MapToolPan>
+    public class SelectCommand : MapToolCommand<MapToolSelect>
     {
-        public PanCommand(IMap? map):base(map) 
+        public SelectCommand(IMap? map):base(map) 
         {
 
         }

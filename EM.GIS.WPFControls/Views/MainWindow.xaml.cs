@@ -16,39 +16,35 @@ namespace EM.GIS.WPFControls
     /// </summary>
     public partial class MainWindow : RibbonWindow
     {
-        private IIocManager IocManager { get; }
         private MainWindowViewModel ViewModel { get; set; }
-        public MainWindow(IIocManager iocManager)
+        public MainWindow()
         {
             InitializeComponent();
-            IocManager = iocManager ?? throw new ArgumentNullException(nameof(iocManager));
             Loaded += MainWindow_Loaded;
         }
 
         private void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
-            var appManager = IocManager.GetService<IWpfAppManager>();
+            var iocManager = IocManager.Default;
+            var appManager = iocManager.GetService<IAppManager, IWpfAppManager>();
             if (appManager == null)
             {
                 throw new Exception($"未注册{nameof(IWpfAppManager)}");
             }
-            var map = IocManager.GetService<IMap, Map>();
+            var map = iocManager.GetService<IMap, Map>();
             mapDocument.Content = map;
             appManager.Map = map;
-            var legend = IocManager.GetService<ILegend, Legend>();
+            var legend = iocManager.GetService<ILegend, Legend>();
             legendAnchorable.Content = legend;
             appManager.Map.Legend = legend;
             appManager.Legend = legend;
             appManager.Ribbon = ribbon;
             appManager.StatusBar = statusBar;
             appManager.DockingManager = dockingManager;
-            ViewModel = new MainWindowViewModel(this, appManager, IocManager);
+            ViewModel = new MainWindowViewModel(this);
 
             DataContext = ViewModel;
-            if (ViewModel.IocManager != null)
-            {
-                var plugins= ViewModel.IocManager.LoadPlugins();
-            }
+            var plugins = iocManager.LoadPlugins();
         }
      
     }

@@ -63,7 +63,7 @@ namespace EM.WpfDemo
                 throw new Exception("容器管理器不能为空");
             }
             //此处可设置优先启动登录窗体
-            MainWindow window = new MainWindow(iocManager);//在主窗体中加载插件
+            MainWindow window = new MainWindow();//在主窗体中加载插件
             if (!(window.ShowDialog() ?? false))
             {
                 Shutdown();

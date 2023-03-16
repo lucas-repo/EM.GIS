@@ -63,9 +63,13 @@ namespace EM.GIS.Symbology
             {
                 return ret;
             }
-            FeatureSet.SetSpatialExtentFilter(extent);
+            FeatureSet.SetSpatialExtentFilter(extent); 
             foreach (var item in FeatureSet.GetFeatures())
             {
+                if (Features.Any(x=>x.FId== item.FId))
+                {
+                    continue;
+                }
                 Features.Add(item);
                 affectedExtent.ExpandToInclude(item.Geometry.GetExtent());
             }
