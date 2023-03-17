@@ -21,11 +21,11 @@ namespace EM.GIS.WPFControls
     [Injectable(ServiceLifetime = ServiceLifetime.Singleton, ServiceType = typeof(ICommand))]
     public class AddLayersCommand : ContextCommand
     {
-        private IDriverFactory? DriverFactory { get; }
+        private IDataSetFactory? DataSetFactory { get; }
         private IFrame? Frame { get; }
-        public AddLayersCommand(IDriverFactory? driverFactory,IFrame? frame)
+        public AddLayersCommand(IDataSetFactory? dataSetFactory,IFrame? frame)
         {
-            DriverFactory = driverFactory;
+            DataSetFactory = dataSetFactory;
             Frame = frame;
             Name = nameof(AddLayersCommand);
             Header = "添加图层";
@@ -33,17 +33,18 @@ namespace EM.GIS.WPFControls
             Image = ResourcesHelper.GetBitmapImage("Add16.png");
             LargeImage = ResourcesHelper.GetBitmapImage("Add32.png");
         }
-
+        /// <inheritdoc/>
         protected override void OnExecute(object? parameter)
         {
-            if (Frame != null && DriverFactory != null)
+            if (Frame != null && DataSetFactory != null)
             {
-                Frame.AddLayers(DriverFactory, Application.Current.MainWindow);
+                Frame.AddLayers(DataSetFactory, Application.Current.MainWindow);
             }
         }
+        /// <inheritdoc/>
         public override bool CanExecute(object? parameter)
         {
-            return Frame != null && DriverFactory != null;
+            return Frame != null && DataSetFactory != null;
         }
     }
 }

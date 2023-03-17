@@ -8,15 +8,14 @@ namespace EM.GIS.Data
     /// <summary>
     ///栅格数据驱动接口
     /// </summary>
-    public interface IRasterDriver : IFileDriver
+    public interface IRasterDriver : IDriver
     {
         /// <summary>
-        /// 打开栅格
+        /// 打开要素数据集
         /// </summary>
-        /// <param name="fileName">文件名</param>
-        /// <param name="update">是否更新</param>
-        /// <returns>栅格</returns>
-        IRasterSet? Open(string fileName, bool update);
+        /// <param name="path">路径</param>
+        /// <returns>要素数据集</returns>
+        new IRasterSet? Open(string path);
         /// <summary>
         /// 创建栅格
         /// </summary>

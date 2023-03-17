@@ -11,21 +11,25 @@ namespace EM.GIS.Gdals
     /// gdal栅格驱动
     /// </summary>
     [Injectable(ServiceLifetime = ServiceLifetime.Singleton, ServiceType = typeof(IDriver))]
-    public class GdalRasterDriver : FileDriver, IRasterDriver
+    public class GdalRasterDriver : Driver, IRasterDriver
     {
-        static GdalRasterDriver()
+        OSGeo.GDAL.Driver driver;
+        /// <summary>
+        /// 初始化栅格驱动
+        /// </summary>
+        /// <param name="driver">gdal栅格驱动</param>
+        /// <param name="extension">扩展</param>
+        public GdalRasterDriver(OSGeo.GDAL.Driver driver, string extension = "")
         {
-            OSGeo.GDAL.Gdal.AllRegister();
-            // 为了支持中文路径，请添加下面这句代码  
-            if (Encoding.Default.EncodingName == Encoding.UTF8.EncodingName && Encoding.Default.CodePage == Encoding.UTF8.CodePage)
+            this.driver = driver;
+            Name = driver.ShortName;
+            if (!string.IsNullOrEmpty(extension))
             {
-                OSGeo.GDAL.Gdal.SetConfigOption("GDAL_FILENAME_IS_UTF8", "YES");
-            }
-            else
-            {
-                OSGeo.GDAL.Gdal.SetConfigOption("GDAL_FILENAME_IS_UTF8", "NO");
+                Extensions=extension;
+                Filter = $"*{extension}|*{extension}";
             }
         }
+
         /// <inheritdoc/>
         public IRasterSet? Create(string filename, int width, int height, int bandCount, RasterType rasterType, string[]? options = null)
         {
@@ -38,127 +42,43 @@ namespace EM.GIS.Gdals
                     var dataset = driver.Create(filename,  width,  height,  bandCount,  rasterType.ToRasterType(),options);
                     if (dataset != null)
                     {
-                        rasterSet = GetRasterSet(filename, dataset);
+                        rasterSet = dataset.GetRasterSet(filename );
                     }
                 }
             }
             return rasterSet;
         }
 
-        IRasterSet IRasterDriver.Open(string fileName, bool update)
+        public override IDataSet? Open(string path)
         {
-            OSGeo.GDAL.Dataset dataset = null;
-            var access = update ? OSGeo.GDAL.Access.GA_Update : OSGeo.GDAL.Access.GA_ReadOnly;
+            return (this as IRasterDriver).Open(path);
+        }
+
+        IRasterSet? IRasterDriver.Open(string path)
+        {
+            OSGeo.GDAL.Dataset? dataset = null; 
             try
             {
-                dataset = OSGeo.GDAL.Gdal.Open(fileName, access);
+                dataset = OSGeo.GDAL.Gdal.Open(path,  OSGeo.GDAL.Access.GA_Update);
             }
             catch (Exception e)
             {
-                Debug.WriteLine($"打开“{fileName}”失败，错误信息：{e}");
-            }
-            IRasterSet rasterSet = GetRasterSet(fileName, dataset);
-            return rasterSet;
-        }
-        private IRasterSet GetRasterSet(string fileName, OSGeo.GDAL.Dataset dataset)
-        {
-            IRasterSet rasterSet = null;
-            if (dataset != null && dataset.RasterCount > 0)
-            {
-                using var band = dataset.GetRasterBand(1);
-                if (band == null)
+                Debug.WriteLine($"{nameof(Open)} 读写方式打开 {path} 失败,{e}");
+                try
                 {
-                    return null;
+                    dataset = OSGeo.GDAL.Gdal.Open(path, OSGeo.GDAL.Access.GA_ReadOnly);
                 }
-                switch (band.DataType)
+                catch (Exception e1)
                 {
-                    case OSGeo.GDAL.DataType.GDT_Byte:
-                        rasterSet = new GdalRasterSet<byte>(fileName, dataset);
-                        break;
-                    case OSGeo.GDAL.DataType.GDT_Int16:
-                        rasterSet = new GdalRasterSet<short>(fileName, dataset);
-                        break;
-                    case OSGeo.GDAL.DataType.GDT_UInt16:
-                        rasterSet = new GdalRasterSet<ushort>(fileName, dataset);
-                        break;
-                    case OSGeo.GDAL.DataType.GDT_Int32:
-                        rasterSet = new GdalRasterSet<int>(fileName, dataset);
-                        break;
-                    case OSGeo.GDAL.DataType.GDT_UInt32:
-                        rasterSet = new GdalRasterSet<uint>(fileName, dataset);
-                        break;
-                    case OSGeo.GDAL.DataType.GDT_CFloat32:
-                        rasterSet = new GdalRasterSet<float>(fileName, dataset);
-                        break;
-                    case OSGeo.GDAL.DataType.GDT_CFloat64:
-                        rasterSet = new GdalRasterSet<double>(fileName, dataset);
-                        break;
-                    default:
-                        throw new NotImplementedException();
+                    Debug.WriteLine($"{nameof(Open)} 只读方式打开 {path} 失败,{e1}");
                 }
             }
-            return rasterSet;
-        }
-        public override bool CopyFiles(string srcFileName, string destFileName)
-        {
-            bool ret = false;
-            using var ds = OSGeo.GDAL.Gdal.Open(srcFileName, 0);
-            if (ds != null)
+            IRasterSet? ret = null;
+            if (dataset != null)
             {
-                using var driver = ds.GetDriver();
-                var error = driver.CopyFiles(destFileName, srcFileName);
-                ret = error == OSGeo.GDAL.CPLErr.CE_None;
+                ret = dataset.GetRasterSet(path);
             }
             return ret;
-        }
-
-        public override IDataSet GetDataSet(string fileName, bool update)
-        {
-            return (this as IRasterDriver).Open(fileName, update);
-        }
-        public override bool Delete(string fileName)
-        {
-            bool ret = false;
-            using var ds = OSGeo.GDAL.Gdal.Open(fileName, 0);
-            if (ds != null)
-            {
-                using var driver = ds.GetDriver();
-                var error = driver.Delete(fileName);
-                ret = error == OSGeo.GDAL.CPLErr.CE_None;
-            }
-            return ret;
-        }
-        public override bool Rename(string srcFileName, string destFileName)
-        {
-            bool ret = false;
-            using var ds = OSGeo.GDAL.Gdal.Open(srcFileName, 0);
-            if (ds != null)
-            {
-                using var driver = ds.GetDriver();
-                var error = driver.CopyFiles(destFileName, srcFileName);
-                if (error == OSGeo.GDAL.CPLErr.CE_None)
-                {
-                    error = driver.Delete(srcFileName);
-                    ret = error == OSGeo.GDAL.CPLErr.CE_None;
-                }
-            }
-            return ret;
-        }
-        public override List<string> GetReadableFileExtensions()
-        {
-            List<string> extensions = new List<string>() 
-            {
-                ".asc",".adf",".bil",".gen",".thf",".blx",".xlb",".bt",".dt0",".dt1",".dt2",".tif",".dem",".ter",".mem",".img",".nc"
-            };
-            return extensions;
-        }
-        public override List<string> GetWritableFileExtensions()
-        {
-            List<string> extensions = new List<string>()
-            {
-                ".asc",".adf",".dt0",".dt1",".dt2",".tif",".dem",".ter",".bil",".mem",".img",".nc"
-            };
-            return extensions;
         }
     }
 }

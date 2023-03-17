@@ -27,7 +27,7 @@ namespace EM.GIS.Gdals
     [Injectable(ServiceLifetime = ServiceLifetime.Singleton, ServiceType = typeof(IDriver))]
     public class WebMapDriver : Driver, IWebMapDriver
     {
-        private static HttpClient _client;
+        private static HttpClient? _client;
         /// <summary>
         /// Http客户端
         /// </summary>
@@ -51,7 +51,7 @@ namespace EM.GIS.Gdals
         {
         }
 
-        public override IDataSet GetDataSet(string path)
+        public override IDataSet Open(string path)
         {
             return OpenWmts(path).FirstOrDefault();
         }

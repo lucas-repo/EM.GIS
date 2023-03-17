@@ -25,11 +25,11 @@ namespace EM.GIS.Gdals
                 SetProperty(ref _dataSource, value);
             }
         }
-        private Layer _layer;
+        private Layer? _layer;
         /// <summary>
         /// 要素图层
         /// </summary>
-        public Layer Layer
+        public Layer? Layer
         {
             get { return _layer; }
             set
@@ -95,13 +95,36 @@ namespace EM.GIS.Gdals
 
         public override int FieldCount => FeatureDefn.GetFieldCount();
 
-        public GdalFeatureSet(string filename, DataSource dataSource, Layer layer)
+        public GdalFeatureSet(string filename, DataSource dataSource, Layer? layer)
         {
             _ignoreChangeDataSource = true;
             Filename = filename;
             Name = Path.GetFileNameWithoutExtension(filename);
             _dataSource = dataSource;
             Layer = layer;
+        }
+        /// <summary>
+        /// 初始化内存要素集
+        /// </summary>
+        /// <param name="name">名称</param>
+        /// <param name="featureType">要素类型</param>
+        public GdalFeatureSet(string name,FeatureType featureType)
+        {
+            _ignoreChangeDataSource = true;
+            using var driver = Ogr.GetDriverByName("Memory");
+            if (driver == null)
+            {
+                throw new Exception("创建内存要素集失败");
+            }
+            var geometryType = featureType.ToWkbGeometryType();
+            if (geometryType == wkbGeometryType.wkbUnknown)
+            {
+                throw new Exception($"不支持的类型 {featureType}");
+            }
+            _dataSource = driver.CreateDataSource(name,null);
+            _layer = _dataSource.CreateLayer(name, null, geometryType, null);
+            Name = name;
+            OnLayerChanged();
         }
         protected override void Dispose(bool disposing)
         {

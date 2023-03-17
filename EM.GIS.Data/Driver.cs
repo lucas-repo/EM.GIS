@@ -1,4 +1,6 @@
-﻿namespace EM.GIS.Data
+﻿using System.Collections.Generic;
+
+namespace EM.GIS.Data
 {
     /// <summary>
     /// 数据驱动
@@ -6,13 +8,15 @@
     public abstract class Driver:IDriver
     {
         /// <inheritdoc/>
-        public ProgressDelegate Progress { get; set; }
-        /// <inheritdoc/>
         public string Name { get; set; }=string.Empty;
         /// <inheritdoc/>
         public string Discription { get; set; } = string.Empty;
+        /// <inheritdoc/>
+        public string Extensions { get; protected set; } =string.Empty;
+        /// <inheritdoc/>
+        public string Filter { get; set; } = string.Empty;
 
         /// <inheritdoc/>
-        public abstract IDataSet? GetDataSet(string path);
+        public abstract IDataSet? Open(string path);
     }
 }

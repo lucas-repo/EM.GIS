@@ -1,7 +1,9 @@
 ﻿using EM.GIS.Data;
+using EM.GIS.GdalExtensions;
 using EM.IOC;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -11,95 +13,61 @@ namespace EM.GIS.Gdals
     /// <summary>
     /// 矢量数据驱动类
     /// </summary>
-    [Injectable(ServiceLifetime = ServiceLifetime.Singleton, ServiceType = typeof(IDriver))]
-    public class GdalVectorDriver : FileDriver, IVectorDriver
+    public class GdalVectorDriver : Driver, IVectorDriver
     {
-        static GdalVectorDriver()
+        OSGeo.OGR.Driver driver;
+        /// <summary>
+        /// 初始化矢量驱动
+        /// </summary>
+        /// <param name="driver">ogr矢量驱动</param>
+        /// <param name="extension">扩展</param>
+        public GdalVectorDriver(OSGeo.OGR.Driver driver, string extension="")
         {
-            OSGeo.OGR.Ogr.RegisterAll();
-            // 为了使属性表字段支持中文，请添加下面这句  
-            OSGeo.GDAL.Gdal.SetConfigOption("SHAPE_ENCODING", "");
-        }
-        public override bool CopyFiles(string srcFileName, string destFileName)
-        {
-            bool ret = false;
-            using var ds = OSGeo.OGR.Ogr.Open(srcFileName, 0);
-            if (ds != null)
+            this.driver = driver;
+            Name = driver.name;
+            if (!string.IsNullOrEmpty(extension))
             {
-                using var driver = ds.GetDriver();
-                using var destDs = driver.CopyDataSource(ds, destFileName, null);
-                ret = destDs != null;
+                Extensions = extension;
+                Filter = $"*{extension}|*{extension}";
             }
-            return ret;
+        }
+        /// <inheritdoc/>
+        public override IDataSet? Open(string path)
+        {
+            return (this as IVectorDriver).Open(path);
         }
 
-        IFeatureSet IVectorDriver.Open(string fileName, bool update)
+        /// <inheritdoc/>
+        IFeatureSet? IVectorDriver.Open(string path)
         {
-            IFeatureSet featureSet = null;
-            int updateValue = update ? 1 : 0;
-            var ds = OSGeo.OGR.Ogr.Open(fileName, updateValue);
-            if (ds != null)
+            OSGeo.OGR.DataSource? dataSource = null;
+            try
             {
-                using var driver = ds.GetDriver();
-                switch (driver.name)
+                dataSource = driver.Open(path, 1);
+            }
+            catch (Exception e)
+            {
+                Debug.WriteLine($"{nameof(Open)} 读写方式打开 {path} 失败,{e}");
+                try
                 {
-                    case "ESRI Shapefile":
-                        if (ds.GetLayerCount() > 0)
-                        {
-                            featureSet = new GdalFeatureSet(fileName, ds, ds.GetLayerByIndex(0));
-                        }
-                        break;
-                    default:
-                        throw new NotImplementedException();
+                    dataSource = driver.Open(path, 0);
+                }
+                catch (Exception e1)
+                {
+                    Debug.WriteLine($"{nameof(Open)} 只读方式打开 {path} 失败,{e1}");
                 }
             }
-            return featureSet;
-        }
-        public override IDataSet GetDataSet(string fileName, bool update)
-        {
-            return (this as IVectorDriver).Open(fileName, update);
-        }
-        public override bool Delete(string fileName)
-        {
-            bool ret = false;
-            using var ds = OSGeo.OGR.Ogr.Open(fileName, 0);
-            if (ds != null)
+            IFeatureSet? ret = null;
+            if (dataSource != null)
             {
-                using var driver = ds.GetDriver();
-                ret = driver.DeleteDataSource(fileName) == 1;
-            }
-            return ret;
-        }
-        public override bool Rename(string srcFileName, string destFileName)
-        {
-            bool ret = false;
-            using var ds = OSGeo.OGR.Ogr.Open(srcFileName, 0);
-            if (ds != null)
-            {
-                using var driver = ds.GetDriver();
-                using var destDs = driver.CopyDataSource(ds, destFileName, null);
-                if (destDs != null)
+                OSGeo.OGR.Layer? layer = null;
+                if (dataSource.GetLayerCount() > 0)
                 {
-                    ret = driver.DeleteDataSource(srcFileName) == 1;
+                    layer = dataSource.GetLayerByIndex(0);
                 }
+                ret = new GdalFeatureSet(path, dataSource, layer);
             }
             return ret;
-        }
-        public override List<string> GetReadableFileExtensions()
-        {
-            List<string> extensions = new List<string>()
-            {
-                ".shp",".kml",".dxf"
-            };
-            return extensions;
-        }
-        public override List<string> GetWritableFileExtensions()
-        {
-            List<string> extensions = new List<string>()
-            {
-                ".shp",".kml",".dxf"
-            };
-            return extensions; 
         }
     }
 }

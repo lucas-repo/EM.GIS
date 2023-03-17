@@ -25,7 +25,7 @@ namespace EM.GIS.WPFControls.ViewModels
         /// 地图框架
         /// </summary>
         public IFrame? Frame => Map?.Frame;
-        private IDriverFactory? DriverFactory=>IocManager.Default.GetService<IDriverFactory>();
+        private IDataSetFactory? DataSetFactory=>IocManager.Default.GetService<IDataSetFactory>();
         private string _coordStr=string.Empty;
         /// <summary>
         /// 坐标字符串
@@ -172,9 +172,9 @@ namespace EM.GIS.WPFControls.ViewModels
             switch (e.PropertyName)
             {
                 case nameof(TileMap):
-                    if (Map!=null&& DriverFactory!=null&&!Map.Frame.Children.Any(x => x.Text == TileMap.Name))
+                    if (Map!=null&& DataSetFactory!=null&&!Map.Frame.Children.Any(x => x.Text == TileMap.Name))
                     {
-                        var driver = DriverFactory.Drivers.FirstOrDefault(x => x is IWebMapDriver) as IWebMapDriver;
+                        var driver = DataSetFactory.Drivers.FirstOrDefault(x => x is IWebMapDriver) as IWebMapDriver;
                         if (driver != null)
                         {
                             var tileSet= driver.OpenXYZ(TileMap.Name, TileMap.Url, TileMap.Servers, TileMap.MinLevel, TileMap.MaxLevel);
