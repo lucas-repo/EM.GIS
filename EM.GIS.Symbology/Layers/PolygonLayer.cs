@@ -25,8 +25,9 @@ namespace EM.GIS.Symbology
                 Text = "默认"
             };
         }
-        protected override void DrawGeometry(IProj proj, Graphics graphics, IFeatureSymbolizer symbolizer, IGeometry geometry)
+        protected override Rectangle DrawGeometry(IProj proj, Graphics graphics, IFeatureSymbolizer symbolizer, IGeometry geometry)
         {
+            var ret=Rectangle.Empty;
             if (symbolizer is IPolygonSymbolizer polygonSymbolizer)
             {
                 float scaleSize = (float)symbolizer.GetScale(proj);
@@ -34,8 +35,10 @@ namespace EM.GIS.Symbology
                 {
                     GetPolygons(proj, geometry, path);
                     polygonSymbolizer.DrawPolygon(graphics, scaleSize, path);
+                    ret=path.GetBounds().ToRectangle();
                 }
             }
+            return ret;
         }
         private void DrawGeometry(MapArgs drawArgs, Graphics context, float scaleSize, IPolygonSymbolizer polygonSymbolizer, IGeometry geometry)
         {

@@ -1,23 +1,16 @@
-﻿using BruTile.Wmts;
-using BruTile;
-using BruTile.Wmts.Generated;
-using EM.GIS.Data;
-using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Text;
-using System.Net.Http;
-using System.Linq;
+﻿using BruTile;
 using BruTile.Cache;
-using System.IO;
-using System.Drawing.Imaging;
 using BruTile.Predefined;
-using BruTile.Web;
-using System.Threading.Tasks;
+using BruTile.Wmts;
+using EM.GIS.Data;
 using EM.IOC;
-using System.Windows.Input;
-using EM.GIS.Geometries;
+using System;
+using System.Collections.Generic;
+using System.Drawing.Imaging;
+using System.IO;
+using System.Linq;
 using System.Net;
+using System.Net.Http;
 
 namespace EM.GIS.Gdals
 {
@@ -47,10 +40,7 @@ namespace EM.GIS.Gdals
                 return _client;
             }
         }
-        public WebMapDriver()
-        {
-        }
-
+        /// <inheritdoc/>
         public override IDataSet Open(string path)
         {
             return OpenWmts(path).FirstOrDefault();
@@ -73,7 +63,8 @@ namespace EM.GIS.Gdals
         }
         private FileCache GetTileCache(string name)
         {
-            return new FileCache(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "TileCache", name), "jpg", new TimeSpan(30, 0, 0, 0));
+            var fileCache = new FileCache(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "TileCache", name), "jpg", new TimeSpan(30, 0, 0, 0));
+            return fileCache;
         }
         /// <inheritdoc/>
         public ITileSet OpenXYZ(string name, string urlFormatter, IEnumerable<string>? serverNodes = null, int minLevel = 0, int maxLevel = 18, PixelFormat pixelFormat = PixelFormat.Format24bppRgb)
@@ -99,10 +90,13 @@ namespace EM.GIS.Gdals
                     throw new ArgumentException("Only support Format24bppRgb or Format32bppArgb", nameof(pixelFormat));
             }
             ITileSchema tileSchema = new GlobalSphericalMercator(format, YAxis.OSM, minLevel, maxLevel, name);
-            HttpTileSource tileSource = new HttpTileSource(tileSchema, urlFormatter, serverNodes, tileFetcher: FetchTile)
+            var tileSource = new EmHttpTileSource(tileSchema, urlFormatter, serverNodes)
             {
                 Name= name
             };
+            tileSource.HttpClient.Timeout = new TimeSpan(0, 0, 5);
+            ServicePointManager.DefaultConnectionLimit = Environment.ProcessorCount; // 设置最大连接数
+            tileSource.HttpClient.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", @"Mozilla / 5.0(Windows; U; Windows NT 6.0; en - US; rv: 1.9.1.7) Gecko / 20091221 Firefox / 3.5.7");
             var tileSet = new TileSet(tileSource)
             {
                 Projection = new GdalProjection(3857),
@@ -110,15 +104,6 @@ namespace EM.GIS.Gdals
             };
             tileSource.PersistentCache = GetTileCache(tileSource.Name);
             return tileSet;
-        }
-        /// <summary>
-        /// 下载瓦片
-        /// </summary>
-        /// <param name="uri">地址</param>
-        /// <returns>字节数组</returns>
-        public static async Task<byte[]> FetchTile(Uri uri)
-        {
-            return await Client.GetByteArrayAsync(uri);
         }
     }
 }

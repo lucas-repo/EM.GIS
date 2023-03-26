@@ -1,4 +1,6 @@
-﻿using EM.GIS.Geometries;
+﻿using EM.GIS.Data;
+using EM.GIS.Geometries;
+using EM.IOC;
 using OSGeo.OGR;
 using System;
 using System.Collections.Generic;
@@ -6,6 +8,9 @@ using System.Text;
 
 namespace EM.GIS.Gdals
 {
+    /// <summary>
+    /// 范围扩展类
+    /// </summary>
     public static class ExtentExtensions
     {
         #region 范围
@@ -79,7 +84,12 @@ namespace EM.GIS.Gdals
 
             return extent.Within(env.MinX, env.MaxX, env.MinY, env.MaxY);
         }
-        public static OSGeo.OGR.Geometry ToGeometry(this IExtent extent)
+        /// <summary>
+        /// 将<see cref="IExtent"/>转为<see cref="OSGeo.OGR.Geometry"/>
+        /// </summary>
+        /// <param name="extent"><see cref="IExtent"/></param>
+        /// <returns><see cref="OSGeo.OGR.Geometry"/></returns>
+        public static OSGeo.OGR.Geometry ToOgrGeometry(this IExtent extent)
         {
             var ring = new OSGeo.OGR.Geometry(wkbGeometryType.wkbLinearRing);
             ring.AddPoint_2D(extent.MinX, extent.MinY);

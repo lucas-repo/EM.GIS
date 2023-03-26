@@ -24,18 +24,21 @@ namespace EM.GIS.Symbology
             };
         }
 
-        protected override void DrawGeometry(IProj proj, Graphics graphics, IFeatureSymbolizer symbolizer, IGeometry geometry)
+        protected override Rectangle DrawGeometry(IProj proj, Graphics graphics, IFeatureSymbolizer symbolizer, IGeometry geometry)
         {
+            var ret = Rectangle.Empty;
             if (!(symbolizer is ILineSymbolizer lineSymbolizer))
             {
-                return;
+                return ret;
             }
             float scaleSize = (float)symbolizer.GetScale(proj);
             using (GraphicsPath path = new GraphicsPath())
             {
                 GetLines(proj, geometry, path);
                 lineSymbolizer.DrawLine(graphics, scaleSize, path);
+                ret=path.GetBounds().ToRectangle();
             }
+            return ret;
         }
         private void GetLines(IProj proj, IGeometry geometry, GraphicsPath path)
         {

@@ -63,7 +63,6 @@ namespace EM.GIS.Gdals
             Dictionary<string, string> nameAndExtensions = new Dictionary<string, string>
             {
                 ["DXF"]=".dxf",
-                ["FileGDB"] = ".gdb",
                 ["GeoJSON"] = ".geojson",
                 ["GML"] = ".gml",
                 ["KML"] = ".kml",
@@ -73,6 +72,11 @@ namespace EM.GIS.Gdals
             foreach (var item in nameAndExtensions)
             {
                 var driver = Ogr.GetDriverByName(item.Key);
+                if (driver == null)
+                {
+                    Debug.WriteLine($"{nameof(InitializeVectorDrivers)}获取驱动 {item.Key} 失败");
+                    continue;
+                }
                 var vectorDriver = new GdalVectorDriver(driver, item.Value);
                 Drivers.Add(vectorDriver);
             }
@@ -98,7 +102,6 @@ namespace EM.GIS.Gdals
                 ["GPKG"] = ".gpkg",
                 ["GTiff"] = ".tif",
                 ["HFA"] = ".img",
-                ["JP2ECW"] = ".jp2",
                 ["JPEG"] = ".jpg",
                 ["MBTiles"] = ".mbtiles",
                 ["PDF"] = ".pdf",
@@ -109,6 +112,11 @@ namespace EM.GIS.Gdals
             foreach (var item in nameAndExtensions)
             {
                 var driver = Gdal.GetDriverByName(item.Key);
+                if (driver == null)
+                {
+                    Debug.WriteLine($"{nameof(InitializeRasterDrivers)}获取驱动 {item.Key} 失败");
+                    continue;
+                }
                 var rasterDriver = new GdalRasterDriver(driver, item.Value);
                 Drivers.Add(rasterDriver);
             }

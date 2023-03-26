@@ -15,7 +15,7 @@ namespace EM.GIS.Symbology
         /// <summary>
         /// 改变事件
         /// </summary>
-        event EventHandler Changed;
+        event EventHandler? Changed;
         /// <summary>
         /// 恢复改变
         /// </summary>

@@ -150,66 +150,63 @@ namespace EM.GIS.Data
         {
             Bitmap? bitmap = null;
             bool isNodata = false;
-            if (TileSource is HttpTileSource httpTileSource)
+            byte[]? data = null;
+            for (int i = 0; i < reloadTimes; i++)
             {
-                byte[]? data = null;
-                for (int i = 0; i < reloadTimes; i++)
+                if (cancelFunc?.Invoke() == true)
                 {
-                    if (cancelFunc?.Invoke() == true)
-                    {
-                        break;
-                    }
-                    bool catchedException = false;//是否已捕捉异常
-                    try
-                    {
-                        //data = httpTileSource.PersistentCache?.Find(tileInfo.Index);
-                        //if (data == null)
-                        //{
-                        data = await httpTileSource.GetTileAsync(tileInfo);
-                        //if (data != null)
-                        //{
-                        //    httpTileSource.PersistentCache?.Add(tileInfo.Index, data);
-                        //}
-                        //}
-                    }
-                    catch (TaskCanceledException)
-                    {
-                        Debug.WriteLine($"已取消第{i}次下载瓦片 {tileInfo.Index.Level}_{tileInfo.Index.Col}_{tileInfo.Index.Row} ");
-                        catchedException = true;
-                    }
-                    catch (Exception e)
-                    {
-                        Debug.WriteLine($"获取瓦片 {tileInfo.Index.Level}_{tileInfo.Index.Col}_{tileInfo.Index.Row} 失败,{e}");
-                        catchedException = true;
-                    }
-                    if (data != null)
-                    {
-                        break;
-                    }
-                    else
-                    {
-                        if (!catchedException)
-                        {
-                            Debug.WriteLine($"第{i}次下载瓦片 {tileInfo.Index.Level}_{tileInfo.Index.Col}_{tileInfo.Index.Row} 超时");
-                        }
-                    }
+                    break;
                 }
-
+                bool catchedException = false;//是否已捕捉异常
                 try
                 {
-                    if (data != null)
-                    {
-                        using (MemoryStream ms = new MemoryStream(data))
-                        {
-                            bitmap = new Bitmap(ms);
-                            ms.Close();
-                        }
-                    }
+                    //data = httpTileSource.PersistentCache?.Find(tileInfo.Index);
+                    //if (data == null)
+                    //{
+                    data = await TileSource.GetTileAsync(tileInfo);
+                    //if (data != null)
+                    //{
+                    //    httpTileSource.PersistentCache?.Add(tileInfo.Index, data);
+                    //}
+                    //}
+                }
+                catch (TaskCanceledException)
+                {
+                    Debug.WriteLine($"已取消第{i}次下载瓦片 {tileInfo.Index.Level}_{tileInfo.Index.Col}_{tileInfo.Index.Row} ");
+                    catchedException = true;
                 }
                 catch (Exception e)
                 {
-                    Debug.WriteLine($"瓦片 {tileInfo.Index.Level}_{tileInfo.Index.Col}_{tileInfo.Index.Row} 生成位图失败,{e}");
+                    Debug.WriteLine($"获取瓦片 {tileInfo.Index.Level}_{tileInfo.Index.Col}_{tileInfo.Index.Row} 失败,{e}");
+                    catchedException = true;
                 }
+                if (data != null)
+                {
+                    break;
+                }
+                else
+                {
+                    if (!catchedException)
+                    {
+                        Debug.WriteLine($"第{i}次下载瓦片 {tileInfo.Index.Level}_{tileInfo.Index.Col}_{tileInfo.Index.Row} 超时");
+                    }
+                }
+
+            }
+            try
+            {
+                if (data != null)
+                {
+                    using (MemoryStream ms = new MemoryStream(data))
+                    {
+                        bitmap = new Bitmap(ms);
+                        ms.Close();
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                Debug.WriteLine($"瓦片 {tileInfo.Index.Level}_{tileInfo.Index.Col}_{tileInfo.Index.Row} 生成位图失败,{e}");
             }
             if (bitmap == null)
             {
@@ -246,18 +243,15 @@ namespace EM.GIS.Data
         {
             var ret = new List<TileInfo>();
             int minZoom = 0, maxZoom = 18;
-            if (TileSource is HttpTileSource httpTileSource)
+            var levels = TileSource.Schema.Resolutions.Keys;
+            if (levels.Count > 0)
             {
-                var levels = httpTileSource.Schema.Resolutions.Keys;
-                if (levels.Count > 0)
-                {
-                    minZoom = levels.First();
-                    maxZoom = levels.Last();
-                }
-
-                var zoom = TileCalculator.DetermineZoomLevel(geoExtent, rectangle, minZoom, maxZoom);
-                ret.AddRange(httpTileSource.Schema.GetTileInfos(extent.ToExtent(), zoom));
+                minZoom = levels.First();
+                maxZoom = levels.Last();
             }
+
+            var zoom = TileCalculator.DetermineZoomLevel(geoExtent, rectangle, minZoom, maxZoom);
+            ret.AddRange(TileSource.Schema.GetTileInfos(extent.ToExtent(), zoom));
             return ret;
         }
         /// <inheritdoc/>

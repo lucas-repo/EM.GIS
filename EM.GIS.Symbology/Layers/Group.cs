@@ -1,4 +1,5 @@
-﻿using EM.GIS.Data;
+﻿using EM.Bases;
+using EM.GIS.Data;
 using EM.GIS.Geometries;
 using System;
 using System.Collections.Generic;
@@ -49,6 +50,8 @@ namespace EM.GIS.Symbology
             }
         }
 
+        /// <inheritdoc/>
+        public event EventHandler? SelectionChanged;
         /// <summary>
         /// 实例化<seealso cref="Group"/>
         /// </summary>
@@ -145,15 +148,15 @@ namespace EM.GIS.Symbology
         }
 
         private int _suspendLevel;
-        private bool _changed;
+        private bool _selectionChanged;
         /// <inheritdoc/>
         public override bool SelectionChangesIsSuspended => _suspendLevel > 0;
         /// <inheritdoc/>
-        public override void SuspendSelectionChanges()
+        public void SuspendSelectionChanges()
         {
             if (_suspendLevel == 0)
             {
-                _changed = false;
+                _selectionChanged = false;
             }
 
             _suspendLevel += 1;
@@ -189,7 +192,7 @@ namespace EM.GIS.Symbology
         {
             affectedArea = new Extent();
             bool somethingChanged = false;
-
+            SuspendSelectionChanges();
             foreach (var item in Children)
             {
                 if (item is IRenderableItem renderableItem && renderableItem.SelectionEnabled && renderableItem.IsVisible)
@@ -200,9 +203,8 @@ namespace EM.GIS.Symbology
                         affectedArea.ExpandToInclude(layerArea);
                     }
                 }
-
-                OnSelectionChanged(); // fires only AFTER the individual layers have fired their events.
             }
+            ResumeSelectionChanges();
             return somethingChanged;
         }
         /// <inheritdoc />
@@ -216,7 +218,19 @@ namespace EM.GIS.Symbology
                 if (item is IRenderableItem renderableItem && renderableItem.SelectionEnabled && renderableItem.GetVisible())
                 {
                     IExtent layerArea;
-                    if (renderableItem.Select(tolerant, strict, mode, out layerArea, clear))
+                    IExtent destTolerant = tolerant;
+                    IExtent destStrict = strict;
+                    if (renderableItem is ILayer layer)
+                    {
+                        if (Frame != null && layer.DataSet != null && !Equals(layer.DataSet.Projection, Frame.Projection))
+                        {
+                            destTolerant = tolerant.Copy();
+                            Frame.Projection.ReProject(layer.DataSet.Projection, destTolerant);
+                            destStrict = strict.Copy();
+                            Frame.Projection.ReProject(layer.DataSet.Projection, destStrict);
+                        }
+                    }
+                    if (renderableItem.Select(destTolerant, destStrict, mode, out layerArea, clear))
                     {
                         somethingChanged = true;
                         affectedArea.ExpandToInclude(layerArea);
@@ -233,6 +247,7 @@ namespace EM.GIS.Symbology
         {
             affectedArea = new Extent();
             bool somethingChanged = false;
+            SuspendSelectionChanges();
             foreach (var item in Children)
             {
                 if (item is IRenderableItem renderableItem && renderableItem.SelectionEnabled && renderableItem.GetVisible())
@@ -245,16 +260,16 @@ namespace EM.GIS.Symbology
                     }
                 }
             }
-            OnSelectionChanged(); // fires only AFTER the individual layers have fired their events.
+            ResumeSelectionChanges();
             return somethingChanged;
         }
         /// <inheritdoc/>
-        public override void ResumeSelectionChanges()
+        public void ResumeSelectionChanges()
         {
             _suspendLevel -= 1;
             if (SelectionChangesIsSuspended == false)
             {
-                if (_changed)
+                if (_selectionChanged)
                 {
                     OnSelectionChanged();
                 }
@@ -263,16 +278,42 @@ namespace EM.GIS.Symbology
             if (_suspendLevel < 0) _suspendLevel = 0;
         }
 
-        /// <inheritdoc/>
-        protected override void OnSelectionChanged()
+        /// <summary>
+        /// 触发SelectionChanged事件
+        /// </summary>
+        protected virtual void OnSelectionChanged()
         {
             if (SelectionChangesIsSuspended)
             {
-                _changed = true;
+                _selectionChanged = true;
                 return;
             }
 
-            base.OnSelectionChanged();
+            SelectionChanged?.Invoke(this, EventArgs.Empty);
+        }
+        /// <inheritdoc/>
+        protected override void OnChildrenItemAdded(ILegendItem t)
+        {
+            if (t is IFeatureLayer featureLayer)
+            {
+                featureLayer.Selection.Changed += LayerSelection_Changed;
+            }
+            base.OnChildrenItemAdded(t);
+        }
+
+        private void LayerSelection_Changed(object sender, EventArgs e)
+        {
+            OnSelectionChanged();
+        }
+
+        /// <inheritdoc/>
+        protected override void OnChildrenItemRemoved(ILegendItem t)
+        {
+            if (t is IFeatureLayer featureLayer)
+            {
+                featureLayer.Selection.Changed -= LayerSelection_Changed;
+            }
+            base.OnChildrenItemRemoved(t);
         }
     }
 }

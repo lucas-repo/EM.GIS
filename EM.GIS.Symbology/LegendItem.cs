@@ -1,8 +1,10 @@
-﻿using EM.Bases;
+﻿using BruTile.Wms;
+using EM.Bases;
 using EM.GIS.Data;
 using System;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using System.ComponentModel;
 using System.Drawing;
 
 namespace EM.GIS.Symbology
@@ -37,14 +39,35 @@ namespace EM.GIS.Symbology
                 {
                     var oldChildren = base.Children;
                     base.Children = value;
-                    base.Children.CollectionChanged += Children_CollectionChanged;
+                    if (base.Children != null)
+                    {
+                        HandleChildrenEvents(base.Children);
+                    }
                     if (oldChildren != null)
                     {
-                        oldChildren.CollectionChanged -= Children_CollectionChanged;
+                        IgnoreChildrenEvents(oldChildren);
                     }
                 }
             }
         }
+
+        /// <summary>
+        /// 移除Children挂接的事件
+        /// </summary>
+        /// <param name="children">子项</param>
+        protected virtual void IgnoreChildrenEvents(IItemCollection<IBaseItem> children)
+        {
+            children.CollectionChanged -= Children_CollectionChanged;
+        }
+        /// <summary>
+        /// 挂接事件到Children
+        /// </summary>
+        /// <param name="children">子项</param>
+        protected virtual void HandleChildrenEvents(IItemCollection<IBaseItem> children)
+        {
+            children.CollectionChanged += Children_CollectionChanged;
+        }
+
         /// <summary>
         /// 实例化<seealso cref="LegendItem"/>
         /// </summary>
@@ -72,6 +95,7 @@ namespace EM.GIS.Symbology
                     {
                         t.Parent = default;
                         t.Frame = default;
+                        OnChildrenItemRemoved(t);
                     }
                 }
             });
@@ -83,6 +107,7 @@ namespace EM.GIS.Symbology
                     {
                         t.Parent = this;
                         t.Frame = Frame;
+                        OnChildrenItemAdded(t);
                     }
                 }
             });
@@ -100,7 +125,23 @@ namespace EM.GIS.Symbology
                     break;
                 case NotifyCollectionChangedAction.Move:
                     break;
+                case NotifyCollectionChangedAction.Reset:
+                    break;
             }
+        }
+        /// <summary>
+        /// 子要素已被移除
+        /// </summary>
+        /// <param name="t">子要素</param>
+        protected virtual void OnChildrenItemRemoved(ILegendItem t)
+        {
+        }
+        /// <summary>
+        /// 添加子要素后
+        /// </summary>
+        /// <param name="t">子要素</param>
+        protected virtual void OnChildrenItemAdded(ILegendItem t)
+        {
         }
 
         private void LegendItem_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)

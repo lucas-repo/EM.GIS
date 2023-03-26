@@ -27,8 +27,6 @@ namespace EM.GIS.Symbology
         /// <inheritdoc/>
         public double MinInverseScale { get; set; }
         private string _progressMessage = string.Empty;
-        /// <inheritdoc/>
-        public event EventHandler? SelectionChanged;
 
         /// <summary>
         /// 进度消息文字
@@ -43,13 +41,6 @@ namespace EM.GIS.Symbology
                 }
                 return _progressMessage;
             }
-        }
-        /// <summary>
-        /// 触发选择改变事件
-        /// </summary>
-        protected virtual void OnSelectionChanged()
-        {
-            SelectionChanged?.Invoke(this, EventArgs.Empty);
         }
         /// <inheritdoc/>
         public bool SelectionEnabled { get; set; } = true;
@@ -116,16 +107,6 @@ namespace EM.GIS.Symbology
         {
             affectedArea = new Extent();
             return false;
-        }
-
-        /// <inheritdoc/>
-        public virtual void ResumeSelectionChanges()
-        {
-        }
-
-        /// <inheritdoc/>
-        public virtual void SuspendSelectionChanges()
-        {
         }
     }
 }

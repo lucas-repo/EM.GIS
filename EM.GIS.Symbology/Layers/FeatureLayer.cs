@@ -103,10 +103,10 @@ namespace EM.GIS.Symbology
         /// <inheritdoc/>
         protected override Rectangle OnDraw(MapArgs mapArgs, bool selected = false, Action<string, int>? progressAction = null, Func<bool>? cancelFunc = null, Action<Rectangle>? invalidateMapFrameAction = null)
         {
-            var ret = Rectangle.Empty;
+            var ret = RectangleF.Empty;
             if ((selected && Selection.Count == 0) || cancelFunc?.Invoke() == true || DataSet == null)
             {
-                return ret;
+                return ret.ToRectangle();
             }
             IExtent filter = mapArgs.DestExtent;
             if (mapArgs.Projection != null && DataSet.Projection != null && !mapArgs.Projection.Equals(DataSet.Projection))
@@ -131,22 +131,13 @@ namespace EM.GIS.Symbology
                     {
                         percent = (int)(drawnFeatureCount * 90 / featureCount);
                         progressAction?.Invoke(ProgressMessage, percent);
-                        DrawFeatures(mapArgs, features, selected, progressAction, cancelFunc);
-                        drawnFeatureCount += features.Count;
-                        if (features.Count > 0)
+                        var rect = DrawFeatures(mapArgs, features, selected, progressAction, cancelFunc);
+                        if (!rect.IsEmpty)
                         {
-                            IExtent extent = new Extent();
-                            foreach (var feature in features)
-                            {
-                                extent.ExpandToInclude(feature.Geometry.GetExtent());
-                            }
-                            var rect = mapArgs.ProjToPixel(extent);
-                            if (!rect.IsEmpty)
-                            {
-                                ret = ret.ExpandToInclude(rect);
-                                invalidateMapFrameAction?.Invoke(rect);
-                            }
+                            ret = ret.ExpandToInclude(rect);
+                            invalidateMapFrameAction?.Invoke(rect);
                         }
+                        drawnFeatureCount += features.Count;
                     }
                     foreach (var item in features)
                     {
@@ -201,7 +192,7 @@ namespace EM.GIS.Symbology
                 drawFeatuesAction();
             }
             DataSet.SetSpatialFilter(null);
-            return ret;
+            return ret.ToRectangle();
         }
         private Dictionary<IFeature, IFeatureCategory> GetFeatureAndCategoryDic(List<IFeature> features)
         {
@@ -247,12 +238,14 @@ namespace EM.GIS.Symbology
         /// <param name="graphics">画布</param>
         /// <param name="symbolizer">要素符号</param>
         /// <param name="geometry">几何体</param>
-        protected abstract void DrawGeometry(IProj proj, Graphics graphics, IFeatureSymbolizer symbolizer, IGeometry geometry);
-        private void DrawFeatures(MapArgs mapArgs, List<IFeature> features, bool selected, Action<string, int>? progressAction = null, Func<bool>? cancelFunc = null)
+        /// <returns>像素范围</returns>
+        protected abstract Rectangle DrawGeometry(IProj proj, Graphics graphics, IFeatureSymbolizer symbolizer, IGeometry geometry);
+        private Rectangle DrawFeatures(MapArgs mapArgs, List<IFeature> features, bool selected, Action<string, int>? progressAction = null, Func<bool>? cancelFunc = null)
         {
+            var ret = Rectangle.Empty;
             if (features == null || cancelFunc?.Invoke() == true)
             {
-                return;
+                return ret;
             }
             var featureCategoryDic = GetFeatureAndCategoryDic(features);
             Func<IGeometry, IGeometry> getGeometryFunc = (geometry) =>
@@ -269,7 +262,7 @@ namespace EM.GIS.Symbology
             {
                 if (cancelFunc?.Invoke() == true)
                 {
-                    return;
+                    return ret;
                 }
                 IFeature feature = item.Key;
                 if (feature.Geometry == null)
@@ -283,8 +276,14 @@ namespace EM.GIS.Symbology
                     continue;
                 }
                 var geometry = getGeometryFunc(feature.Geometry);
-                DrawGeometry(mapArgs, mapArgs.Graphics, symbolizer, geometry);
+                var rect = DrawGeometry(mapArgs, mapArgs.Graphics, symbolizer, geometry);
+                ret = ret.ExpandToInclude(rect);
+                if (geometry != feature.Geometry)
+                {
+                    geometry.Dispose();
+                }
             }
+            return ret;
         }
 
         private DataTable GetSchema()
@@ -438,10 +437,11 @@ namespace EM.GIS.Symbology
         }
         private bool DoSelectAction(IExtent tolerant, IExtent strict, SelectionMode selectionMode, ClearStates clear, out IExtent affectedArea, SelectAction action)
         {
+            bool changed = false;
+            affectedArea = new Extent();
             if ((!SelectionEnabled && clear != ClearStates.Force) || !GetVisible(Extent))
             {
-                affectedArea = new Extent();
-                return false;
+                return changed;
             }
 
             Selection.SuspendChanges();
@@ -450,37 +450,36 @@ namespace EM.GIS.Symbology
             {
                 if (Selection.Count > 0)
                 {
+                    affectedArea.ExpandToInclude(Selection.Extent);
                     Selection.Clear();
+                    changed = true;
                 }
             }
 
             var region = DataSet?.FeatureType == FeatureType.Polygon ? strict : tolerant;
-            bool changed = false;
             Selection.SelectionMode = selectionMode;
 
             // all categories are selection enabled, so a category independent action is enough
             if (Children.All(x => x is IFeatureCategory category && category.SelectionEnabled))
             {
-                changed = action(Selection, region, out affectedArea);
+                if (action(Selection, region, out var selectionExtent))
+                {
+                    changed = true;
+                    affectedArea.ExpandToInclude(selectionExtent);
+                }
             }
             else
             {
-                var area = new Extent();
-
                 foreach (IFeatureCategory cat in Children.Where(x => x is IFeatureCategory category && category.SelectionEnabled))
                 {
-                    IExtent categoryArea;
                     Selection.Category = cat;
-                    if (action(Selection, region, out categoryArea))
+                    if (action(Selection, region, out var categoryArea))
                     {
                         changed = true;
-                        area.ExpandToInclude(categoryArea);
+                        affectedArea.ExpandToInclude(categoryArea);
                     }
-
                     Selection.Category = null;
                 }
-
-                affectedArea = area;
             }
 
             Selection.ResumeChanges();
@@ -511,17 +510,6 @@ namespace EM.GIS.Symbology
         {
             SelectAction action = (ISelection selection, IExtent region, out IExtent affectedRegion) => selection.RemoveRegion(region, out affectedRegion);
             return DoSelectAction(tolerant, strict, selectionMode, ClearStates.False, out affectedArea, action);
-        }
-        /// <inheritdoc/>
-        public override void SuspendSelectionChanges()
-        {
-            Selection.SuspendChanges();
-        }
-
-        /// <inheritdoc/>
-        public override void ResumeSelectionChanges()
-        {
-            Selection.ResumeChanges();
         }
         private delegate bool SelectAction(ISelection selection, IExtent region, out IExtent affectedRegion);
     }

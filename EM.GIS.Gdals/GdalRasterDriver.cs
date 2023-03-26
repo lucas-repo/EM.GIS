@@ -10,10 +10,9 @@ namespace EM.GIS.Gdals
     /// <summary>
     /// gdal栅格驱动
     /// </summary>
-    [Injectable(ServiceLifetime = ServiceLifetime.Singleton, ServiceType = typeof(IDriver))]
     public class GdalRasterDriver : Driver, IRasterDriver
     {
-        OSGeo.GDAL.Driver driver;
+        readonly OSGeo.GDAL.Driver driver;
         /// <summary>
         /// 初始化栅格驱动
         /// </summary>
@@ -34,21 +33,15 @@ namespace EM.GIS.Gdals
         public IRasterSet? Create(string filename, int width, int height, int bandCount, RasterType rasterType, string[]? options = null)
         {
             IRasterSet? rasterSet = null;
-            var driverCount = OSGeo.GDAL.Gdal.GetDriverCount();
-            for (int i = 0; i < driverCount; i++)
+            var dataset = driver.Create(filename, width, height, bandCount, rasterType.ToRasterType(), options);
+            if (dataset != null)
             {
-                using (var driver = OSGeo.GDAL.Gdal.GetDriver(i))
-                {
-                    var dataset = driver.Create(filename,  width,  height,  bandCount,  rasterType.ToRasterType(),options);
-                    if (dataset != null)
-                    {
-                        rasterSet = dataset.GetRasterSet(filename );
-                    }
-                }
+                rasterSet = dataset.GetRasterSet(filename);
             }
             return rasterSet;
         }
 
+        /// <inheritdoc/>
         public override IDataSet? Open(string path)
         {
             return (this as IRasterDriver).Open(path);

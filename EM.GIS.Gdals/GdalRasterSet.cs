@@ -828,10 +828,6 @@ namespace EM.GIS.Gdals
                     return;
                 }
                 byte[] buffer = new byte[srcWidth * srcHeight * bandCount];
-                for (int i = 0; i < bandMap.Length; i++)
-                {
-                    bandMap[i] = i + 1;
-                }
                 dataset.ReadRaster(srcXOff, srcYOff, srcWidth, srcHeight, buffer, srcWidth, srcHeight, bandCount, bandMap, 0, 0, 0);
                 _dataset.WriteRaster(destXOff, destYOff, destWidth, destHeight, buffer, srcWidth, srcHeight, bandCount, bandMap, 0, 0, 0);
             }
@@ -839,6 +835,18 @@ namespace EM.GIS.Gdals
             {
                 Debug.WriteLine($"{nameof(WriteRaster)} 失败，{e}");
             }
+        }
+        /// <inheritdoc/>
+        public override void Save()
+        {
+            _dataset.FlushCache();
+            base.Save();
+        }
+        /// <inheritdoc/>
+        public override void SaveAs(string filename, bool overwrite)
+        {
+            using var dataset= _dataset.GetDriver().CreateCopy(filename, _dataset, 1, null, null, null);
+            base.SaveAs(filename, overwrite);
         }
     }
 }

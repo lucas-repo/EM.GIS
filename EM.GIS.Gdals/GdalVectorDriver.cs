@@ -15,7 +15,7 @@ namespace EM.GIS.Gdals
     /// </summary>
     public class GdalVectorDriver : Driver, IVectorDriver
     {
-        OSGeo.OGR.Driver driver;
+        readonly OSGeo.OGR.Driver driver;
         /// <summary>
         /// 初始化矢量驱动
         /// </summary>

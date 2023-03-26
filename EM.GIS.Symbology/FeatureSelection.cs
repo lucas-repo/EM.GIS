@@ -2,6 +2,7 @@
 using EM.GIS.Geometries;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 
 namespace EM.GIS.Symbology
@@ -18,7 +19,7 @@ namespace EM.GIS.Symbology
         /// <summary>
         /// 选择的要素集合
         /// </summary>
-        private List<IFeature> Features { get; }
+        private ObservableCollection<IFeature> Features { get; }
         /// <inheritdoc/>
         public IFeature this[int index] { get => Features[index]; set => Features[index] = value; }
 
@@ -47,8 +48,15 @@ namespace EM.GIS.Symbology
         public FeatureSelection(IFeatureSet featureSet)
         {
             FeatureSet = featureSet;
-            Features = new List<IFeature>();
+            Features = new  ObservableCollection<IFeature>();
+            Features.CollectionChanged += Features_CollectionChanged;
         }
+
+        private void Features_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+        {
+            OnChanged();
+        }
+
         /// <inheritdoc/>
         public void Add(IFeature item)
         {
@@ -58,7 +66,7 @@ namespace EM.GIS.Symbology
         public override bool AddRegion(IExtent extent, out IExtent affectedExtent)
         {
             bool ret = false;
-            affectedExtent = extent;
+            affectedExtent = new Extent();
             if (extent == null)
             {
                 return ret;
@@ -72,9 +80,9 @@ namespace EM.GIS.Symbology
                 }
                 Features.Add(item);
                 affectedExtent.ExpandToInclude(item.Geometry.GetExtent());
+                ret = true;
             }
             FeatureSet.SetSpatialExtentFilter(null);
-            ret = true;
             return ret;
         }
 

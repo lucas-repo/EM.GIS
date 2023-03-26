@@ -11,10 +11,6 @@ namespace EM.GIS.Symbology
     public interface ISelectable
     {
         /// <summary>
-        /// 选择改变事件
-        /// </summary>
-        event EventHandler? SelectionChanged;
-        /// <summary>
         /// 是否可选择
         /// </summary>
         bool SelectionEnabled { get; set; }
@@ -57,13 +53,5 @@ namespace EM.GIS.Symbology
         /// <param name="affectedArea">影响范围</param>
         /// <returns>成功与否</returns>
         bool UnSelect(IExtent tolerant, IExtent strict, SelectionMode mode, out IExtent affectedArea);
-        /// <summary>
-        /// 恢复选择事件
-        /// </summary>
-        void ResumeSelectionChanges();
-        /// <summary>
-        /// 暂停选择事件
-        /// </summary>
-        void SuspendSelectionChanges();
     }
 }

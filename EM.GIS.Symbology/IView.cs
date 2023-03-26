@@ -58,6 +58,10 @@ namespace EM.GIS.Symbology
         /// <summary>
         /// 重绘缓存
         /// </summary>
+        void ResetBuffer();
+        /// <summary>
+        /// 重绘缓存
+        /// </summary>
         /// <param name="rectangle">画布大小</param>
         /// <param name="extent">地图范围</param>
         /// <param name="drawingExtent">重绘范围</param>

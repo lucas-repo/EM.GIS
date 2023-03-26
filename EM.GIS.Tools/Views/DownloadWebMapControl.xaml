@@ -15,16 +15,13 @@
     <Grid  Margin="20">
         <DockPanel IsEnabled="{Binding IsFree}">
             <StackPanel DockPanel.Dock="Top">
-                <DockPanel >
-                    <Label Content="任务名称："  DockPanel.Dock="Left"/>
-                    <TextBox Text="{Binding Name}" />
-                </DockPanel>
+                <DockPanel />
                 <DockPanel Margin="{StaticResource topMargin}">
                     
                     <Label Content="地图类型："  DockPanel.Dock="Left"/>
                     <ComboBox ItemsSource="{Binding TileSets}" SelectedItem="{Binding TileSet}" DisplayMemberPath="Name"/>
                 </DockPanel>
-                <DockPanel  Margin="{StaticResource topMargin}">
+                <DockPanel  Margin="{StaticResource topMargin}" Visibility="Collapsed">
                     <Label Content="下载范围："  />
                     <Grid>
                         <Grid.ColumnDefinitions>
@@ -52,14 +49,14 @@
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
-                        <ComboBox ItemsSource="{Binding OutTypes}" SelectedItem="{Binding OutType}" DisplayMemberPath="Name"/>
-                        <ComboBox Grid.Column="1" ItemsSource="{Binding Formats}" SelectedItem="{Binding Format}" />
+                        <ComboBox ItemsSource="{Binding OutTypes}" SelectedItem="{Binding OutType}" DisplayMemberPath="Key"/>
+                        <ComboBox Grid.Column="1" ItemsSource="{Binding TileFormats}" SelectedItem="{Binding TileFormat}" DisplayMemberPath="Key"/>
                     </Grid>
                 </DockPanel>
                 <DockPanel Margin="{StaticResource topMargin}">
-                    <Label Content="存储目录：" DockPanel.Dock="Left" VerticalAlignment="Center"/>
+                    <Label Content="存储路径：" DockPanel.Dock="Left" VerticalAlignment="Center"/>
                     <Button Content="浏览" DockPanel.Dock="Right" Command="{Binding BrowseCmd}" />
-                    <TextBox Text="{Binding OutDirectory}" Margin="0,0,5,0"/>
+                    <TextBox Text="{Binding OutPath}" Margin="0,0,5,0"/>
                 </DockPanel>
             </StackPanel>
             <ScrollViewer VerticalScrollBarVisibility="Auto" Margin="{StaticResource topMargin}">

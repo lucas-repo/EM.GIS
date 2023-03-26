@@ -75,6 +75,7 @@ namespace EM.GIS.Data
         // }
 
         // 添加此代码以正确实现可处置模式。
+        /// <inheritdoc/>
         public void Dispose()
         {
             // 请勿更改此代码。将清理代码放入以上 Dispose(bool disposing) 中。
@@ -82,8 +83,9 @@ namespace EM.GIS.Data
             // TODO: 如果在以上内容中替代了终结器，则取消注释以下行。
             // GC.SuppressFinalize(this);
         }
-
+        /// <inheritdoc/>
         public virtual void Save() { }
+        /// <inheritdoc/>
         public virtual void SaveAs(string filename, bool overwrite) { }
 
         #endregion

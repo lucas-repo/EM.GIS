@@ -5,7 +5,7 @@ namespace EM.GIS.Symbology
     /// <summary>
     /// 可改变类
     /// </summary>
-    public class Changeable:IChangeable
+    public class Changeable : IChangeable
     {
         #region Fields
 
@@ -15,10 +15,13 @@ namespace EM.GIS.Symbology
 
         #endregion
 
-        public event EventHandler Changed;
-
+        /// <inheritdoc/>
+        public event EventHandler? Changed;
+        /// <inheritdoc/>
         public bool ChangesSuspended => _suspendCount > 0;
-
+        /// <summary>
+        /// 触发Changed事件
+        /// </summary>
         protected virtual void OnChanged()
         {
             if (_ignoreChanges) return;
@@ -32,6 +35,7 @@ namespace EM.GIS.Symbology
             _ignoreChanges = false;
         }
 
+        /// <inheritdoc/>
         public virtual void ResumeChanges()
         {
             _suspendCount -= 1;
@@ -45,6 +49,7 @@ namespace EM.GIS.Symbology
             if (_suspendCount < 0) _suspendCount = 0;
         }
 
+        /// <inheritdoc/>
         public virtual void SuspendChanges()
         {
             if (_suspendCount == 0)

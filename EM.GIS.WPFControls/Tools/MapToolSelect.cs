@@ -55,9 +55,15 @@ namespace EM.GIS.WPFControls
             var minY = Math.Min(startCoord.Y, e.GeographicLocation.Y);
             var maxY = Math.Max(startCoord.Y, e.GeographicLocation.Y);
             IExtent extent = new Extent(minX, minY, maxX, maxY);
-            e.Map.Frame.Select(extent, extent, Symbology.SelectionMode.Intersects, out _, Symbology.ClearStates.Force);
-            //InvalidateRect(e);
-            Map.Frame.View.ResetBuffer(Map.Frame.View.Bound, Map.Frame.View.ViewExtent, Map.Frame.View.ViewExtent);
+            var seletionChanged= e.Map.Frame.Select(extent, extent, Symbology.SelectionMode.Intersects, out var affectedArea, Symbology.ClearStates.Force);
+            if (seletionChanged && Map != null)
+            {
+                Map.Frame.View.ResetBuffer();
+            }
+            else
+            {
+                InvalidateRect(e);
+            }
             startCoord = null;
             lastRect = RectangleF.Empty;
             base.DoMouseUp(e);

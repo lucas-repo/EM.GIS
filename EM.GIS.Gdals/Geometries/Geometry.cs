@@ -257,5 +257,13 @@ namespace EM.GIS.Gdals
             }
             return ret;
         }
+        protected override void OnCopy(object copy)
+        {
+            base.OnCopy(copy);
+            if (copy is Geometry geometry)
+            {
+                geometry.OgrGeometry = OgrGeometry.Clone();
+            }
+        }
     }
 }

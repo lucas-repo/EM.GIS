@@ -11,6 +11,7 @@ using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.Linq;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
@@ -276,7 +277,10 @@ namespace EM.GIS.Symbology
             switch (e.PropertyName)
             {
                 case nameof(ILegendItem.IsVisible):
-                    ResetBuffer(Bound, ViewExtent, ViewExtent);
+                    if (sender is IRenderableItem renderableItem)
+                    {
+                        ResetBuffer(Bound, ViewExtent, renderableItem.Extent);
+                    }
                     break;
             }
         }
@@ -311,12 +315,16 @@ namespace EM.GIS.Symbology
                 }
             }
         }
-        private void RemoveLayerEvent(ILegendItem layer)
+        private void RemoveLayerEvent(ILegendItem legendItem)
         {
-            if (layer != null)
+            if (legendItem != null)
             {
-                layer.PropertyChanged -= Layer_PropertyChanged;
-                layer.Children.CollectionChanged -= LegendItems_CollectionChanged;
+                legendItem.PropertyChanged -= Layer_PropertyChanged;
+                legendItem.Children.CollectionChanged -= LegendItems_CollectionChanged;
+                if (legendItem is IRenderableItem renderableItem)
+                {
+                    ResetBuffer(Bound, ViewExtent, renderableItem.Extent);
+                }
             }
         }
         private void BwRunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
@@ -635,6 +643,11 @@ namespace EM.GIS.Symbology
             };
             DrawFrame(mapArgs, onlyInitialized, cancelFunc, newUpdateMapAction);//mapargs绘制冲突 
             //UpdateMapAction?.Invoke(Bound);//绘制完成后，更新整个地图控件
+        }
+        /// <inheritdoc/>
+        public void ResetBuffer()
+        {
+            ResetBuffer(Bound, ViewExtent, ViewExtent);
         }
         /// <inheritdoc/>
         public void ResetBuffer(Rectangle rectangle, IExtent extent, IExtent drawingExtent)

@@ -126,7 +126,7 @@ namespace EM.GIS.WPFControls.ViewModels
         public MainWindowViewModel(MainWindow t) : base(t)
         {
             var iocManager = IocManager.Default;
-            var AppManager = iocManager.GetService<IAppManager>();
+             AppManager = iocManager.GetService<IAppManager>();
             if (AppManager == null)
             {
                 throw new Exception($"未注册{nameof(IAppManager)}");

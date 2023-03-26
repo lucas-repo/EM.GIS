@@ -15,6 +15,7 @@ namespace EM.GIS.Tools
         {
         }
         private bool _isFree = true;
+        /// <inheritdoc/>
         public bool IsFree
         {
             get => _isFree;
