@@ -34,10 +34,16 @@ namespace EM.GIS.Gdals
                     {
                         Timeout = new TimeSpan(0, 0, 5)
                     };
-                    ServicePointManager.DefaultConnectionLimit = Environment.ProcessorCount; // 设置最大连接数
                     _client.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", @"Mozilla / 5.0(Windows; U; Windows NT 6.0; en - US; rv: 1.9.1.7) Gecko / 20091221 Firefox / 3.5.7");
                 }
                 return _client;
+            }
+        }
+        static WebMapDriver()
+        {
+            if (ServicePointManager.DefaultConnectionLimit != Environment.ProcessorCount)
+            {
+                ServicePointManager.DefaultConnectionLimit = Environment.ProcessorCount; // 设置最大连接数
             }
         }
         /// <inheritdoc/>
@@ -55,7 +61,7 @@ namespace EM.GIS.Gdals
                 var tileSet = new TileSet(tileSource)
                 {
                     Projection = new GdalProjection(3857),
-                    Extent=new Geometries.Extent(TileCalculator.MinWebMercX, TileCalculator.MinWebMercY, TileCalculator.MaxWebMercX, TileCalculator.MaxWebMercY)
+                    Extent = new Geometries.Extent(TileCalculator.MinWebMercX, TileCalculator.MinWebMercY, TileCalculator.MaxWebMercX, TileCalculator.MaxWebMercY)
                 };
                 tileSource.PersistentCache = GetTileCache(tileSource.Name);
                 yield return tileSet;
@@ -92,11 +98,9 @@ namespace EM.GIS.Gdals
             ITileSchema tileSchema = new GlobalSphericalMercator(format, YAxis.OSM, minLevel, maxLevel, name);
             var tileSource = new EmHttpTileSource(tileSchema, urlFormatter, serverNodes)
             {
-                Name= name
+                Name = name
             };
-            tileSource.HttpClient.Timeout = new TimeSpan(0, 0, 5);
             ServicePointManager.DefaultConnectionLimit = Environment.ProcessorCount; // 设置最大连接数
-            tileSource.HttpClient.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", @"Mozilla / 5.0(Windows; U; Windows NT 6.0; en - US; rv: 1.9.1.7) Gecko / 20091221 Firefox / 3.5.7");
             var tileSet = new TileSet(tileSource)
             {
                 Projection = new GdalProjection(3857),

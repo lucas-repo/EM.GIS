@@ -15,6 +15,7 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
@@ -144,16 +145,46 @@ namespace EM.GIS.Tools
         /// </summary>
         public ObservableCollection<SelectableItem<int>> Levels { get; }
 
-        private string outDirectory;
+        private string outPath;
         /// <summary>
         /// 输出路径
         /// 下载瓦片时为文件夹，否则为保存文件名称
         /// </summary>
         public string OutPath
         {
-            get { return outDirectory; }
-            set { SetProperty(ref outDirectory, value); }
+            get { return outPath; }
+            set { SetProperty(ref outPath, value); }
         }
+        /// <summary>
+        /// 全选
+        /// </summary>
+        public bool IsAllSelected
+        {
+            get 
+            {
+                bool ret = true;
+                foreach (var item in Levels)
+                {
+                    if (!item.IsSelected)
+                    {
+                        ret = false;
+                        break;
+                    }
+                }
+                return ret;
+            }
+            set
+            {
+                foreach (var item in Levels)
+                {
+                    if (item.IsSelected!=value)
+                    {
+                        item.IsSelected = value;
+                    }
+                }
+            }
+        }
+
         /// <summary>
         /// 下载或取消
         /// </summary>
@@ -169,57 +200,6 @@ namespace EM.GIS.Tools
         /// </summary>
         private readonly CityInfo BlankCityInfo = new CityInfo(0, "");
 
-        public DownloadWebMapViewModel(DownloadWebMapControl t, IExtent extent) : base(t)
-        {
-            var frame = IocManager.Default.GetService<IFrame>();
-            Frame = frame ?? throw new Exception($"未注册 {nameof(IFrame)}");
-            TileSets = new ObservableCollection<ITileSet>();
-            geometry = extent.ToPolygon();
-            var tileLayers = frame.Children.GetAllItems<ITileLayer>();
-            foreach (var tileLayer in tileLayers)
-            {
-                if (tileLayer.DataSet != null)
-                {
-                    TileSets.Add(tileLayer.DataSet);
-                }
-            }
-            _wkt = @"PROJCS[\”WGS_1984_Web_Mercator_Auxiliary_Sphere\”,GEOGCS[\”GCS_WGS_1984\”,DATUM[\”D_WGS_1984\”,SPHEROID[\”WGS_1984\”,6378137.0,298.257223563]],PRIMEM[\”Greenwich\”,0.0],UNIT[\”Degree\”,0.0174532925199433]],PROJECTION[\”Mercator_Auxiliary_Sphere\”],PARAMETER[\”False_Easting\”,0.0],PARAMETER[\”False_Northing\”,0.0],PARAMETER[\”Central_Meridian\”,0.0],PARAMETER[\”Standard_Parallel_1\”,0.0],PARAMETER[\”Auxiliary_Sphere_Type\”,0.0],UNIT[\”Meter\”,1.0],AUTHORITY[\”EPSG\”,3857]]";
-            OutTypes = new Dictionary<string, string>()
-            {
-                ["拼接（*.tif）"] = ".tif",
-                ["瓦片（谷歌）"] = string.Empty,
-                ["瓦片库（*.mbtiles）"] = ".mbtiles"
-            };
-            OutType = OutTypes.FirstOrDefault();
-            TileFormats = new Dictionary<string, string>()
-            {
-                ["JPEG（*.jpg）"] = ".jpg",
-                ["PNG（*.png）"] = ".png"
-            };
-            TileFormat = TileFormats.FirstOrDefault();
-            BoundTypes = new ObservableCollection<BoundType>();
-            BoundTypes.AddEnums();
-
-            Provinces = new ObservableCollection<CityInfo>(BoundaryHelper.GetCityInfos());
-            Provinces.Insert(0, BlankCityInfo);
-            Cities = new ObservableCollection<CityInfo>();
-            Counties = new ObservableCollection<CityInfo>();
-            Levels = new ObservableCollection<SelectableItem<int>>();
-            StartOrCancelCmd = new DelegateCommand(StartOrCancel, CanDownload);
-            BrowseCmd = new DelegateCommand(Browse);
-
-            PropertyChanged += DownloadWebMapViewModel_PropertyChanged;
-            if (TileSets.Count > 0)
-            {
-                TileSet = TileSets.First();
-            }
-            boundType = BoundTypes.FirstOrDefault();
-            OnPropertyChanged(nameof(BoundType));
-            if (Provinces.Count > 0)
-            {
-                Province = Provinces.First();
-            }
-        }
         public DownloadWebMapViewModel(DownloadWebMapControl t, IGeometry? dounloadExtent = null) : base(t)
         {
             var frame = IocManager.Default.GetService<IFrame>();
@@ -259,7 +239,6 @@ namespace EM.GIS.Tools
                 ["瓦片（谷歌）"] = string.Empty,
                 ["瓦片库（*.mbtiles）"] = ".mbtiles"
             };
-            OutType = OutTypes.FirstOrDefault();
             TileFormats = new Dictionary<string, string>()
             {
                 ["JPEG（*.jpg）"] = ".jpg",
@@ -278,6 +257,10 @@ namespace EM.GIS.Tools
             BrowseCmd = new DelegateCommand(Browse);
 
             PropertyChanged += DownloadWebMapViewModel_PropertyChanged;
+            if (OutTypes.Count > 0)
+            {
+                OutType = OutTypes.FirstOrDefault();
+            }
             if (TileSets.Count > 0)
             {
                 TileSet = TileSets.First();
@@ -401,6 +384,20 @@ namespace EM.GIS.Tools
                     break;
                 case nameof(OutPath):
                     StartOrCancelCmd.RaiseCanExecuteChanged();
+                    break;
+                case nameof(OutType):
+                    if (string.IsNullOrEmpty(OutPath))
+                    {
+                        switch (OutType.Value)
+                        {
+                            case "":
+                                OutPath =Path.Combine(AppDomain.CurrentDomain.BaseDirectory,"downloads");
+                                break;
+                            case ".tif":
+                                OutPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "downloads/测试.tif");
+                                break;
+                        }
+                    }
                     break;
             }
         }
@@ -627,6 +624,25 @@ namespace EM.GIS.Tools
                 }
             }
         }
+        private HttpClient? _client;
+        /// <summary>
+        /// Http客户端
+        /// </summary>
+        public HttpClient HttpClient
+        {
+            get
+            {
+                if (_client == null)
+                {
+                    _client = new HttpClient()
+                    {
+                        Timeout = new TimeSpan(0, 3, 0)
+                    };
+                    _client.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", @"Mozilla / 5.0(Windows; U; Windows NT 6.0; en - US; rv: 1.9.1.7) Gecko / 20091221 Firefox / 3.5.7");
+                }
+                return _client;
+            }
+        }
         public override void Cancel()
         {
             if (IsFree || Cancellation.IsCancellationRequested)
@@ -810,7 +826,7 @@ namespace EM.GIS.Tools
                         var bytes = fileCache.Find(tileInfo.Index);
                         if (bytes == null)
                         {
-                            var task = HttpTileSource.HttpClient.GetByteArrayAsync(uri);
+                            var task = HttpClient.GetByteArrayAsync(uri);
                             task.ConfigureAwait(false);
                             bytes = task.Result;
                             if (bytes != null)

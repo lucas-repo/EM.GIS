@@ -22,11 +22,25 @@ namespace EM.GIS.Data
         /// 请求
         /// </summary>
         public readonly IRequest Request;
+        private  HttpClient? _client;
         /// <summary>
-        /// http客户端
+        /// Http客户端
         /// </summary>
-        public readonly HttpClient HttpClient = HttpClientBuilder.Build();
-
+        public  HttpClient HttpClient
+        {
+            get
+            {
+                if (_client == null)
+                {
+                    _client = new HttpClient()
+                    {
+                        Timeout = new TimeSpan(0, 0, 5)
+                    };
+                    _client.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", @"Mozilla / 5.0(Windows; U; Windows NT 6.0; en - US; rv: 1.9.1.7) Gecko / 20091221 Firefox / 3.5.7");
+                }
+                return _client;
+            }
+        }
         public EmHttpTileSource(ITileSchema tileSchema, string urlFormatter, IEnumerable<string>? serverNodes = null,
             string? apiKey = null, string? name = null, IPersistentCache<byte[]>? persistentCache = null,
             Func<Uri, Task<byte[]>>? tileFetcher = null, Attribution? attribution = null, string? userAgent = null)
