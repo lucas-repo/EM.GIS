@@ -45,7 +45,7 @@ namespace EM.GIS.Data
         public virtual string RelativeFilename { get; protected set; }
 
         /// <inheritdoc/>
-        public Projection Projection { get; set; }
+        public virtual IProjection Projection { get; set; }
 
         #region IDisposable Support
         /// <summary>

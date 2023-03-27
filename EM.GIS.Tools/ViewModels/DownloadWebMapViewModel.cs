@@ -248,7 +248,7 @@ namespace EM.GIS.Tools
             BoundTypes = new ObservableCollection<BoundType>();
             BoundTypes.AddEnums();
 
-            Provinces = new ObservableCollection<CityInfo>(BoundaryHelper.GetCityInfos());
+            Provinces = new ObservableCollection<CityInfo>(/*BoundaryHelper.GetCityInfos()*/);
             Provinces.Insert(0, BlankCityInfo);
             Cities = new ObservableCollection<CityInfo>();
             Counties = new ObservableCollection<CityInfo>();
@@ -394,7 +394,7 @@ namespace EM.GIS.Tools
                                 OutPath =Path.Combine(AppDomain.CurrentDomain.BaseDirectory,"downloads");
                                 break;
                             case ".tif":
-                                OutPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "downloads/测试.tif");
+                                OutPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory,@"downloads\测试.tif");
                                 break;
                         }
                     }
@@ -437,7 +437,8 @@ namespace EM.GIS.Tools
         {
             int tileWidth = 256, tileHeight = 256;
             int bandCount = 3;
-            int[] bandMap = { 3, 2, 1 };
+            //int[] bandMap = { 3, 2, 1 };
+            int[] bandMap = { 1, 2, 3 };
             var options = DatasetExtensions.GetTiffOptions();
             var fileCache = GetFileCache();
             var directory = Path.GetDirectoryName(OutPath);
@@ -474,7 +475,7 @@ namespace EM.GIS.Tools
                 }
                 WriteTileToRasterSet(fileCache, tileWidth, tileHeight, bandCount, bandMap, level, tileInfos, minCol, minRow, minX, minY, maxX, maxY, width, height, rasterSet);
                 //ProgressAction?.Invoke($"第{level.Item}级创建金字塔中", 99);
-                //dataset.BuildOverviews(); //创建金字塔
+                rasterSet.BuildOverviews();//创建金字塔
             }
         }
         private void DownloadMbtiles(IRasterDriver rasterDriver, Dictionary<int, List<TileInfo>> levelAndTileInfos)
@@ -515,7 +516,6 @@ namespace EM.GIS.Tools
                 }
                 WriteTileToRasterSet(fileCache, tileWidth, tileHeight, bandCount, bandMap, level, tileInfos, minCol, minRow, minX, minY, maxX, maxY, width, height, rasterSet);
                 //ProgressAction?.Invoke($"第{level.Item}级创建金字塔中", 99);
-                //dataset.BuildOverviews(); //创建金字塔
             }
         }
 
@@ -531,8 +531,11 @@ namespace EM.GIS.Tools
             rasterSet.SetGeoTransform(affine);
             int totalCount = tileInfos.Count();
             int successCount = 0;
-            int cacheCount = 0;
-            Parallel.ForEach(tileInfos, (tileInfo) =>
+            ParallelOptions options = new ParallelOptions()
+            {
+                MaxDegreeOfParallelism = 1
+            };
+            Parallel.ForEach(tileInfos, options ,(tileInfo) =>
             {
                 if (Cancellation.IsCancellationRequested)
                 {
@@ -562,8 +565,9 @@ namespace EM.GIS.Tools
                 {
                     lock (_lockObj)
                     {
-                        rasterSet.WriteRaster(filename, 0, 0, tileWidth, tileHeight, xOff, yOff, tileWidth, tileHeight, bandCount, bandMap);
-                        cacheCount++;
+                        RasterArgs readArgs = new RasterArgs(0,0,tileWidth,tileHeight,tileWidth,tileHeight,bandCount,bandMap);
+                        RasterArgs writeArgs = new RasterArgs(xOff, yOff, tileWidth, tileHeight, tileWidth, tileHeight, bandCount, bandMap);
+                        rasterSet.WriteRaster(filename, readArgs,writeArgs);
                         successCount++;
                     }
                     ProgressAction?.Invoke($"第{level}级下载中", successCount * 100 / totalCount);

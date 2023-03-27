@@ -49,16 +49,12 @@ namespace EM.GIS.Data
         /// 写入指定的栅格文件
         /// </summary>
         /// <param name="filename">文件名</param>
-        /// <param name="srcXOff">源X偏移</param>
-        /// <param name="srcYOff">源Y偏移</param>
-        /// <param name="srcWidth">源宽度</param>
-        /// <param name="srcHeight">源高度</param>
-        /// <param name="destXOff">目标X偏移</param>
-        /// <param name="destYOff">目标Y偏移</param>
-        /// <param name="destWidth">目标宽度</param>
-        /// <param name="destHeight">目标高度</param>
-        /// <param name="bandCount">波段数</param>
-        /// <param name="bandMap">波段顺序</param>
-        void WriteRaster(string filename, int srcXOff, int srcYOff, int srcWidth, int srcHeight, int destXOff, int destYOff, int destWidth, int destHeight,int bandCount,int[] bandMap);
+        /// <param name="readArgs">读取块参数</param>
+        /// <param name="writeArgs">写入块参数</param>
+        void WriteRaster(string filename, RasterArgs readArgs, RasterArgs writeArgs);
+        /// <summary>
+        /// 创建金字塔
+        /// </summary>
+        void BuildOverviews();
     }
 }

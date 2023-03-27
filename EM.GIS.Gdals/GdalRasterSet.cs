@@ -1,6 +1,7 @@
 ﻿using EM.GIS.Data;
 using EM.GIS.GdalExtensions;
 using EM.GIS.Geometries;
+using EM.GIS.Projections;
 using OSGeo.GDAL;
 using System;
 using System.Collections.Generic;
@@ -33,6 +34,20 @@ namespace EM.GIS.Gdals
                 if (SetProperty(ref _dataset, value))
                 {
                     OnDatasetChanged();
+                }
+            }
+        }
+        /// <inheritdoc/>
+        public override IProjection Projection 
+        { 
+            get => base.Projection;
+            set
+            {
+                if (!Equals(base.Projection, value))
+                {
+                    base.Projection = value;
+                    var wkt = base.Projection.ExportToWkt();
+                    var err = _dataset.SetProjection(wkt);
                 }
             }
         }
@@ -97,7 +112,7 @@ namespace EM.GIS.Gdals
         /// <summary>
         /// 当前波段
         /// </summary>
-        private Band _band;
+        private Band? _band;
         private int _overviewCount;
         private ColorInterp _colorInterp;
         private int _overview;
@@ -750,13 +765,13 @@ namespace EM.GIS.Gdals
                             raster.Dispose();
                         }
                         rasters.Clear();
+                        _dataset.Dispose();
                     }
                 }
                 // 释放未托管的资源(未托管的对象)并在以下内容中替代终结器。
                 // 将大型字段设置为 null。
                 if (_band != null)
                 {
-                    _dataset.FlushCache();
                     _band.Dispose();
                     _band = null;
                 }
@@ -818,7 +833,7 @@ namespace EM.GIS.Gdals
         }
         #endregion
         /// <inheritdoc/>
-        public override void WriteRaster(string filename, int srcXOff, int srcYOff, int srcWidth, int srcHeight, int destXOff, int destYOff, int destWidth, int destHeight, int bandCount, int[] bandMap)
+        public override void WriteRaster(string filename, RasterArgs readArgs,RasterArgs writeArgs)
         {
             try
             {
@@ -827,9 +842,20 @@ namespace EM.GIS.Gdals
                 {
                     return;
                 }
-                byte[] buffer = new byte[srcWidth * srcHeight * bandCount];
-                dataset.ReadRaster(srcXOff, srcYOff, srcWidth, srcHeight, buffer, srcWidth, srcHeight, bandCount, bandMap, 0, 0, 0);
-                _dataset.WriteRaster(destXOff, destYOff, destWidth, destHeight, buffer, srcWidth, srcHeight, bandCount, bandMap, 0, 0, 0);
+                byte[] buffer = new byte[readArgs.BufferXSize * readArgs.BufferYSize * readArgs.BandCount];
+                var err = dataset.ReadRaster(readArgs.XOff, readArgs.YOff, readArgs.XSize, readArgs.YSize, buffer, readArgs.BufferXSize , readArgs.BufferYSize, readArgs.BandCount, readArgs.BandMap, readArgs.PixelSpace, readArgs.LineSpace, readArgs.BandSpace);
+                if (err == CPLErr.CE_None)
+                {
+                    err = _dataset.WriteRaster(writeArgs.XOff, writeArgs.YOff, writeArgs.XSize, writeArgs.YSize, buffer, writeArgs.BufferXSize, writeArgs.BufferYSize, writeArgs.BandCount, writeArgs.BandMap, writeArgs.PixelSpace, writeArgs.LineSpace, writeArgs.BandSpace); 
+                    if (err != CPLErr.CE_None)
+                    {
+                        Debug.WriteLine($"写入{filename}_destXOff:{writeArgs.XOff}_destYOff:{writeArgs.YOff}_destWidth:{writeArgs.XSize}_destHeight:{writeArgs.YSize}失败，{err}");
+                    }
+                }
+                else
+                {
+                    Debug.WriteLine($"读取{filename}_srcXOff:{readArgs.XOff}_srcYOff:{readArgs.YOff}_srcWidth:{readArgs.BufferXSize}_srcHeight:{readArgs.BufferYSize}失败");
+                }
             }
             catch (Exception e)
             {
@@ -845,8 +871,13 @@ namespace EM.GIS.Gdals
         /// <inheritdoc/>
         public override void SaveAs(string filename, bool overwrite)
         {
-            using var dataset= _dataset.GetDriver().CreateCopy(filename, _dataset, 1, null, null, null);
+            using var dataset = _dataset.GetDriver().CreateCopy(filename, _dataset, 1, null, null, null);
             base.SaveAs(filename, overwrite);
+        }
+        /// <inheritdoc/>
+        public override void BuildOverviews()
+        {
+            var ret= _dataset.BuildOverviews();
         }
     }
 }

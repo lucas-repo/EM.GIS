@@ -128,9 +128,12 @@ namespace EM.GIS.Data
         }
 
         /// <inheritdoc/>
-        public virtual void WriteRaster(string filename, int srcXOff, int srcYOff, int srcWidth, int srcHeight, int destXOff, int destYOff, int destWidth, int destHeight, int bandCount, int[] bandMap)
+        public virtual void WriteRaster(string filename, RasterArgs readArgs, RasterArgs writeArgs)
         {
             throw new NotImplementedException();
         }
+        /// <inheritdoc/>
+        public virtual void BuildOverviews()
+        { }
     }
 }

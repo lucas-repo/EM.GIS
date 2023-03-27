@@ -42,11 +42,13 @@ namespace EM.GIS.GdalExtensions
         /// <summary>
         /// 创建金字塔
         /// </summary>
-        /// <param name="dataset"></param>
-        /// <param name="resampling"></param>
-        /// <param name="overviewlist"></param>
-        /// <returns></returns>
-        public static int BuildOverviews(this Dataset dataset, Resampling resampling = Resampling.NEAREST, int[] overviewlist = null)
+        /// <param name="dataset">数据集</param>
+        /// <param name="resampling">重采样</param>
+        /// <param name="overviewlist">金字塔集合</param>
+        /// <param name="minWidth">最小宽度</param>
+        /// <param name="minHeight">最大宽度</param>
+        /// <returns>结果</returns>
+        public static int BuildOverviews(this Dataset dataset, Resampling resampling = Resampling.NEAREST, int[] overviewlist = null,int minWidth=256,int minHeight=256)
         {
             int value = -1;
             if (dataset == null || dataset.RasterCount <= 0)
@@ -60,7 +62,7 @@ namespace EM.GIS.GdalExtensions
                 int width = dataset.RasterXSize;
                 int height = dataset.RasterYSize;
                 int k = 1;
-                while (width > 256 && height > 256)
+                while (width > minWidth && height > minHeight)
                 {
                     k *= 2;
                     intList.Add(k);

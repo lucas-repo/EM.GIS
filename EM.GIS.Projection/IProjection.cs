@@ -8,7 +8,7 @@ namespace EM.GIS.Projections
     /// <summary>
     /// 投影接口
     /// </summary>
-    public interface IProjection
+    public interface IProjection:ICloneable
     {
         /// <summary>
         ///  认证机构（如EPSG）
@@ -72,7 +72,7 @@ namespace EM.GIS.Projections
         /// <param name="coord1">第一个坐标</param>
         /// <param name="coord2">第二个坐标</param>
         /// <returns>距离（米）</returns>
-        double GetLengthOfMeters(ICoordinate coord1,ICoordinate coord2);
+        double GetLengthOfMeters(ICoordinate coord1, ICoordinate coord2);
         /// <summary>
         /// 计算两点的距离（米）
         /// </summary>
@@ -82,5 +82,10 @@ namespace EM.GIS.Projections
         /// <param name="y2">第二个点y</param>
         /// <returns>距离（米）</returns>
         double GetLengthOfMeters(double x1, double y1, double x2, double y2);
+        /// <summary>
+        /// 导出成wkt
+        /// </summary>
+        /// <returns>wkt</returns>
+        string ExportToWkt();
     }
 }

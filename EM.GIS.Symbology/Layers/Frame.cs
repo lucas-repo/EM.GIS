@@ -83,7 +83,7 @@ namespace EM.GIS.Symbology
                         if (firstLayerAdded)
                         {
                             #region 设置投影
-                            if (e.NewItems.Count > 0 && e.NewItems[0] is ILayer layer)
+                            if (e.NewItems.Count > 0 && e.NewItems[0] is ILayer layer&& layer.DataSet!=null)
                             {
                                 Projection = layer.DataSet.Projection.Copy();
                             }
