@@ -8,9 +8,5 @@
         Title="DownloadWebMapWindow" Height="450" Width="800">
     <Grid>
         <local:DownloadWebMapControl x:Name="downloadWebMapControl"/>
-        <Grid VerticalAlignment="Bottom" Height="20" Background="Blue">
-            <ProgressBar x:Name="progressBar" Background="Transparent" BorderThickness="0"/>
-            <TextBlock x:Name="progressTextBlock" VerticalAlignment="Center" HorizontalAlignment="Center"/>
-        </Grid>
     </Grid>
 </Window>

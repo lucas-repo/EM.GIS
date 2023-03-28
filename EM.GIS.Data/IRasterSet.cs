@@ -55,6 +55,8 @@ namespace EM.GIS.Data
         /// <summary>
         /// 创建金字塔
         /// </summary>
-        void BuildOverviews();
+        /// <param name="minWidth">最小宽度</param>
+        /// <param name="minHeight">最大宽度</param>
+        void BuildOverviews(int minWidth = 2560, int minHeight = 2560);
     }
 }

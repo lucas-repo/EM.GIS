@@ -133,7 +133,7 @@ namespace EM.GIS.Data
             throw new NotImplementedException();
         }
         /// <inheritdoc/>
-        public virtual void BuildOverviews()
+        public virtual void BuildOverviews(int minWidth = 2560, int minHeight = 2560)
         { }
     }
 }

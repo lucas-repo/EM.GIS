@@ -810,11 +810,11 @@ namespace EM.GIS.Gdals
                 _overviewCount = _band.GetOverviewCount();
                 _colorInterp = _band.GetColorInterpretation();
                 int maxPixels = 2048 * 2048;
-                if (_overviewCount <= 0 && Width * Height > maxPixels)
-                {
-                    int ret = _dataset.CreateOverview();
-                    _overviewCount = _band.GetOverviewCount();
-                }
+                //if (_overviewCount <= 0 && Width * Height > maxPixels)
+                //{
+                //    int ret = _dataset.CreateOverview();
+                //    _overviewCount = _band.GetOverviewCount();
+                //}
             }
 
             double[] affine = new double[6];
@@ -875,9 +875,9 @@ namespace EM.GIS.Gdals
             base.SaveAs(filename, overwrite);
         }
         /// <inheritdoc/>
-        public override void BuildOverviews()
+        public override void BuildOverviews(int minWidth = 2560, int minHeight = 2560)
         {
-            var ret= _dataset.BuildOverviews();
+            var ret= _dataset.BuildOverviews(minWidth:minWidth,minHeight:minHeight);
         }
     }
 }

@@ -12,12 +12,15 @@
         <local:BoundTypeToVisibility x:Key="boundTypeToVisibility"/>
         <Thickness x:Key="topMargin">0,10,0,0</Thickness>
     </UserControl.Resources>
-    <Grid  Margin="20">
+    <DockPanel>
+        <Grid DockPanel.Dock="Bottom" Height="20" >
+            <ProgressBar x:Name="progressBar" Background="Transparent" BorderThickness="0" Value="{Binding ProgressValue,FallbackValue=100}"/>
+            <TextBlock x:Name="progressTextBlock" VerticalAlignment="Center" HorizontalAlignment="Center" Text="{Binding ProgressText,FallbackValue=已完成}"/>
+        </Grid>
+        <Button DockPanel.Dock="Bottom" Content="{Binding IsFree,Converter={StaticResource boolToStartString},FallbackValue=开始}" Command="{Binding StartOrCancelCmd}" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,5"/>
         <DockPanel IsEnabled="{Binding IsFree}">
             <StackPanel DockPanel.Dock="Top">
-                <DockPanel />
                 <DockPanel Margin="{StaticResource topMargin}">
-                    
                     <Label Content="地图类型："  DockPanel.Dock="Left"/>
                     <ComboBox ItemsSource="{Binding TileSets}" SelectedItem="{Binding TileSet}" DisplayMemberPath="Name"/>
                 </DockPanel>
@@ -59,7 +62,7 @@
                     <TextBox Text="{Binding OutPath}" Margin="0,0,5,0"/>
                 </DockPanel>
             </StackPanel>
-            <ScrollViewer VerticalScrollBarVisibility="Auto" Margin="{StaticResource topMargin}">
+            <ScrollViewer VerticalScrollBarVisibility="Auto" Margin="{StaticResource topMargin}" >
                 <GroupBox>
                     <GroupBox.Header>
                         <CheckBox Content="全选" IsChecked="{Binding IsAllSelected}"/>
@@ -89,8 +92,6 @@
                     </ItemsControl>
                 </GroupBox>
             </ScrollViewer>
-
         </DockPanel>
-        <Button Content="{Binding IsFree,Converter={StaticResource boolToStartString},FallbackValue=开始}" Command="{Binding StartOrCancelCmd}" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="20"/>
-    </Grid>
+    </DockPanel>
 </UserControl>

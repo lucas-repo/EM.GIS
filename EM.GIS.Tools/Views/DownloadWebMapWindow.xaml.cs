@@ -22,18 +22,6 @@ namespace EM.GIS.Tools
         public DownloadWebMapWindow()
         {
             InitializeComponent();
-            if (downloadWebMapControl.DataContext is IReportable reportable)
-            {
-                reportable.ProgressAction = ReportProgress;
-            }
-        }
-        private void ReportProgress(string message, int percent)
-        {
-            Dispatcher.Invoke(() =>
-            {
-                progressTextBlock.Text = message;
-                progressBar.Value = percent;
-            });
         }
     }
 }
