@@ -45,6 +45,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EM.Bases", "..\..\EM.Bases\
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EM.WpfBases", "..\..\EM.Bases\EM.WpfBases\EM.WpfBases.csproj", "{DCF90688-515E-46E3-BD4E-4C6B26D5B53E}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EM.SQLites", "..\..\EM.Bases\EM.SQLites\EM.SQLites.csproj", "{0552EC46-5052-4BBE-A558-E3878CE6167C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EM.GIS.MBTiles", "EM.GIS.MBTiles\EM.GIS.MBTiles.csproj", "{510F66C6-E455-4B8A-BF7F-1DA789F793B2}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -123,6 +127,14 @@ Global
 		{DCF90688-515E-46E3-BD4E-4C6B26D5B53E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DCF90688-515E-46E3-BD4E-4C6B26D5B53E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DCF90688-515E-46E3-BD4E-4C6B26D5B53E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0552EC46-5052-4BBE-A558-E3878CE6167C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0552EC46-5052-4BBE-A558-E3878CE6167C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0552EC46-5052-4BBE-A558-E3878CE6167C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0552EC46-5052-4BBE-A558-E3878CE6167C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{510F66C6-E455-4B8A-BF7F-1DA789F793B2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{510F66C6-E455-4B8A-BF7F-1DA789F793B2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{510F66C6-E455-4B8A-BF7F-1DA789F793B2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{510F66C6-E455-4B8A-BF7F-1DA789F793B2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
