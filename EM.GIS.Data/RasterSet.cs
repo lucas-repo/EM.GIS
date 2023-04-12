@@ -1,7 +1,9 @@
-﻿using EM.GIS.Geometries;
+﻿using BruTile;
+using EM.GIS.Geometries;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.ComponentModel.Design;
 using System.Drawing;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -122,11 +124,29 @@ namespace EM.GIS.Data
             //return 0;
         }
         /// <inheritdoc/>
-        public virtual Rectangle Draw(MapArgs mapArgs, Action<int>? progressAction = null, Func<bool>? cancelFunc = null)
+        public Rectangle Draw(MapArgs mapArgs, Action<int>? progressAction = null, Func<bool>? cancelFunc = null, Action<Rectangle>? graphicsUpdatedAction = null, Dictionary<string, object>? options = null)
+        {
+            var ret = Rectangle.Empty;
+            if (mapArgs == null || mapArgs.Graphics == null || mapArgs.Bound.IsEmpty || mapArgs.Extent == null || mapArgs.Extent.IsEmpty() || mapArgs.DestExtent == null || mapArgs.DestExtent.IsEmpty() || !Extent.Intersects(mapArgs.DestExtent) || cancelFunc?.Invoke() == true)
+            {
+                return ret;
+            }
+            ret = OnDraw(mapArgs,  progressAction, cancelFunc, graphicsUpdatedAction,options);
+            return ret;
+        }
+        /// <summary>
+        /// 根据指定的范围，将当前内容绘制到指定的画布
+        /// </summary>
+        /// <param name="mapArgs">参数</param>
+        /// <param name="progressAction">进度委托</param>
+        /// <param name="cancelFunc">取消委托</param>
+        /// <param name="graphicsUpdatedAction">画布更新后的匿名方法</param>
+        /// <param name="options">可选参数</param>
+        /// <returns>绘制的区域</returns>
+        protected virtual Rectangle OnDraw(MapArgs mapArgs, Action<int>? progressAction = null, Func<bool>? cancelFunc = null, Action<Rectangle>? graphicsUpdatedAction = null, Dictionary<string, object>? options = null)
         {
             return Rectangle.Empty;
         }
-
         /// <inheritdoc/>
         public virtual void WriteRaster(string filename, RasterArgs readArgs, RasterArgs writeArgs)
         {

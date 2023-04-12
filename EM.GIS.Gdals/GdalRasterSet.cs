@@ -189,13 +189,9 @@ namespace EM.GIS.Gdals
         #region Methods
 
         /// <inheritdoc/>
-        public override Rectangle Draw(MapArgs mapArgs, Action<int>? progressAction = null, Func<bool>? cancelFunc = null)
+        protected override Rectangle OnDraw(MapArgs mapArgs, Action<int>? progressAction = null, Func<bool>? cancelFunc = null, Action<Rectangle>? graphicsUpdatedAction = null, Dictionary<string, object>? options = null)
         {
             var ret = Rectangle.Empty;
-            if (mapArgs == null || mapArgs.Graphics == null || mapArgs.Bound.IsEmpty || mapArgs.Extent == null || mapArgs.Extent.IsEmpty() || mapArgs.DestExtent == null || mapArgs.DestExtent.IsEmpty() || cancelFunc?.Invoke() == true)
-            {
-                return ret;
-            }
 
             progressAction?.Invoke(5);
 
@@ -206,7 +202,7 @@ namespace EM.GIS.Gdals
             double[] affine = Bounds.AffineCoefficients;
 
             // calculate inverse
-            double p = 1 / ((affine[1] * affine[5]) - (affine[2] * affine[4]));
+            double p = 1 / ((affine[1] * affine[5]) - (affine[2] * affine[4])); 
             double[] aInv = new double[4];
             aInv[0] = affine[5] * p;
             aInv[1] = -affine[2] * p;

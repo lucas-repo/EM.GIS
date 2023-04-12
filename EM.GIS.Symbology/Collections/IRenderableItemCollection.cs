@@ -41,13 +41,6 @@ namespace EM.GIS.Symbology
         /// <returns>栅格图层</returns>
         IRasterLayer? AddLayer(IRasterSet dataset, bool isVisible = true);
         /// <summary>
-        /// 添加瓦片图层
-        /// </summary>
-        /// <param name="tileSet">瓦片数据集</param>
-        /// <param name="isVisible">是否可见</param>
-        /// <returns>瓦片图层</returns>
-        ITileLayer? AddLayer(ITileSet tileSet, bool isVisible = true);
-        /// <summary>
         /// 添加分组
         /// </summary>
         /// <param name="groupName">分组名</param>

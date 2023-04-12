@@ -37,14 +37,9 @@ namespace EM.GIS.Data
             RasterType = RasterType.Byte;
         }
         /// <inheritdoc/>
-        public override Rectangle Draw(MapArgs mapArgs, Action<int>? progressAction = null, Func<bool>? cancelFunc = null)
+        protected override Rectangle OnDraw(MapArgs mapArgs, Action<int>? progressAction = null, Func<bool>? cancelFunc = null, Action<Rectangle>? graphicsUpdatedAction = null, Dictionary<string, object>? options = null)
         {
             var ret = Rectangle.Empty;
-            if (mapArgs == null || mapArgs.Graphics == null || mapArgs.Bound.IsEmpty || mapArgs.Extent == null || mapArgs.Extent.IsEmpty() || mapArgs.DestExtent == null || mapArgs.DestExtent.IsEmpty() || cancelFunc?.Invoke() == true|| Bitmap == null || Bounds == null || Bounds.Extent == null || Bounds.Extent.IsEmpty())
-            {
-                return ret;
-            }
-
             var destExtent = mapArgs.DestExtent.Intersection(Extent);
             if (destExtent == null || destExtent.IsEmpty())
             {

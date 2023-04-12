@@ -22,13 +22,9 @@ namespace EM.GIS.Data.MBTiles
             Context=new MBTilesContext(filename); 
         }
         /// <inheritdoc/>
-        public override Rectangle Draw(MapArgs mapArgs, Action<int>? progressAction = null, Func<bool>? cancelFunc = null)
+        protected override Rectangle OnDraw(MapArgs mapArgs, Action<int>? progressAction = null, Func<bool>? cancelFunc = null, Action<Rectangle>? graphicsUpdatedAction = null, Dictionary<string, object>? options = null)
         {
             Rectangle ret=Rectangle.Empty;
-            if (mapArgs == null || mapArgs.Graphics == null || mapArgs.Bound.IsEmpty || mapArgs.Extent == null || mapArgs.Extent.IsEmpty() || mapArgs.DestExtent == null || mapArgs.DestExtent.IsEmpty() || cancelFunc?.Invoke() == true)
-            {
-                return ret;
-            }
             var metadataInfo = Context.Metadata.GetMetadataInfo();//测试下时间
             if (metadataInfo != null)
             {
