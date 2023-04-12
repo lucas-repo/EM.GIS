@@ -10,7 +10,7 @@ namespace EM.GIS.Data
     /// <summary>
     /// 地图参数
     /// </summary>
-    public class MapArgs :BaseCopy, IProj
+    public class MapArgs : BaseCopy, IProj
     {
         /// <summary>
         /// 画布
@@ -25,20 +25,15 @@ namespace EM.GIS.Data
         /// </summary>
         public Rectangle Bound { get; set; }
         /// <summary>
-        /// 投影
-        /// </summary>
-        public IProjection Projection { get; set; }
-        /// <summary>
         /// 要绘制的范围
         /// </summary>
         public IExtent DestExtent { get; set; }
-        public MapArgs(Rectangle rectangle, IExtent extent, Graphics graphics, IProjection projection, IExtent destExtent):this(rectangle,  extent,  projection,  destExtent)
+        public MapArgs(Rectangle rectangle, IExtent extent, Graphics graphics, IExtent destExtent) : this(rectangle, extent, destExtent)
         {
             Graphics = graphics;
         }
-        public MapArgs(Rectangle rectangle, IExtent extent,IProjection projection, IExtent destExtent)
+        public MapArgs(Rectangle rectangle, IExtent extent, IExtent destExtent)
         {
-            Projection = projection;
             DestExtent = destExtent;
             Extent = extent;
             Bound = rectangle;

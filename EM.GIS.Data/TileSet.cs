@@ -324,6 +324,26 @@ namespace EM.GIS.Data
             return ret;
         }
         /// <summary>
+        /// 是否缓存了瓦片
+        /// </summary>
+        /// <param name="tileIndex">瓦片索引</param>
+        /// <returns>已缓存为true反之false</returns>
+        private bool IsTileCached(TileIndex tileIndex)
+        {
+            bool ret = Tiles.ContainsKey(tileIndex);
+            if (ret)
+            {
+                if (Tiles.TryGetValue(tileIndex, out var oldTleInfo)) // 重新下载nodata的瓦片
+                {
+                    if (oldTleInfo.IsNodata)
+                    {
+                        ret=false;
+                    }
+                }
+            }
+            return ret;
+        }
+        /// <summary>
         /// 添加瓦片
         /// </summary>
         /// <param name="tileSet">瓦片数据集</param>
@@ -402,28 +422,41 @@ namespace EM.GIS.Data
                         CancellationToken = parallelCts.Token
                     };
                     //var cancellationLock = _lockContainer.GetOrCreateLock("cancellationLock");
+                    bool noTileCached =true;//未缓存瓦片
                     Parallel.ForEach(tileInfos, parallelOptions, (tileInfo) =>
                     {
                         if (newCancelFunc?.Invoke() == true) return;
+                        bool tileCached = IsTileCached(tileInfo.Index);
                         using var task = AddTile(this, tileInfo, newCancelFunc);
                         task.ConfigureAwait(false);
                         var tile = task.Result;// 等待任务完成
                         if (tile == null || newCancelFunc?.Invoke() == true) return;
                         lock (lockObj)
                         {
+                            if (tileCached)
+                            {
+                                noTileCached = false;
+                            }
                             if (tile.Extent.Intersects(mapArgs.DestExtent))
                             {
                                 var rect = tile.Draw(mapArgs, null, cancelFunc);
                                 if (!rect.IsEmpty)
                                 {
                                     ret = ret.ExpandToInclude(rect);
-                                    graphicsUpdatedAction?.Invoke(rect);
+                                    if (!tileCached)
+                                    {
+                                        graphicsUpdatedAction?.Invoke(rect);//未缓存瓦片时才刷新，以减少地图刷新次数
+                                    }
                                 }
                                 progress += increment;
                                 progressAction?.Invoke( (int)progress);
                             }
                         }
                     });
+                    if (!noTileCached&&!ret.IsEmpty)
+                    {
+                        graphicsUpdatedAction?.Invoke(ret);
+                    }
                 }
                 #endregion
 

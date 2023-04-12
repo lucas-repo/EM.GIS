@@ -37,7 +37,7 @@ namespace EM.GIS.Symbology
         /// <summary>
         /// 绘制到画布
         /// </summary>
-        /// <param name="mapArgs">绘制参数</param>
+        /// <param name="mapArgs">基于所在地图的绘制参数</param>
         /// <param name="selected">是否选择</param>
         /// <param name="progressAction">进度委托</param>
         /// <param name="cancelFunc">取消委托</param>

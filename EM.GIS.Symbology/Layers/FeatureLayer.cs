@@ -108,14 +108,7 @@ namespace EM.GIS.Symbology
             {
                 return ret.ToRectangle();
             }
-            IExtent filter = mapArgs.DestExtent;
-            if (mapArgs.Projection != null && DataSet.Projection != null && !mapArgs.Projection.Equals(DataSet.Projection))
-            {
-                filter = mapArgs.DestExtent.Copy();
-                mapArgs.Projection.ReProject(DataSet.Projection, filter);
-            }
-
-            DataSet.SetSpatialExtentFilter(filter);
+            DataSet.SetSpatialExtentFilter(mapArgs.DestExtent);
             long featureCount = DataSet.FeatureCount;
             progressAction?.Invoke(ProgressMessage, 5);
             var features = new List<IFeature>();
@@ -251,10 +244,10 @@ namespace EM.GIS.Symbology
             Func<IGeometry, IGeometry> getGeometryFunc = (geometry) =>
             {
                 IGeometry ret = geometry;
-                if (mapArgs.Projection != null && DataSet?.Projection != null && !mapArgs.Projection.Equals(DataSet.Projection))
+                if (Frame?.Projection != null && DataSet?.Projection != null && !Frame.Projection.Equals(DataSet.Projection))
                 {
                     ret = geometry.Copy();
-                    DataSet.Projection.ReProject(mapArgs.Projection, ret);
+                    DataSet.Projection.ReProject(Frame.Projection, ret);
                 }
                 return ret;
             };

@@ -59,7 +59,7 @@ namespace EM.GIS.Symbology
                 return ret;
             }
             Action<int> newProgressAction = (progress) => progressAction?.Invoke(ProgressMessage, progress);
-            ret = DataSet.Draw(mapArgs, newProgressAction, cancelFunc);
+            ret = DataSet.Draw(mapArgs, newProgressAction, cancelFunc, invalidateMapFrameAction);
             return ret;
         }
     }

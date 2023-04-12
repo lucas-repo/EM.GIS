@@ -388,7 +388,7 @@ namespace EM.GIS.Symbology
                 }
                 bool selected = i == 1;
                 Action<string, int>? destProgressAction = selected ? null : drawLayerProgressAction;//不更新绘制选择要素的进度
-                var rect = Frame.Draw(mapArgs,  selected, destProgressAction, cancelFunc, updateMapAction);
+                var rect = Frame.Draw(mapArgs, selected, destProgressAction, cancelFunc, updateMapAction);
                 if (!rect.IsEmpty)
                 {
                     destRect = destRect.ExpandToInclude(rect);
@@ -403,7 +403,7 @@ namespace EM.GIS.Symbology
                 {
                     break;
                 }
-                var rect = visibleLabelLayers[i].Draw(mapArgs,  false, drawLabelProgressAction, cancelFunc, updateMapAction);
+                var rect = visibleLabelLayers[i].Draw(mapArgs, false, drawLabelProgressAction, cancelFunc, updateMapAction);
                 if (!rect.IsEmpty)
                 {
                     destRect = destRect.ExpandToInclude(rect);
@@ -463,13 +463,13 @@ namespace EM.GIS.Symbology
         /// <param name="viewCache">正在绘制的视图缓存</param>
         /// <param name="rectangle">复制矩形的范围</param>
         /// <param name="copyCache">是否整体复制缓存</param>
-        private void CopyDrawingViewCacheToBackImage(ViewCache viewCache, Rectangle rectangle,bool copyCache)
+        private void CopyDrawingViewCacheToBackImage(ViewCache viewCache, Rectangle rectangle, bool copyCache)
         {
             if (viewCache == null)
             {
                 return;
             }
-            if (BackImage == null|| copyCache)
+            if (BackImage == null || copyCache)
             {
                 BackImage = viewCache.Copy();
             }
@@ -531,7 +531,7 @@ namespace EM.GIS.Symbology
                 }
                 return isCancel;
             };
-            DrawToViewCache(viewCache,  cancelFunc);
+            DrawToViewCache(viewCache, cancelFunc);
             if (viewCache != DrawingViewCache)//如果不是正在绘制的视图缓存，则释放资源
             {
                 viewCache.Dispose();
@@ -545,7 +545,7 @@ namespace EM.GIS.Symbology
         private void DrawToViewCache(ViewCache viewCache, Func<bool> cancelFunc)
         {
             using Graphics g = Graphics.FromImage(viewCache.Bitmap);
-            MapArgs mapArgs = new MapArgs(viewCache.Bound, viewCache.Extent, g, Frame.Projection, viewCache.DrawingExtent);
+            MapArgs mapArgs = new MapArgs(viewCache.Bound, viewCache.Extent, g, viewCache.DrawingExtent);
             SetClip(mapArgs);
             //Action<Rectangle> newUpdateMapAction = GetNewUpdateMapAction(viewCache);//先设置缓存图片，再更新地图控件
             int count = 0;
@@ -556,7 +556,7 @@ namespace EM.GIS.Symbology
                 UpdateMapAction?.Invoke(rect);//更新局部地图控件
                 count++;
             };
-            DrawFrame(mapArgs,  cancelFunc, newUpdateMapAction);//mapargs绘制冲突 
+            DrawFrame(mapArgs, cancelFunc, newUpdateMapAction);//mapargs绘制冲突 
             //UpdateMapAction?.Invoke(Bound);//绘制完成后，更新整个地图控件
         }
         /// <inheritdoc/>

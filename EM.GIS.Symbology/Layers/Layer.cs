@@ -88,14 +88,15 @@ namespace EM.GIS.Symbology
             }
             progressAction?.Invoke(ProgressMessage, 0);
             MapArgs destMapArgs = mapArgs;
-            //if (mapArgs.Projection != null && DataSet?.Projection != null && !mapArgs.Projection.Equals(DataSet.Projection))
-            //{
-            //    destMapArgs = mapArgs.Copy();
-            //    destMapArgs.Extent = mapArgs.DestExtent.Copy();
-            //    mapArgs.Projection.ReProject(DataSet.Projection, destMapArgs.Extent);
-            //    destMapArgs.DestExtent = mapArgs.DestExtent.Copy();
-            //    mapArgs.Projection.ReProject(DataSet.Projection, destMapArgs.DestExtent);
-            //}
+            var mapProjection = Frame?.Projection;
+            if (mapProjection != null && DataSet?.Projection != null && !mapProjection.Equals(DataSet.Projection))
+            {
+                destMapArgs = mapArgs.Copy();
+                //destMapArgs.Extent = mapArgs.DestExtent.Copy();
+                //mapProjection.ReProject(DataSet.Projection, destMapArgs.Extent);
+                destMapArgs.DestExtent = mapArgs.DestExtent.Copy();
+                mapProjection.ReProject(DataSet.Projection, destMapArgs.DestExtent);
+            }
             ret = OnDraw(destMapArgs, selected, progressAction, cancelFunc, invalidateMapFrameAction);
             progressAction?.Invoke(ProgressMessage, 100);
             return ret;
@@ -103,7 +104,7 @@ namespace EM.GIS.Symbology
         /// <summary>
         /// 绘制图层到画布
         /// </summary>
-        /// <param name="mapArgs">参数</param>
+        /// <param name="mapArgs">基于当前图层的绘制参数</param>
         /// <param name="selected">是否绘制选择</param>
         /// <param name="progressAction">进度委托</param>
         /// <param name="cancelFunc">取消匿名方法</param>
