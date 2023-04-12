@@ -277,9 +277,9 @@ namespace EM.GIS.Symbology
             switch (e.PropertyName)
             {
                 case nameof(ILegendItem.IsVisible):
-                    if (sender is IRenderableItem renderableItem)
+                    if (sender is IRenderableItem)
                     {
-                        ResetBuffer(Bound, ViewExtent, renderableItem.Extent);
+                        ResetBuffer(Bound, ViewExtent, ViewExtent);
                     }
                     break;
             }
@@ -353,9 +353,12 @@ namespace EM.GIS.Symbology
                     visibleLabelLayers.Add(featureLayer.LabelLayer);
                 }
             }
+            var destRect = Rectangle.Empty;
             var totalCount = allVisibleLayers.Count() + visibleLabelLayers.Count;
             if (totalCount == 0)
             {
+                destRect= mapArgs.ProjToPixel(mapArgs.DestExtent);
+                updateMapAction(destRect);
                 return;
             }
             double layerRatio = allVisibleLayers.Count() / totalCount;//可见图层占比
@@ -377,7 +380,6 @@ namespace EM.GIS.Symbology
                 }
             };
             #endregion
-            var destRect = Rectangle.Empty;
             #region 绘制图层
             int count = 2;
             for (int i = 0; i < count; i++)
