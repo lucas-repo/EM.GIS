@@ -92,8 +92,6 @@ namespace EM.GIS.Symbology
             if (mapProjection != null && DataSet?.Projection != null && !mapProjection.Equals(DataSet.Projection))
             {
                 destMapArgs = mapArgs.Copy();
-                //destMapArgs.Extent = mapArgs.DestExtent.Copy();
-                //mapProjection.ReProject(DataSet.Projection, destMapArgs.Extent);
                 destMapArgs.DestExtent = mapArgs.DestExtent.Copy();
                 mapProjection.ReProject(DataSet.Projection, destMapArgs.DestExtent);
             }
