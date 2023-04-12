@@ -339,16 +339,12 @@ namespace EM.GIS.Symbology
             }
         }
 
-        private void DrawFrame(MapArgs mapArgs, bool onlyInitialized, Func<bool> cancelFunc, Action<Rectangle> updateMapAction)
+        private void DrawFrame(MapArgs mapArgs, Func<bool> cancelFunc, Action<Rectangle> updateMapAction)
         {
             mapArgs.Graphics.Clear(Background); //填充背景色
 
             #region 获取进度委托
             IEnumerable<ILayer> allVisibleLayers = Frame.Children.GetAllLayers().Where(x => x.GetVisible(mapArgs.DestExtent));
-            if (onlyInitialized)
-            {
-                allVisibleLayers = allVisibleLayers.Where(x => x.IsDrawingInitialized(mapArgs, mapArgs.DestExtent));
-            }
             List<ILabelLayer> visibleLabelLayers = new List<ILabelLayer>();
             foreach (var item in allVisibleLayers)
             {
@@ -392,7 +388,7 @@ namespace EM.GIS.Symbology
                 }
                 bool selected = i == 1;
                 Action<string, int>? destProgressAction = selected ? null : drawLayerProgressAction;//不更新绘制选择要素的进度
-                var rect = Frame.Draw(mapArgs, onlyInitialized, selected, destProgressAction, cancelFunc, updateMapAction);
+                var rect = Frame.Draw(mapArgs,  selected, destProgressAction, cancelFunc, updateMapAction);
                 if (!rect.IsEmpty)
                 {
                     destRect = destRect.ExpandToInclude(rect);
@@ -407,7 +403,7 @@ namespace EM.GIS.Symbology
                 {
                     break;
                 }
-                var rect = visibleLabelLayers[i].Draw(mapArgs, onlyInitialized, false, drawLabelProgressAction, cancelFunc, updateMapAction);
+                var rect = visibleLabelLayers[i].Draw(mapArgs,  false, drawLabelProgressAction, cancelFunc, updateMapAction);
                 if (!rect.IsEmpty)
                 {
                     destRect = destRect.ExpandToInclude(rect);
@@ -521,23 +517,6 @@ namespace EM.GIS.Symbology
                 return;
             }
 
-            ////记录正在绘制的视图缓存
-            //if (DrawingViewCache == null)
-            //{
-            //    DrawingViewCache = new ViewCache(drawingArgs);
-            //}
-            //else
-            //{
-            //    DrawingViewCache.Bound = drawingArgs.Bound;
-            //    DrawingViewCache.Extent = drawingArgs.Extent;
-            //    DrawingViewCache.DrawingExtent = drawingArgs.Extent;
-            //}
-            //if (DrawingViewCache.Bitmap==null|| DrawingViewCache.Bitmap?.PixelFormat== PixelFormat.DontCare|| DrawingViewCache.Bitmap.Width!=Width|| DrawingViewCache.Bitmap.Height!=Height)
-            //{
-            //    DrawingViewCache.Bitmap=new Bitmap(Width,Height);    
-            //}
-
-            #region 初始化绘制图层
             using var parallelCts = new CancellationTokenSource();
             Func<bool> cancelFunc = () =>
             {
@@ -552,70 +531,7 @@ namespace EM.GIS.Symbology
                 }
                 return isCancel;
             };
-            bool cancelDrawingInitializedLayers = false;//取消绘制已初始化图层的标记
-            Func<bool> drawingInitializedLayersCancelFunc = () =>
-            {
-                return cancelFunc() || cancelDrawingInitializedLayers;
-            };
-            var layers = Frame.Children.GetAllLayers().Where(x => !x.IsDrawingInitialized(viewCache, viewCache.DrawingExtent));
-            Task? initializeLayerTask = null;//初始化图层任务
-            object lockObj = new object();
-            //if (layers.Count() > 0)
-            //{
-            //    //异步线程完成图层的初始化
-            //    initializeLayerTask = Task.Run(() =>
-            //    {
-            //        #region 初始化图层绘制
-            //        try
-            //        {
-            //            ParallelOptions parallelOptions = new ParallelOptions()
-            //            {
-            //                CancellationToken = parallelCts.Token
-            //            };
-            //            Parallel.ForEach(layers, parallelOptions, (layer) =>
-            //            {
-            //                layer.InitializeDrawing(viewCache, viewCache.DrawingExtent);
-            //            });
-            //        }
-            //        catch (OperationCanceledException)
-            //        {
-            //            Debug.WriteLine($"已正常取消{nameof(ILayer.InitializeDrawing)}。"); // 不用管该异常
-            //        }
-            //        catch (Exception ex)
-            //        {
-            //            Debug.WriteLine($"{nameof(ILayer.InitializeDrawing)}失败，{ex}");
-            //        }
-            //        #endregion
-            //    }).ContinueWith((task) =>
-            //    {
-            //        #region 再重新绘制所有图层
-            //        if (!cancelFunc())
-            //        {
-            //            cancelDrawingInitializedLayers = true;//先取消绘制已准备好的图层
-            //            lock (lockObj)
-            //            {
-            //                DrawToViewCache(viewCache,cancelFunc);
-            //            }
-            //        }
-            //        #endregion
-            //    });
-            //    initializeLayerTask.ConfigureAwait(false);
-            //}
-            #endregion
-            lock (lockObj)
-            {
-                DrawToViewCache(viewCache, false, drawingInitializedLayersCancelFunc);
-            }
-            if (!drawingInitializedLayersCancelFunc())//若取消绘制则释放图片
-            {
-                if (initializeLayerTask != null)
-                {
-                    initializeLayerTask.Wait(); //等待初始化线程及重绘完成
-                }
-                //TODO 待测试，后台绘制完成后，重设缓存以及刷新地图控件
-                //var rect = mapArgs.ProjToPixelF(mapArgs.DestExtent);
-                //ResetViewCacheAndUpdateMap(viewCache, rect, false);
-            }
+            DrawToViewCache(viewCache,  cancelFunc);
             if (viewCache != DrawingViewCache)//如果不是正在绘制的视图缓存，则释放资源
             {
                 viewCache.Dispose();
@@ -625,9 +541,8 @@ namespace EM.GIS.Symbology
         /// 绘制地图至视图缓存
         /// </summary>
         /// <param name="viewCache">视图缓存</param>
-        /// <param name="onlyInitialized">是否只绘制已初始化的图层</param>
         /// <param name="cancelFunc">取消委托</param>
-        private void DrawToViewCache(ViewCache viewCache, bool onlyInitialized, Func<bool> cancelFunc)
+        private void DrawToViewCache(ViewCache viewCache, Func<bool> cancelFunc)
         {
             using Graphics g = Graphics.FromImage(viewCache.Bitmap);
             MapArgs mapArgs = new MapArgs(viewCache.Bound, viewCache.Extent, g, Frame.Projection, viewCache.DrawingExtent);
@@ -641,7 +556,7 @@ namespace EM.GIS.Symbology
                 UpdateMapAction?.Invoke(rect);//更新局部地图控件
                 count++;
             };
-            DrawFrame(mapArgs, onlyInitialized, cancelFunc, newUpdateMapAction);//mapargs绘制冲突 
+            DrawFrame(mapArgs,  cancelFunc, newUpdateMapAction);//mapargs绘制冲突 
             //UpdateMapAction?.Invoke(Bound);//绘制完成后，更新整个地图控件
         }
         /// <inheritdoc/>

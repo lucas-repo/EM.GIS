@@ -8,14 +8,14 @@ using System.Threading.Tasks;
 namespace EM.GIS.MBTiles
 {
     /// <summary>
-    /// 瓦片
+    /// 栅格
     /// </summary>
-    public class Tile : Indexable
+    public class Grid : Indexable
     {
         /// <summary>
         /// 二进制数据
         /// </summary>
-        [Field("tile_data", SQLites.FieldType.BLOB)]
+        [Field("grid ", SQLites.FieldType.BLOB)]
         public byte[] Datas { get; set; } = new byte[0];
     }
 }

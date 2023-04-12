@@ -61,7 +61,7 @@ namespace EM.GIS.Symbology
         }
 
         /// <inheritdoc/>
-        public override Rectangle Draw(MapArgs mapArgs, bool onlyInitialized = false, bool selected = false, Action<string, int>? progressAction = null, Func<bool>? cancelFunc = null, Action<Rectangle>? invalidateMapFrameAction = null)
+        public override Rectangle Draw(MapArgs mapArgs, bool selected = false, Action<string, int>? progressAction = null, Func<bool>? cancelFunc = null, Action<Rectangle>? invalidateMapFrameAction = null)
         {
             var ret = Rectangle.Empty;
             if (mapArgs == null || mapArgs.Graphics == null || mapArgs.Bound.IsEmpty || mapArgs.Extent == null || mapArgs.Extent.IsEmpty() || mapArgs.DestExtent == null || mapArgs.DestExtent.IsEmpty() || cancelFunc?.Invoke() == true || Children.Count == 0)
@@ -74,24 +74,7 @@ namespace EM.GIS.Symbology
             {
                 if (item is IRenderableItem renderableItem && renderableItem.IsVisible)
                 {
-                    if (item is IGroup group)
-                    {
-                        visibleItems.Add(group);
-                    }
-                    else
-                    {
-                        if (onlyInitialized)
-                        {
-                            if (renderableItem.IsDrawingInitialized(mapArgs, mapArgs.DestExtent))
-                            {
-                                visibleItems.Add(renderableItem);
-                            }
-                        }
-                        else
-                        {
-                            visibleItems.Add(renderableItem);
-                        }
-                    }
+                    visibleItems.Add(renderableItem);
                 }
             }
             if (visibleItems.Count == 0)
@@ -116,10 +99,10 @@ namespace EM.GIS.Symbology
                 switch (visibleItems[i])
                 {
                     case ILayer layer:
-                        rect = layer.Draw(mapArgs, onlyInitialized, selected, newProgressAction, cancelFunc, invalidateMapFrameAction);
+                        rect = layer.Draw(mapArgs, selected, newProgressAction, cancelFunc, invalidateMapFrameAction);
                         break;
                     case IGroup group:
-                        rect = group.Draw(mapArgs, onlyInitialized, selected, newProgressAction, cancelFunc, invalidateMapFrameAction);
+                        rect = group.Draw(mapArgs, selected, newProgressAction, cancelFunc, invalidateMapFrameAction);
                         break;
                 }
                 if (!rect.IsEmpty)
@@ -132,21 +115,6 @@ namespace EM.GIS.Symbology
             //progressAction?.Invoke(progressStr, 100);
             return ret;
         }
-        /// <inheritdoc/>
-        public override bool IsDrawingInitialized(IProj proj, IExtent extent)
-        {
-            bool ret = true;
-            foreach (var item in Children)
-            {
-                if (item is IRenderableItem renderableItem && !renderableItem.IsDrawingInitialized(proj, extent))
-                {
-                    ret = false;
-                    break;
-                }
-            }
-            return ret;
-        }
-
         private int _suspendLevel;
         private bool _selectionChanged;
         /// <inheritdoc/>

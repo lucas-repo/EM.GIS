@@ -26,7 +26,7 @@ namespace EM.GIS.Symbology
                     throw new Exception($"{nameof(DataSet)}类型必须为{nameof(IRasterSet)}");
                 }
             }
-            set=> base.DataSet = value;
+            set => base.DataSet = value;
         }
 
         /// <inheritdoc/>
@@ -45,7 +45,7 @@ namespace EM.GIS.Symbology
             }
             set => base.Children = value;
         }
-        public RasterLayer(IRasterSet rasterSet):base(rasterSet)
+        public RasterLayer(IRasterSet rasterSet) : base(rasterSet)
         {
             Children = new RasterCategoryCollection(this);
         }
@@ -54,15 +54,12 @@ namespace EM.GIS.Symbology
         protected override Rectangle OnDraw(MapArgs mapArgs, bool selected = false, Action<string, int>? progressAction = null, Func<bool>? cancelFunc = null, Action<Rectangle>? invalidateMapFrameAction = null)
         {
             var ret = Rectangle.Empty;
-            if (selected || cancelFunc?.Invoke() == true)
+            if (selected || cancelFunc?.Invoke() == true || DataSet == null)
             {
                 return ret;
             }
-            if (DataSet is IDrawable drawable)
-            {
-                Action<int> newProgressAction = (progress) => progressAction?.Invoke(ProgressMessage, progress);
-                ret= drawable.Draw(mapArgs, newProgressAction, cancelFunc);
-            }
+            Action<int> newProgressAction = (progress) => progressAction?.Invoke(ProgressMessage, progress);
+            ret = DataSet.Draw(mapArgs, newProgressAction, cancelFunc);
             return ret;
         }
     }

@@ -75,11 +75,7 @@ namespace EM.GIS.Symbology
             return ret;
         }
         /// <inheritdoc/>
-        public abstract Rectangle Draw(MapArgs mapArgs, bool onlyInitialized = false, bool selected = false, Action<string, int>? progressAction = null, Func<bool>? cancelFunc = null, Action<Rectangle>? invalidateMapFrameAction = null);
-        /// <inheritdoc/>
-        public virtual bool IsDrawingInitialized(IProj proj, IExtent extent) => true;
-        /// <inheritdoc/>
-        public virtual void InitializeDrawing(IProj proj, IExtent extent, Func<bool>? cancelFunc = null) { }
+        public abstract Rectangle Draw(MapArgs mapArgs, bool selected = false, Action<string, int>? progressAction = null, Func<bool>? cancelFunc = null, Action<Rectangle>? invalidateMapFrameAction = null);
 
         /// <inheritdoc/>
         public virtual bool ClearSelection(out IExtent affectedArea, bool force)

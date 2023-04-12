@@ -79,10 +79,10 @@ namespace EM.GIS.Symbology
             Text = dataSet.Name;
         }
         /// <inheritdoc/>
-        public override Rectangle Draw(MapArgs mapArgs, bool onlyInitialized = false, bool selected = false, Action<string, int>? progressAction = null, Func<bool>? cancelFunc = null, Action<Rectangle>? invalidateMapFrameAction = null)
+        public override Rectangle Draw(MapArgs mapArgs, bool selected = false, Action<string, int>? progressAction = null, Func<bool>? cancelFunc = null, Action<Rectangle>? invalidateMapFrameAction = null)
         {
-            var ret=Rectangle.Empty;
-            if (mapArgs == null || mapArgs.Graphics == null || mapArgs.Bound.IsEmpty || mapArgs.Extent == null || mapArgs.Extent.IsEmpty() || mapArgs.DestExtent == null || mapArgs.DestExtent.IsEmpty() || !GetVisible(mapArgs.DestExtent) || (onlyInitialized && !IsDrawingInitialized(mapArgs, mapArgs.DestExtent)) || cancelFunc?.Invoke() == true)
+            var ret = Rectangle.Empty;
+            if (mapArgs == null || mapArgs.Graphics == null || mapArgs.Bound.IsEmpty || mapArgs.Extent == null || mapArgs.Extent.IsEmpty() || mapArgs.DestExtent == null || mapArgs.DestExtent.IsEmpty() || !GetVisible(mapArgs.DestExtent) || cancelFunc?.Invoke() == true)
             {
                 return ret;
             }

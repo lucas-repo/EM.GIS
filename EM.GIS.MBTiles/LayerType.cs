@@ -1,5 +1,4 @@
-﻿using EM.SQLites;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,14 +7,17 @@ using System.Threading.Tasks;
 namespace EM.GIS.MBTiles
 {
     /// <summary>
-    /// 瓦片
+    /// 类型
     /// </summary>
-    public class Tile : Indexable
+    public enum LayerType
     {
         /// <summary>
-        /// 二进制数据
+        /// 覆盖
         /// </summary>
-        [Field("tile_data", SQLites.FieldType.BLOB)]
-        public byte[] Datas { get; set; } = new byte[0];
+        overlay,
+        /// <summary>
+        /// 底图
+        /// </summary>
+        baselayer
     }
 }
