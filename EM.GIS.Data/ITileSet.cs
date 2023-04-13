@@ -5,6 +5,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace EM.GIS.Data
@@ -26,18 +27,18 @@ namespace EM.GIS.Data
         /// 获取瓦片位图
         /// </summary>
         /// <param name="tileInfo">瓦片信息</param>
+        /// <param name="cancellationToken">取消标记</param>
         /// <param name="reloadTimes">重试次数</param>
-        /// <param name="cancelFunc">取消委托</param>
         /// <returns>瓦片位图</returns>
-        Task<(Bitmap Bitmap, bool IsNodata)> GetBitmapAsync(TileInfo tileInfo, int reloadTimes = 1, Func<bool>? cancelFunc = null);
+        Task<(Bitmap Bitmap, bool IsNodata)> GetBitmapAsync(TileInfo tileInfo, CancellationToken cancellationToken, int reloadTimes = 1);
         /// <summary>
         /// 将指定的瓦片添加到<see cref="Tiles"/>
         /// </summary>
         /// <param name="tileInfo">瓦片信息</param>
         /// <param name="tileBitmap">瓦片缓存</param>
-        /// <param name="cancelFunc">取消委托</param>
+        /// <param name="cancellationToken">取消标记</param>
         /// <returns>瓦片</returns>
-        IRasterSet? AddTileToTiles(TileInfo tileInfo, (Bitmap Bitmap, bool IsNodata) tileBitmap, Func<bool>? cancelFunc = null);
+        IRasterSet? AddTileToTiles(TileInfo tileInfo, (Bitmap Bitmap, bool IsNodata) tileBitmap, CancellationToken cancellationToken);
         /// <summary>
         /// 根据指定的窗口范围，计算所需瓦片集合
         /// </summary>

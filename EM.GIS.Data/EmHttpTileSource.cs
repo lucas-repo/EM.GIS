@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
+using System.Threading;
 
 namespace EM.GIS.Data
 {
@@ -93,8 +94,24 @@ namespace EM.GIS.Data
 
         private async Task<byte[]> FetchTileAsync(Uri arg)
         {
-            //return await HttpClient.GetByteArrayAsync(arg).ConfigureAwait(false);
             return await HttpClient.GetByteArrayAsync(arg);
         }
+        /// <summary>
+        /// 获取瓦片
+        /// </summary>
+        /// <param name="tileInfo">瓦片信息</param>
+        /// <param name="cancellationToken">取消标记</param>
+        /// <returns>瓦片</returns>
+        public virtual async Task<byte[]?> GetTileAsync(TileInfo tileInfo, CancellationToken cancellationToken)
+        {
+            var bytes = PersistentCache.Find(tileInfo.Index);
+            if (bytes != null) return bytes;
+            var uri = Request.GetUri(tileInfo);
+            var httpResponseMessage = await HttpClient.GetAsync(uri, cancellationToken);
+            bytes = await httpResponseMessage.Content.ReadAsByteArrayAsync();
+            if (bytes != null) PersistentCache.Add(tileInfo.Index, bytes);
+            return bytes;
+        }
+
     }
 }

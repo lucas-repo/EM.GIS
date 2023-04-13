@@ -1,4 +1,5 @@
 ﻿using BruTile;
+using BruTile.Cache;
 using BruTile.Web;
 using EM.Bases;
 using EM.GIS.Data.Properties;
@@ -87,10 +88,10 @@ namespace EM.GIS.Data
             return false;
         }
         /// <inheritdoc/>
-        public IRasterSet? AddTileToTiles(TileInfo tileInfo, (Bitmap Bitmap, bool IsNodata) tileBitmap, Func<bool>? cancelFunc = null)
+        public IRasterSet? AddTileToTiles(TileInfo tileInfo, (Bitmap Bitmap, bool IsNodata) tileBitmap, CancellationToken cancellationToken)
         {
             IRasterSet? ret = null;
-            if (tileInfo == null || tileInfo.Extent == null || tileInfo.Index == null || tileBitmap.Bitmap == null || cancelFunc?.Invoke() == true)
+            if (tileInfo == null || tileInfo.Extent == null || tileInfo.Index == null || tileBitmap.Bitmap == null || cancellationToken.IsCancellationRequested)
             {
                 return ret;
             }
@@ -117,7 +118,7 @@ namespace EM.GIS.Data
                         }
 
                         destImage = bmp;
-                        if (cancelFunc?.Invoke() == true)
+                        if (cancellationToken.IsCancellationRequested)
                         {
                             bmp.Dispose();
                             return ret;
@@ -139,37 +140,29 @@ namespace EM.GIS.Data
             }
             return ret;
         }
-
-        /// <summary>
-        /// 获取瓦片位图
-        /// </summary>
-        /// <param name="tileInfo">瓦片信息</param>
-        /// <param name="reloadTimes">重试次数</param>
-        /// <param name="cancelFunc">取消委托</param>
-        /// <returns>瓦片位图</returns>
-        public async Task<(Bitmap Bitmap, bool IsNodata)> GetBitmapAsync(TileInfo tileInfo, int reloadTimes = 1, Func<bool>? cancelFunc = null)
+        /// <inheritdoc/>
+        public async Task<(Bitmap Bitmap, bool IsNodata)> GetBitmapAsync(TileInfo tileInfo, CancellationToken cancellationToken, int reloadTimes = 1)
         {
             Bitmap? bitmap = null;
             bool isNodata = false;
             byte[]? data = null;
             for (int i = 0; i < reloadTimes; i++)
             {
-                if (cancelFunc?.Invoke() == true)
+                if (cancellationToken.IsCancellationRequested)
                 {
                     break;
                 }
                 bool catchedException = false;//是否已捕捉异常
                 try
                 {
-                    //data = httpTileSource.PersistentCache?.Find(tileInfo.Index);
-                    //if (data == null)
-                    //{
-                    data = await TileSource.GetTileAsync(tileInfo);
-                    //if (data != null)
-                    //{
-                    //    httpTileSource.PersistentCache?.Add(tileInfo.Index, data);
-                    //}
-                    //}
+                    if (TileSource is EmHttpTileSource emHttpTileSource)
+                    {
+                        data = await emHttpTileSource.GetTileAsync(tileInfo, cancellationToken);
+                    }
+                    else
+                    {
+                        data = await TileSource.GetTileAsync(tileInfo);
+                    }
                 }
                 catch (TaskCanceledException)
                 {
@@ -324,20 +317,46 @@ namespace EM.GIS.Data
             return ret;
         }
         /// <summary>
+        /// 计算已缓存的瓦片
+        /// </summary>
+        /// <param name="tileInfos">瓦片索引集合</param>
+        /// <returns>已缓存的瓦片</returns>
+        private List<TileInfo> GetCachedTileInfos(IEnumerable<TileInfo> tileInfos)
+        {
+            var ret = new List<TileInfo>();
+            if (TileSource is EmHttpTileSource httpTileSource && httpTileSource.PersistentCache is FileCache fileCache)
+            {
+                ret.AddRange(tileInfos.Where(x => fileCache.Exists(x.Index)));
+            }
+            else
+            {
+                throw new NotImplementedException();
+            }
+            return ret;
+        }
+        /// <summary>
         /// 是否缓存了瓦片
         /// </summary>
         /// <param name="tileIndex">瓦片索引</param>
         /// <returns>已缓存为true反之false</returns>
         private bool IsTileCached(TileIndex tileIndex)
         {
-            bool ret = Tiles.ContainsKey(tileIndex);
-            if (ret)
+            bool ret;
+            if (TileSource is EmHttpTileSource httpTileSource && httpTileSource.PersistentCache is FileCache fileCache)
             {
-                if (Tiles.TryGetValue(tileIndex, out var oldTleInfo)) // 重新下载nodata的瓦片
+                ret = fileCache.Exists(tileIndex);
+            }
+            else
+            {
+                ret = Tiles.ContainsKey(tileIndex);
+                if (ret)
                 {
-                    if (oldTleInfo.IsNodata)
+                    if (Tiles.TryGetValue(tileIndex, out var oldTleInfo)) // 重新下载nodata的瓦片
                     {
-                        ret=false;
+                        if (oldTleInfo.IsNodata)
+                        {
+                            ret = false;
+                        }
                     }
                 }
             }
@@ -348,16 +367,16 @@ namespace EM.GIS.Data
         /// </summary>
         /// <param name="tileSet">瓦片数据集</param>
         /// <param name="tileInfo">瓦片信息</param>
-        /// <param name="cancelFunc">取消委托</param>
+        /// <param name="cancellationToken">取消标记</param>
         /// <returns>任务</returns>
-        private async Task<IRasterSet?> AddTile(ITileSet tileSet, TileInfo tileInfo, Func<bool>? cancelFunc)
+        private async Task<IRasterSet?> AddTile(ITileSet tileSet, TileInfo tileInfo, CancellationToken cancellationToken)
         {
             IRasterSet? ret = null;
             if (!tileSet.Tiles.ContainsKey(tileInfo.Index))// 如果未包含该瓦片，则需进行下载至缓存
             {
-                await tileSet.GetBitmapAsync(tileInfo, 1, cancelFunc).ContinueWith((bitmapTask) =>
+                await tileSet.GetBitmapAsync(tileInfo, cancellationToken, 1).ContinueWith((bitmapTask) =>
                 {
-                    ret = tileSet.AddTileToTiles(tileInfo, bitmapTask.Result, cancelFunc);
+                    ret = tileSet.AddTileToTiles(tileInfo, bitmapTask.Result, cancellationToken);
                 });
             }
             else
@@ -367,7 +386,7 @@ namespace EM.GIS.Data
                     ret = oldTleInfo.Tile;
                     if (oldTleInfo.IsNodata)
                     {
-                        await tileSet.GetBitmapAsync(tileInfo, 1, cancelFunc).ContinueWith((bitmapTask) =>
+                        await tileSet.GetBitmapAsync(tileInfo, cancellationToken, 1).ContinueWith((bitmapTask) =>
                         {
                             var bitmap = bitmapTask.Result.Bitmap;
                             if (bitmap != null)
@@ -396,7 +415,7 @@ namespace EM.GIS.Data
                 if (cancelFunc?.Invoke() == true) return ret;
 
                 var tileInfos = GetTileInfos(mapArgs, mapArgs.DestExtent); // 计算要下载的瓦片
-                progressAction?.Invoke( 5);
+                progressAction?.Invoke(5);
                 #region 绘制瓦片
                 if (tileInfos.Count > 0)
                 {
@@ -421,47 +440,93 @@ namespace EM.GIS.Data
                     {
                         CancellationToken = parallelCts.Token
                     };
-                    //var cancellationLock = _lockContainer.GetOrCreateLock("cancellationLock");
-                    bool noTileCached =true;//未缓存瓦片
-                    Parallel.ForEach(tileInfos, parallelOptions, (tileInfo) =>
+                    #region 绘制已缓存的瓦片
+                    var cachedTileInfos = GetCachedTileInfos(tileInfos);//已缓存的瓦片
+                    if (cachedTileInfos.Count > 0)
                     {
-                        if (newCancelFunc?.Invoke() == true) return;
-                        bool tileCached = IsTileCached(tileInfo.Index);
-                        using var task = AddTile(this, tileInfo, newCancelFunc);
-                        task.ConfigureAwait(false);
-                        var tile = task.Result;// 等待任务完成
-                        if (tile == null || newCancelFunc?.Invoke() == true) return;
-                        lock (lockObj)
+                        Parallel.ForEach(cachedTileInfos, parallelOptions, (tileInfo) =>
                         {
-                            if (tileCached)
-                            {
-                                noTileCached = false;
-                            }
+                            if (newCancelFunc?.Invoke() == true) return;
+                            using var task = AddTile(this, tileInfo, parallelCts.Token);
+                            task.ConfigureAwait(false);
+                            var tile = task.Result;// 等待任务完成
+                            if (tile == null || newCancelFunc?.Invoke() == true) return;
                             if (tile.Extent.Intersects(mapArgs.DestExtent))
                             {
-                                var rect = tile.Draw(mapArgs, null, cancelFunc);
-                                if (!rect.IsEmpty)
+                                lock (lockObj)
                                 {
-                                    ret = ret.ExpandToInclude(rect);
-                                    if (!tileCached)
+                                    var rect = tile.Draw(mapArgs, null, cancelFunc);
+                                    if (!rect.IsEmpty)
                                     {
-                                        graphicsUpdatedAction?.Invoke(rect);//未缓存瓦片时才刷新，以减少地图刷新次数
+                                        ret = ret.ExpandToInclude(rect);
                                     }
+                                    progress += increment;
+                                    progressAction?.Invoke((int)progress);
                                 }
-                                progress += increment;
-                                progressAction?.Invoke( (int)progress);
                             }
-                        }
-                    });
-                    if (!noTileCached&&!ret.IsEmpty)
-                    {
+                        });
                         graphicsUpdatedAction?.Invoke(ret);
                     }
+                    #endregion
+
+                    #region 绘制未缓存的瓦片
+                    var noCachedTileInfos = tileInfos.Except(cachedTileInfos);//未缓存的瓦片
+                    if (newCancelFunc?.Invoke() != true && noCachedTileInfos.Count() > 0)
+                    {
+                        var adjacentTiles = AdjacentTile.GetAdjacentTiles(noCachedTileInfos);
+                        var adjacentTileInfos = new Dictionary<AdjacentTile, KeyValueClass<Rectangle, int>>();//相邻瓦片、范围及计数字典
+                        foreach (var adjacentTile in adjacentTiles)
+                        {
+                            adjacentTileInfos.Add(adjacentTile, new KeyValueClass<Rectangle, int>(Rectangle.Empty, 0));
+                        }
+
+                        try
+                        {
+                            Parallel.ForEach(noCachedTileInfos, parallelOptions, (tileInfo) =>
+                            {
+                                if (newCancelFunc?.Invoke() == true) return;
+                                using var task = AddTile(this, tileInfo, parallelCts.Token);
+                                task.ConfigureAwait(false);
+                                var tile = task.Result;// 等待任务完成
+                                lock (lockObj)
+                                {
+                                    var adjacentTileInfo = adjacentTileInfos.First(x => x.Key.TileInfos.Contains(tileInfo));
+                                    var rectAndCount = adjacentTileInfo.Value;
+                                    rectAndCount.Value++;//计数
+                                    if (tile == null || newCancelFunc?.Invoke() == true) return;
+                                    if (tile.Extent.Intersects(mapArgs.DestExtent))
+                                    {
+                                        var rect = tile.Draw(mapArgs, null, cancelFunc);
+                                        if (!rect.IsEmpty)
+                                        {
+                                            ret = ret.ExpandToInclude(rect);
+                                            rectAndCount.Key = rectAndCount.Key.ExpandToInclude(rect);
+                                            if (adjacentTileInfo.Key.TileInfos.Count() == rectAndCount.Value)//下载两个瓦片后刷新地图
+                                            {
+                                                graphicsUpdatedAction?.Invoke(rectAndCount.Key);
+                                            }
+                                        }
+                                        progress += increment;
+                                        progressAction?.Invoke((int)progress);
+                                    }
+                                }
+                            });
+                        }
+                        catch (OperationCanceledException)
+                        {
+                            Debug.WriteLine($"已正常取消获取瓦片。"); // 不用管该异常
+                        }
+                        catch (Exception ex)
+                        {
+                            Debug.WriteLine($"{nameof(OnDraw)}失败，{ex}");
+                        }
+                    }
+                    #endregion
                 }
                 #endregion
 
                 #region 超过缓存数后，移除多余的缓存图片
-                if (Tiles.Count > 1000)
+                if (Tiles.Count > 200)
                 {
                     for (int i = Tiles.Count - 1; i >= 0; i--)
                     {

@@ -33,7 +33,7 @@ namespace EM.GIS.Data
                 }
                 else
                 {
-                    ret = RectangleF.FromLTRB(Math.Min(rect0.Left, rect1.Left), Math.Min(rect0.Top, rect1.Top), Math.Min(rect0.Right, rect1.Right), Math.Min(rect0.Bottom, rect1.Bottom));
+                    ret = RectangleF.FromLTRB(Math.Min(rect0.Left, rect1.Left), Math.Min(rect0.Top, rect1.Top), Math.Max(rect0.Right, rect1.Right), Math.Max(rect0.Bottom, rect1.Bottom));
                 }
             }
             return ret;
@@ -121,7 +121,7 @@ namespace EM.GIS.Data
                 }
                 else
                 {
-                    ret = Rectangle.FromLTRB(Math.Min(rect0.Left, rect1.Left), Math.Min(rect0.Top, rect1.Top), Math.Min(rect0.Right, rect1.Right), Math.Min(rect0.Bottom, rect1.Bottom));
+                    ret = Rectangle.FromLTRB(Math.Min(rect0.Left, rect1.Left), Math.Min(rect0.Top, rect1.Top), Math.Max(rect0.Right, rect1.Right), Math.Max(rect0.Bottom, rect1.Bottom));
                 }
             }
             return ret;

@@ -353,9 +353,12 @@ namespace EM.GIS.Symbology
                     visibleLabelLayers.Add(featureLayer.LabelLayer);
                 }
             }
+            var destRect = Rectangle.Empty;
             var totalCount = allVisibleLayers.Count() + visibleLabelLayers.Count;
             if (totalCount == 0)
             {
+                destRect = mapArgs.ProjToPixel(mapArgs.DestExtent);
+                updateMapAction(destRect);
                 return;
             }
             double layerRatio = allVisibleLayers.Count() / totalCount;//可见图层占比
@@ -377,7 +380,6 @@ namespace EM.GIS.Symbology
                 }
             };
             #endregion
-            var destRect = Rectangle.Empty;
             #region 绘制图层
             int count = 2;
             for (int i = 0; i < count; i++)
@@ -715,6 +717,10 @@ namespace EM.GIS.Symbology
         /// <inheritdoc/>
         public void Resize(int width, int height)
         {
+            if (width <= 0 || height <= 0||(width==Width&&height==Height))
+            {
+                return;
+            }
             var dx = width - Width;
             var dy = height - Height;
             var destWidth = ViewBound.Width + dx;
@@ -724,11 +730,12 @@ namespace EM.GIS.Symbology
             if (destWidth < 5) destWidth = 5;
             if (destHeight < 5) destHeight = 5;
 
-            viewBound = new RectangleF(ViewBound.X, ViewBound.Y, destWidth, destHeight);
-            ResetViewExtent();
-
+            var newViewBound = new RectangleF(ViewBound.X, ViewBound.Y, destWidth, destHeight);
+            var newViewExtent= IProjExtensions.PixelToProj(newViewBound, Bound, ViewExtent);
             Width = width;
             Height = height;
+            SetViewExtent(newViewExtent, false, true);
+            SetViewBound(Bound, false);
         }
         /// <inheritdoc/>
         public void ZoomToMaxExtent()
