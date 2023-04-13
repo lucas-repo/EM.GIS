@@ -277,9 +277,9 @@ namespace EM.GIS.Symbology
             switch (e.PropertyName)
             {
                 case nameof(ILegendItem.IsVisible):
-                    if (sender is IRenderableItem renderableItem)
+                    if (sender is IRenderableItem)
                     {
-                        ResetBuffer(Bound, ViewExtent, renderableItem.Extent);
+                        ResetBuffer(Bound, ViewExtent, ViewExtent);
                     }
                     break;
             }
