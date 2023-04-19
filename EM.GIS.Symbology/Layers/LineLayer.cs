@@ -42,7 +42,7 @@ namespace EM.GIS.Symbology
         }
         private void GetLines(IProj proj, IGeometry geometry, GraphicsPath path)
         {
-            if (geometry.CoordinateCount == 0)
+            if (geometry.GeometryCount == 0)
             {
                 PointF[] points = new PointF[geometry.CoordinateCount];
                 for (int j = 0; j < geometry.CoordinateCount; j++)

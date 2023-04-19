@@ -60,5 +60,6 @@ namespace EM.GIS.Data
         /// <param name="geometry">几何体</param>
         /// <returns>瓦片集合</returns>
         List<TileInfo> GetTileInfos(int level, IGeometry geometry);
+
     }
 }

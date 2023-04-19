@@ -46,7 +46,28 @@ namespace EM.GIS.WPFControls
             IocManager = iocManager;
             LegendItems = new ObservableCollection<ITreeItem>();
             LegendItems.CollectionChanged += LegendItems_CollectionChanged;
+            PropertyChanged += LegendViewModel_PropertyChanged;
         }
+
+        private void LegendViewModel_PropertyChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            switch (e.PropertyName)
+            {
+                case nameof(SelectedLegendItemItem):
+                    if (SelectedLegendItemItem !=null  && InitializedItems.ContainsKey(SelectedLegendItemItem))
+                    {
+                        foreach (var item in InitializedItems[SelectedLegendItemItem])
+                        {
+                            if (item is Command command)
+                            {
+                                command.RaiseCanExecuteChanged();
+                            }
+                        }
+                    }
+                    break;
+            }
+        }
+
         private void LegendItems_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
         {
             switch (e.Action)

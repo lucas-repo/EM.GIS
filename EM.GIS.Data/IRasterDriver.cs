@@ -26,6 +26,6 @@ namespace EM.GIS.Data
         /// <param name="rasterType">类型</param>
         /// <param name="options">可选项</param>
         /// <returns>栅格</returns>
-        IRasterSet? Create(string filename, int width, int height, int bandCount, RasterType rasterType, string[]? options = null);
+        IRasterSet? Create(string filename, int width, int height, int bandCount, RasterType rasterType, Dictionary<string,object>? options = null);
     }
 }

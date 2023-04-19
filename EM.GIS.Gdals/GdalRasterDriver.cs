@@ -30,10 +30,10 @@ namespace EM.GIS.Gdals
         }
 
         /// <inheritdoc/>
-        public IRasterSet? Create(string filename, int width, int height, int bandCount, RasterType rasterType, string[]? options = null)
+        public IRasterSet? Create(string filename, int width, int height, int bandCount, RasterType rasterType, Dictionary<string, object>? options = null)
         {
             IRasterSet? rasterSet = null;
-            var dataset = driver.Create(filename, width, height, bandCount, rasterType.ToRasterType(), options);
+            var dataset = driver.Create(filename, width, height, bandCount, rasterType.ToRasterType(), options?.ToStringArray());
             if (dataset != null)
             {
                 rasterSet = dataset.GetRasterSet(filename);

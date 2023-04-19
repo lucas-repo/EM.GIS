@@ -35,13 +35,7 @@ namespace EM.GIS.Data
             { PixelFormat.Undefined, PixelFormat.DontCare, PixelFormat.Format16bppArgb1555, PixelFormat.Format1bppIndexed, PixelFormat.Format4bppIndexed, PixelFormat.Format8bppIndexed };
         /// <inheritdoc/>
         public override IEnumerable<IRasterSet> Rasters => Tiles.Values.Select(x => x.Tile);
-        private IExtent extent;
-        /// <inheritdoc/>
-        public override IExtent Extent
-        {
-            get => extent;
-            set => extent = value;
-        }
+        
         /// <summary>
         /// 初始化<seealso cref="Tiles"/>
         /// </summary>
@@ -49,7 +43,7 @@ namespace EM.GIS.Data
         public TileSet(ITileSource tileSource)
         {
             TileSource = tileSource;
-            extent = TileSource.Schema.Extent.ToExtent();
+            Bounds = new RasterBounds(256,256, TileSource.Schema.Extent.ToExtent());//瓦片数据的行数，列数无意义
             Name = tileSource.Name;
             RasterType = RasterType.Byte;
         }
@@ -330,35 +324,7 @@ namespace EM.GIS.Data
             }
             else
             {
-                throw new NotImplementedException();
-            }
-            return ret;
-        }
-        /// <summary>
-        /// 是否缓存了瓦片
-        /// </summary>
-        /// <param name="tileIndex">瓦片索引</param>
-        /// <returns>已缓存为true反之false</returns>
-        private bool IsTileCached(TileIndex tileIndex)
-        {
-            bool ret;
-            if (TileSource is EmHttpTileSource httpTileSource && httpTileSource.PersistentCache is FileCache fileCache)
-            {
-                ret = fileCache.Exists(tileIndex);
-            }
-            else
-            {
-                ret = Tiles.ContainsKey(tileIndex);
-                if (ret)
-                {
-                    if (Tiles.TryGetValue(tileIndex, out var oldTleInfo)) // 重新下载nodata的瓦片
-                    {
-                        if (oldTleInfo.IsNodata)
-                        {
-                            ret = false;
-                        }
-                    }
-                }
+                ret.AddRange(tileInfos.Where(x => Tiles.ContainsKey(x.Index)));
             }
             return ret;
         }

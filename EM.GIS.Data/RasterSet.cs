@@ -41,8 +41,6 @@ namespace EM.GIS.Data
         /// </summary>
         public virtual int ByteSize => GetByteSize<byte>();
         /// <inheritdoc/>
-        [Category("Data")]
-        [Description("Gets or sets a  double showing the no-data value for this raster.")]
         public virtual double? NoDataValue { get; set; }
         /// <inheritdoc/>
         public IRasterBounds Bounds { get; set; }

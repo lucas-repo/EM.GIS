@@ -15,14 +15,14 @@ using System.Threading.Tasks;
 namespace EM.GIS.Tools
 {
     /// <summary>
-    /// 拼接影像下载类
+    /// MBTiles下载类
     /// </summary>
-    public class SpliceDownloader : Downloader
+    public class MBTilesDownloader : Downloader
     {
         private string OutPath;
         private string Extensions;
         private IRasterDriver rasterDriver;
-        public SpliceDownloader(ITileSet tileSet, string tileDirectory, string tileExtensions,string outPath) : base(tileSet, tileDirectory, tileExtensions)
+        public MBTilesDownloader(ITileSet tileSet, string tileDirectory, string tileExtensions,string outPath) : base(tileSet, tileDirectory, tileExtensions)
         {
             OutPath=outPath;    
             var dataSetFactory = IocManager.Default.GetService<IDataSetFactory>();
@@ -32,15 +32,7 @@ namespace EM.GIS.Tools
             }
             IEnumerable<IRasterDriver> rasterDrivers = dataSetFactory.GetRasterDrivers();
             Extensions = Path.GetExtension(outPath);
-            IRasterDriver? driver = null;
-            switch (Extensions)
-            {
-                case ".tif":
-                    driver = rasterDrivers.FirstOrDefault(x => x.Name == "GTiff");
-                    break;
-                default:
-                    throw new NotImplementedException();
-            }
+            IRasterDriver? driver = rasterDrivers.FirstOrDefault(x => x.Name == Extensions);
             if (driver == null)
             {
                 throw new Exception($"不支持的格式{Extensions}");
@@ -152,7 +144,7 @@ namespace EM.GIS.Tools
             int tileWidth = 256, tileHeight = 256;
             int bandCount = 3;
             int[] bandMap = { 1, 2, 3 };
-            var options = OptionExtensions.GetGdalTiffOptions();
+            var options = OptionExtensions.GetMBTilesOptions();
             var directory = Path.GetDirectoryName(OutPath);
             var name = Path.GetFileNameWithoutExtension(OutPath);
             if (directory == null || name == null)

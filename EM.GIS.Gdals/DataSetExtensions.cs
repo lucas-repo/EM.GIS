@@ -1,6 +1,7 @@
 ﻿using EM.GIS.Data;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace EM.GIS.Gdals
@@ -55,6 +56,26 @@ namespace EM.GIS.Gdals
                 }
             }
             return rasterSet;
+        }
+        /// <summary>
+        /// 将参数字典转为字符串数组
+        /// </summary>
+        /// <param name="option">参数</param>
+        /// <returns>字符串数组</returns>
+        public static string[]? ToStringArray(this Dictionary<string, object>? option)
+        {
+            string[]? ret = null;
+            if (option == null || option.Count == 0)
+            {
+                return ret;
+            }
+            ret = new string[option.Count];
+            for (int i = 0; i < option.Count; i++)
+            {
+                var item = option.ElementAt(i);
+                ret[i] = $"{item.Key}={item.Value}";
+            }
+            return ret;
         }
     }
 }

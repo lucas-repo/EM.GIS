@@ -1,6 +1,7 @@
 ﻿using EM.GIS.Geometries;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Text;
 
 namespace EM.GIS.Data
@@ -11,7 +12,7 @@ namespace EM.GIS.Data
     public interface IRasterBounds:ICloneable
     {
         /// <summary>
-        /// 仿射系数
+        /// 仿射6参数
         /// X' = [0] + [1] * Column + [2] * Row
         /// Y' = [3] + [4] * Column + [5] * Row
         /// </summary>
@@ -30,15 +31,22 @@ namespace EM.GIS.Data
         /// </summary>
         IExtent Extent { get; set; }
         /// <summary>
-        /// 宽度
+        /// 列数
         /// </summary>
         int NumColumns { get; }
 
         /// <summary>
-        /// 高度
+        /// 行数
         /// </summary>
         int NumRows { get; }
-
+        /// <summary>
+        /// 宽度
+        /// </summary>
+        double Width { get; set; }
+        /// <summary>
+        /// 高度
+        /// </summary>
+        double Height { get; set; }
         /// <summary>
         /// 世界范围文件路径
         /// </summary>

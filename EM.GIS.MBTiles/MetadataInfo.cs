@@ -34,11 +34,11 @@ namespace EM.GIS.MBTiles
         /// </summary>
         public double MaxY { get; set; }
         /// <summary>
-        /// 最大X（经度）
+        /// 中心X（经度）
         /// </summary>
         public double CenterX { get; set; }
         /// <summary>
-        /// 最大Y（纬度）
+        /// 中心Y（纬度）
         /// </summary>
         public double CenterY { get; set; }
         /// <summary>
@@ -50,7 +50,7 @@ namespace EM.GIS.MBTiles
         /// </summary>
         public int MaxZoom { get; set; }
         /// <summary>
-        /// 一个属性字符串，用于解释 地图的数据和/或样式。
+        /// 一个属性字符串，用于解释地图的数据和/或样式。
         /// </summary>
         public string? Attribution { get; set; }
         /// <summary>
@@ -69,6 +69,8 @@ namespace EM.GIS.MBTiles
         /// 列出矢量切片中显示的图层以及显示在这些图层中要素的属性（json字符串）
         /// </summary>
         public string? json { get; set; }
+        public MetadataInfo()
+        { }
         public MetadataInfo(List<NameValue> nameValues)
         {
             Type type = GetType();

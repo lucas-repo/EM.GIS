@@ -5,7 +5,7 @@ using System.IO;
 namespace EM.GIS.Data
 {
     /// <summary>
-    /// RasterBounds
+    /// 栅格范围
     /// </summary>
     public class RasterBounds : IRasterBounds
     {
@@ -15,14 +15,14 @@ namespace EM.GIS.Data
         private readonly int _numRows;
 
         private double[] _affine;
-        private string _worldFile;
+        private string _worldFile=string.Empty;
 
         #endregion
 
         #region Constructors
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="RasterBounds"/> class.
+        /// 初始化 <see cref="RasterBounds"/> 类.
         /// </summary>
         public RasterBounds()
         {
@@ -30,12 +30,11 @@ namespace EM.GIS.Data
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="RasterBounds"/> class.
-        /// This attempts to read the very simple 6 number world file associated with an image.
+        /// 初始化 <see cref="RasterBounds"/> 类.
         /// </summary>
-        /// <param name="numRows">The number of rows in this raster</param>
-        /// <param name="numColumns">The number of columns in this raster</param>
-        /// <param name="worldFileName">A world file to attempt to read</param>
+        /// <param name="numRows">行数</param>
+        /// <param name="numColumns">列数</param>
+        /// <param name="worldFileName">世界文件路径</param>
         public RasterBounds(int numRows, int numColumns, string worldFileName)
         {
             _numRows = numRows;
@@ -45,11 +44,11 @@ namespace EM.GIS.Data
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="RasterBounds"/> class.
+        /// 初始化 <see cref="RasterBounds"/> 类.
         /// </summary>
-        /// <param name="numRows">The number of rows for this raster</param>
-        /// <param name="numColumns">The number of columns for this raster</param>
-        /// <param name="affineCoefficients">The affine coefficients describing the location of this raster.</param>
+        /// <param name="numRows">行数</param>
+        /// <param name="numColumns">列数</param>
+        /// <param name="affineCoefficients">仿射六参数</param>
         public RasterBounds(int numRows, int numColumns, double[] affineCoefficients)
         {
             _affine = affineCoefficients;
@@ -58,11 +57,11 @@ namespace EM.GIS.Data
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="RasterBounds"/> class that is georeferenced to the specified envelope.
+        /// 初始化 <see cref="RasterBounds"/> 类.
         /// </summary>
-        /// <param name="numRows">The number of rows</param>
-        /// <param name="numColumns">The number of columns</param>
-        /// <param name="bounds">The bounding envelope</param>
+        /// <param name="numRows">行数</param>
+        /// <param name="numColumns">列数</param>
+        /// <param name="bounds">范围</param>
         public RasterBounds(int numRows, int numColumns, IExtent bounds)
         {
             _affine = new double[6];
@@ -74,15 +73,7 @@ namespace EM.GIS.Data
         #endregion
 
         #region Properties
-
-        /// <summary>
-        /// Gets or sets the double affine coefficients that control the world-file
-        /// positioning of this image. X' and Y' are real world coords.
-        /// X' = [0] + [1] * Column + [2] * Row
-        /// Y' = [3] + [4] * Column + [5] * Row
-        /// </summary>
-        [Category("GeoReference")]
-        [Description("X' = [0] + [1] * Column + [2] * Row, Y' = [3] + [4] * Column + [5] * Row")]
+        /// <inheritdoc/>
         public virtual double[] AffineCoefficients
         {
             get
@@ -122,13 +113,7 @@ namespace EM.GIS.Data
                 AffineCoefficients = affine; // use the setter for overriding classes
             }
         }
-
-        /// <summary>
-        /// Gets or sets the desired width per cell. This will keep the skew the same, but
-        /// will adjust both the column based and row based width coefficients in order
-        /// to match the specified cell width. This can be thought of as the width
-        /// of a bounding box that contains an entire grid cell, no matter if it is skewed.
-        /// </summary>
+        /// <inheritdoc/>
         public double CellWidth
         {
             get
@@ -150,9 +135,7 @@ namespace EM.GIS.Data
             }
         }
 
-        /// <summary>
-        /// Gets or sets the rectangular bounding box for this raster.
-        /// </summary>
+        /// <inheritdoc/>
         public IExtent Extent
         {
             get
@@ -176,12 +159,7 @@ namespace EM.GIS.Data
             }
         }
 
-        /// <summary>
-        /// Gets or sets the height of the entire bounds. This is derived by considering both the
-        /// column and row based contributions to the overall height. Changing this will keep
-        /// the skew ratio the same, but adjust both portions so that the overall height
-        /// will match the specified height.
-        /// </summary>
+        /// <inheritdoc/>
         public double Height
         {
             get
@@ -207,25 +185,12 @@ namespace EM.GIS.Data
             }
         }
 
-        /// <summary>
-        /// Gets the number of columns in the raster.
-        /// </summary>
-        [Category("General")]
-        [Description("Gets the number of columns in the raster.")]
+        /// <inheritdoc/>
         public virtual int NumColumns => _numColumns;
-
-        /// <summary>
-        /// Gets the number of rows in the raster.
-        /// </summary>
-        [Category("General")]
-        [Description("Gets the number of rows in the underlying raster.")]
+        /// <inheritdoc/>
         public virtual int NumRows => _numRows;
 
-        /// <summary>
-        /// Gets or sets the geographic width of this raster. This will include the skew term
-        /// in the width estimate, so it will adjust both the width and the skew coefficient,
-        /// but preserve the ratio of skew to cell width.
-        /// </summary>
+        /// <inheritdoc/>
         public double Width
         {
             get
@@ -251,11 +216,7 @@ namespace EM.GIS.Data
             }
         }
 
-        /// <summary>
-        /// Gets or sets the fileName of the wordfile that describes the geographic coordinates of this raster. If a relative path gets assigned it is changed to the absolute path including the file extension.
-        /// </summary>
-        [Category("GeoReference")]
-        [Description("Returns the Geographic width of the envelope that completely contains this raster.")]
+        /// <inheritdoc/>
         public string WorldFile
         {
             get
@@ -269,12 +230,7 @@ namespace EM.GIS.Data
             }
         }
 
-        /// <summary>
-        /// Gets or sets the horizontal placement of the upper left corner of this bounds. Because
-        /// of the skew, this upper left position may not actually be the same as the upper left
-        /// corner of the image itself (_affine[0]). Instead, this is the top left corner of
-        /// the rectangular extent for this raster.
-        /// </summary>
+        /// <inheritdoc/>
         public double X
         {
             get
@@ -301,12 +257,7 @@ namespace EM.GIS.Data
             }
         }
 
-        /// <summary>
-        /// Gets or sets the vertical placement of the upper left corner of this bounds, which is the
-        /// same as the top. The top left corner of the actual image may not be in this position
-        /// because of skew, but this represents the maximum Y value of the rectangular extents
-        /// that contains the image.
-        /// </summary>
+        /// <inheritdoc/>
         public double Y
         {
             get
@@ -381,14 +332,15 @@ namespace EM.GIS.Data
             OpenWorldFile(fileName);
         }
 
-        /// <summary>
-        /// Attempts to save the data to the file listed in WorldFile
-        /// </summary>
+        /// <inheritdoc/>
         public virtual void Save()
         {
-            this.SaveWorldFile();
+            SaveWorldFile();
         }
-
+        /// <summary>
+        /// 扩展范围
+        /// </summary>
+        /// <param name="distance">距离</param>
         public void ExpandBy(double distance)
         {
             X -= distance;
@@ -396,7 +348,7 @@ namespace EM.GIS.Data
             Width += distance * 2;
             Height += distance * 2;
         }
-
+        /// <inheritdoc/>
         public void OpenWorldFile(string fileName)
         {
             WorldFile = fileName;
@@ -443,6 +395,7 @@ namespace EM.GIS.Data
             sr.Close();
         }
 
+        /// <inheritdoc/>
         public void SaveWorldFile()
         {
             using (var sw = new StreamWriter(WorldFile))
@@ -456,7 +409,12 @@ namespace EM.GIS.Data
                 sw.WriteLine(affine[3]); // Top Left Y
             }
         }
-
+        /// <summary>
+        /// 重采样
+        /// </summary>
+        /// <param name="numRows">行数</param>
+        /// <param name="numColumns">列数</param>
+        /// <returns>栅格范围</returns>
         public IRasterBounds ResampleTransform(int numRows, int numColumns)
         {
             double[] affine = AffineCoefficients;
@@ -471,7 +429,7 @@ namespace EM.GIS.Data
             result[4] = affine[4] * oldNumColumns / numColumns; // skew y
             return new RasterBounds(numRows, numColumns, result);
         }
-
+        /// <inheritdoc/>
         public void SaveAs(string fileName)
         {
             WorldFile = fileName;

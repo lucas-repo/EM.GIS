@@ -508,7 +508,7 @@ namespace EM.GIS.Tools
                 default:
                     throw new NotImplementedException();
             }
-            var options = DatasetExtensions.GetMBTilesOptions(tileFormat: tileFormat);
+            var options = OptionExtensions.GetMBTilesOptions(tileFormat: tileFormat);
             var fileCache = GetFileCache();
             Action<string, int> downloadProgressAction = (txt, progress) => ProgressAction?.Invoke(txt, progress / 2);
             Action<string, int> writeProgressAction = (txt, progress) => ProgressAction?.Invoke(txt, 50 + progress / 2);
@@ -600,7 +600,7 @@ namespace EM.GIS.Tools
             rasterSet.Save();
         }
 
-        private IRasterSet? CreateRasterset(IRasterDriver rasterDriver, string path, double minX, double minY, double maxX, double maxY, int width, int height, int bandCount = 3, string[]? options = null)
+        private IRasterSet? CreateRasterset(IRasterDriver rasterDriver, string path, double minX, double minY, double maxX, double maxY, int width, int height, int bandCount = 3, Dictionary<string, object>? options = null)
         {
             IRasterSet? ret = null;
             if (TileSet == null || width == 0 || height == 0 || bandCount == 0)
@@ -737,9 +737,9 @@ namespace EM.GIS.Tools
                         tileDirectory = Path.Combine(OutPath, "Tiles");
                         downloader = new GoogleTileDownloader(TileSet, tileDirectory, TileFormat.Value);
                         break;
-                    //case ".mbtiles":
-                    //    downloadAction = (levelAndTileInfos) => DownloadMbtiles(rasterDriver, levelAndTileInfos);
-                    //    break;
+                    case ".mbtiles":
+                        //downloader = (levelAndTileInfos) => DownloadMbtiles(rasterDriver, levelAndTileInfos);
+                        break;
                     default:
                         throw new NotImplementedException();
                 }
