@@ -127,9 +127,10 @@ namespace EM.GIS.Symbology
             {
                 if (viewBound.IsEmpty)
                 {
-                    if (viewBound != Bound)
+                    var bound = Bound;
+                    if (viewBound != bound)
                     {
-                        viewBound = Bound;
+                        viewBound = bound;
                     }
                 }
                 return viewBound;
@@ -270,7 +271,7 @@ namespace EM.GIS.Symbology
                     RemoveLayerEvent(e.OldItems);
                     break;
             }
-            ResetBuffer(Bound, ViewExtent, ViewExtent);
+            ResetBuffer();
         }
         private void Layer_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
@@ -279,7 +280,7 @@ namespace EM.GIS.Symbology
                 case nameof(ILegendItem.IsVisible):
                     if (sender is IRenderableItem)
                     {
-                        ResetBuffer(Bound, ViewExtent, ViewExtent);
+                        ResetBuffer();
                     }
                     break;
             }
@@ -413,36 +414,7 @@ namespace EM.GIS.Symbology
             }
             #endregion
 
-            //Progress?.Invoke("已完成", 0);
             Progress?.Invoke(string.Empty, 0);
-            //if (cancelFunc?.Invoke() != true)
-            //{
-            //    updateMapAction.Invoke(destRect);//更新地图控件
-            //}
-        }
-        private void ResetViewCacheAndUpdateMap(ViewCache viewCache, Rectangle rect, bool copyView = true)
-        {
-            #region 设置缓存图片、视图矩形、试图范围
-            ViewCache destViewCache = copyView ? viewCache.Copy() : viewCache;
-
-            bool viewExtentChanged = false;
-            if (viewExtent != viewCache.Extent)
-            {
-                viewExtent = viewCache.Extent;
-                viewExtentChanged = true;
-            }
-            SetViewBound(viewCache.Bound, false);
-            BackImage = destViewCache;
-            if (viewExtentChanged) OnPropertyChanged(nameof(ViewExtent));
-            #endregion
-
-            UpdateMapAction?.Invoke(rect);//更新地图控件
-        }
-
-        private Action<Rectangle> GetNewUpdateMapAction(ViewCache viewCache)
-        {
-            Action<Rectangle> newUpdateMapAction = (rect) => ResetViewCacheAndUpdateMap(viewCache, rect);
-            return newUpdateMapAction;
         }
         /// <summary>
         /// 设置绘制裁剪区域
@@ -553,13 +525,11 @@ namespace EM.GIS.Symbology
             int count = 0;
             Action<Rectangle> newUpdateMapAction = (rect) =>
             {
-                //BackImage = viewCache.Copy();
                 CopyDrawingViewCacheToBackImage(viewCache, rect, count == 0);
                 UpdateMapAction?.Invoke(rect);//更新局部地图控件
                 count++;
             };
             DrawFrame(mapArgs, cancelFunc, newUpdateMapAction);//mapargs绘制冲突 
-            //UpdateMapAction?.Invoke(Bound);//绘制完成后，更新整个地图控件
         }
         /// <inheritdoc/>
         public void ResetBuffer()
@@ -586,7 +556,7 @@ namespace EM.GIS.Symbology
             switch (e.PropertyName)
             {
                 case nameof(Background):
-                    ResetBuffer(Bound, ViewExtent, ViewExtent);
+                    ResetBuffer();
                     break;
                 case nameof(ViewExtent):
                     ScaleFactor = GetScaleFactor();
