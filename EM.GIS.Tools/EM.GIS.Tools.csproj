@@ -27,6 +27,7 @@
 		<ProjectReference Include="..\..\..\EM.Bases\EM.WpfBases\EM.WpfBases.csproj" />
 		<ProjectReference Include="..\..\..\EM.IOC\EM.IOC\EM.IOC.csproj" />
 		<ProjectReference Include="..\EM.GIS.CoordinateTransformation\EM.GIS.CoordinateTransformation.csproj" />
+		<ProjectReference Include="..\EM.GIS.Data.MBTiles\EM.GIS.Data.MBTiles.csproj" />
 		<ProjectReference Include="..\EM.GIS.Data\EM.GIS.Data.csproj" />
 		<ProjectReference Include="..\EM.GIS.GdalExtensions\EM.GIS.GdalExtensions.csproj" />
 		<ProjectReference Include="..\EM.GIS.Symbology\EM.GIS.Symbology.csproj" />

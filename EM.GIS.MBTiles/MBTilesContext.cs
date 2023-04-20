@@ -54,5 +54,26 @@ namespace EM.GIS.MBTiles
             }
             return ret;
         }
+        public static MBTilesContext? CreateMBTilesContext(string filename)
+        {
+            MBTilesContext? ret = null;
+            if (string.IsNullOrEmpty(filename))
+            {
+                return ret;
+            }
+            try
+            {
+                if (File.Exists(filename))
+                {
+                    File.Delete(filename);
+                }
+                ret = new MBTilesContext(filename);
+            }
+            catch (Exception e)
+            {
+                Debug.WriteLine($"{nameof(CreateMBTilesContext)}失败，{e}");
+            }
+            return ret;
+        }
     }
 }

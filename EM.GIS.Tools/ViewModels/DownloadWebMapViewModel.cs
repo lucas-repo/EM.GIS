@@ -246,7 +246,7 @@ namespace EM.GIS.Tools
             var tileLayers = frame.Children.GetAllItems<IRasterLayer>();
             foreach (var tileLayer in tileLayers)
             {
-                if (tileLayer.DataSet  is ITileSet tileSet)
+                if (tileLayer.DataSet is ITileSet tileSet)
                 {
                     TileSets.Add(tileSet);
                 }
@@ -490,150 +490,7 @@ namespace EM.GIS.Tools
         }
 
         EmHttpTileSource? HttpTileSource => TileSet?.TileSource as EmHttpTileSource;
-        private void DownloadMbtiles(IRasterDriver rasterDriver, Dictionary<int, List<TileInfo>> levelAndTileInfos)
-        {
-            int tileWidth = 256, tileHeight = 256;
-            int bandCount = 3;
-            int[] bandMap = { 3, 2, 1 };
-
-            TileFormat tileFormat;
-            switch (TileFormat.Value)
-            {
-                case ".jpg":
-                    tileFormat = GdalExtensions.TileFormat.JPEG;
-                    break;
-                case ".png":
-                    tileFormat = GdalExtensions.TileFormat.PNG;
-                    break;
-                default:
-                    throw new NotImplementedException();
-            }
-            var options = OptionExtensions.GetMBTilesOptions(tileFormat: tileFormat);
-            var fileCache = GetFileCache();
-            Action<string, int> downloadProgressAction = (txt, progress) => ProgressAction?.Invoke(txt, progress / 2);
-            Action<string, int> writeProgressAction = (txt, progress) => ProgressAction?.Invoke(txt, 50 + progress / 2);
-            var maxLevelAndTileInfos = levelAndTileInfos.Last();
-            var sortedLevelAndTileInfos = levelAndTileInfos.OrderByDescending(x => x.Key);
-            var level = maxLevelAndTileInfos.Key;
-            var tileInfos = maxLevelAndTileInfos.Value;
-            if (tileInfos.Count == 0)
-            {
-                return;
-            }
-            DownloadTiles(maxLevelAndTileInfos, fileCache, downloadProgressAction);
-
-            var minCol = tileInfos.Min(x => x.Index.Col);
-            var minRow = tileInfos.Min(x => x.Index.Row);
-            var maxCol = tileInfos.Max(x => x.Index.Col);
-            var maxRow = tileInfos.Max(x => x.Index.Row);
-            var minX = tileInfos.Min(x => x.Extent.MinX);
-            var minY = tileInfos.Min(x => x.Extent.MinY);
-            var maxX = tileInfos.Max(x => x.Extent.MaxX);
-            var maxY = tileInfos.Max(x => x.Extent.MaxY);
-            int width = tileWidth * (maxCol - minCol + 1);
-            int height = tileHeight * (maxRow - minRow + 1);
-            var rasterSet = CreateRasterset(rasterDriver, OutPath, minX, minY, maxX, maxY, width, height, bandCount, options);
-            if (rasterSet != null)
-            {
-                WriteTileToRasterSet(fileCache, tileWidth, tileHeight, bandCount, bandMap, level, tileInfos, minCol, minRow, rasterSet, writeProgressAction);
-                ProgressAction?.Invoke($"创建金字塔中", 99);
-                rasterSet.BuildOverviews(256, 256);
-            }
-        }
-
-        private void WriteTileToRasterSet(FileCache fileCache, int tileWidth, int tileHeight, int bandCount, int[] bandMap, int level, List<TileInfo> tileInfos, int minCol, int minRow, IRasterSet rasterSet, Action<string, int>? progressAction)
-        {
-            if (HttpTileSource == null)
-            {
-                return;
-            }
-            int totalCount = tileInfos.Count();
-            int successCount = 0;
-            ParallelOptions options = new ParallelOptions()
-            {
-                MaxDegreeOfParallelism = 1 /*Environment.ProcessorCount*/
-            };
-            Parallel.ForEach(tileInfos, options, (tileInfo) =>
-            {
-                if (Cancellation.IsCancellationRequested)
-                {
-                    return;
-                }
-                var filename = fileCache.GetFileName(tileInfo.Index);
-                if (!File.Exists(filename))
-                {
-                    try
-                    {
-                        var task = HttpTileSource.GetTileAsync(tileInfo);
-                        task.ConfigureAwait(false);
-                        task.Wait();
-                    }
-                    catch (Exception e)
-                    {
-                        Console.WriteLine(e);
-                    }
-                    if (!File.Exists(filename))
-                    {
-                        return;
-                    }
-                }
-                var xOff = (tileInfo.Index.Col - minCol) * tileWidth;
-                var yOff = (tileInfo.Index.Row - minRow) * tileHeight;
-                try
-                {
-                    lock (_lockObj)
-                    {
-                        RasterArgs readArgs = new RasterArgs(0, 0, tileWidth, tileHeight, tileWidth, tileHeight, bandCount, bandMap);
-                        RasterArgs writeArgs = new RasterArgs(xOff, yOff, tileWidth, tileHeight, tileWidth, tileHeight, bandCount, bandMap);
-                        rasterSet.WriteRaster(filename, readArgs, writeArgs);
-                        successCount++;
-                    }
-                    progressAction?.Invoke($"第{level}级写入缓存中", successCount * 100 / totalCount);
-                }
-                catch (Exception e)
-                {
-                    Console.WriteLine($"{tileInfo.Index.Level}_{tileInfo.Index.Col}_{tileInfo.Index.Row}下载失败：{e}");
-                }
-            });
-
-            progressAction?.Invoke($"第{level}级写入缓存中", 99);
-            rasterSet.Save();
-        }
-
-        private IRasterSet? CreateRasterset(IRasterDriver rasterDriver, string path, double minX, double minY, double maxX, double maxY, int width, int height, int bandCount = 3, Dictionary<string, object>? options = null)
-        {
-            IRasterSet? ret = null;
-            if (TileSet == null || width == 0 || height == 0 || bandCount == 0)
-            {
-                return ret;
-            }
-
-            if (width == 0 || height == 0)
-            {
-                return ret;
-            }
-            var directory = Path.GetDirectoryName(path);
-            if (string.IsNullOrEmpty(directory))
-            {
-                return ret;
-            }
-            if (!Directory.Exists(directory))
-            {
-                Directory.CreateDirectory(directory);
-            }
-            DriverExtensions.DeleteDataSource(path);
-            ret = rasterDriver.Create(path, width, height, bandCount, RasterType.Byte, options);
-            if (ret != null)
-            {
-                ret.Projection = TileSet.Projection.Copy();
-                double destXResolution = (maxX - minX) / width;
-                double destYResolution = (maxY - minY) / height;
-                double[] affine = { minX, destXResolution, 0, maxY, 0, -destYResolution };
-                ret.SetGeoTransform(affine);
-            }
-            return ret;
-        }
-
+      
         private CancellationTokenSource _cancellation;
         private CancellationTokenSource Cancellation
         {
@@ -721,15 +578,15 @@ namespace EM.GIS.Tools
 #endif
                 var featureLayers = Frame.Children.GetAllFeatureLayers().Where(x => x.IsVisible && x.Selection.Count > 0);
 
-                string tileDirectory;
-                Downloader? downloader=null;
+                string? directory,tileDirectory;
+                Downloader? downloader = null;
                 switch (OutType.Value)
                 {
                     case ".tif":
-                        var directory = Path.GetDirectoryName(OutPath);
+                         directory = Path.GetDirectoryName(OutPath);
                         if (directory != null)
                         {
-                            tileDirectory= Path.Combine(directory, "Tiles");
+                            tileDirectory = Path.Combine(directory, "Tiles");
                             downloader = new SpliceDownloader(TileSet, tileDirectory, TileFormat.Value, OutPath);
                         }
                         break;
@@ -738,7 +595,12 @@ namespace EM.GIS.Tools
                         downloader = new GoogleTileDownloader(TileSet, tileDirectory, TileFormat.Value);
                         break;
                     case ".mbtiles":
-                        //downloader = (levelAndTileInfos) => DownloadMbtiles(rasterDriver, levelAndTileInfos);
+                         directory = Path.GetDirectoryName(OutPath);
+                        if (directory != null)
+                        {
+                            tileDirectory = Path.Combine(directory, "Tiles");
+                            downloader = new MBTilesDownloader(TileSet, tileDirectory, TileFormat.Value, OutPath);
+                        }
                         break;
                     default:
                         throw new NotImplementedException();

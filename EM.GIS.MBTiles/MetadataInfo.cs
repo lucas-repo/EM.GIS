@@ -68,7 +68,7 @@ namespace EM.GIS.MBTiles
         /// <summary>
         /// 列出矢量切片中显示的图层以及显示在这些图层中要素的属性（json字符串）
         /// </summary>
-        public string? json { get; set; }
+        public string? Json { get; set; }
         public MetadataInfo()
         { }
         public MetadataInfo(List<NameValue> nameValues)
@@ -98,6 +98,25 @@ namespace EM.GIS.MBTiles
                     }
                 }
             }
+        }
+
+        public MetadataInfo(string name, Format format, double minX, double minY, double maxX, double maxY, double centerX, double centerY, int minZoom, int maxZoom, string? attribution, string? description, LayerType type, string? version, string? json)
+        {
+            Name = name;
+            Format = format;
+            MinX = minX;
+            MinY = minY;
+            MaxX = maxX;
+            MaxY = maxY;
+            CenterX = centerX;
+            CenterY = centerY;
+            MinZoom = minZoom;
+            MaxZoom = maxZoom;
+            Attribution = attribution;
+            Description = description;
+            Type = type;
+            Version = version;
+            this.Json = json;
         }
 
         private void InitializeBounds(string str)
