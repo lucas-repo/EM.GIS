@@ -21,6 +21,7 @@
 		<PackageReference Include="HtmlAgilityPack" Version="1.11.46" />
 		<PackageReference Include="MaterialDesignThemes" Version="4.7.0" />
 		<PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="7.0.0" />
+		<PackageReference Include="System.Data.SQLite.Core" Version="1.0.116" />
 		<PackageReference Include="WindowsAPICodePack" Version="7.0.1" />
 	</ItemGroup>
 

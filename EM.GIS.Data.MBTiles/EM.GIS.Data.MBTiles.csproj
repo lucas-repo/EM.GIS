@@ -1,16 +1,24 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>net7.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-    <GenerateDocumentationFile>True</GenerateDocumentationFile>
-  </PropertyGroup>
+	<PropertyGroup>
+		<TargetFramework>netstandard2.1</TargetFramework>
+		<Nullable>enable</Nullable>
+		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+		<BaseOutputPath>..\bin</BaseOutputPath>
+		<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+		<AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+		<GenerateDocumentationFile>True</GenerateDocumentationFile>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\..\..\EM.IOC\EM.IOC\EM.IOC.csproj" />
-    <ProjectReference Include="..\EM.GIS.Data\EM.GIS.Data.csproj" />
-    <ProjectReference Include="..\EM.GIS.MBTiles\EM.GIS.MBTiles.csproj" />
-  </ItemGroup>
+	<ItemGroup>
+	  <PackageReference Include="System.Data.SQLite.Core" Version="1.0.116" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\..\..\EM.IOC\EM.IOC\EM.IOC.csproj" />
+		<ProjectReference Include="..\EM.GIS.Data\EM.GIS.Data.csproj" />
+		<ProjectReference Include="..\EM.GIS.MBTiles\EM.GIS.MBTiles.csproj" />
+		<ProjectReference Include="..\EM.GIS.Projection\EM.GIS.Projections.csproj" />
+	</ItemGroup>
 
 </Project>

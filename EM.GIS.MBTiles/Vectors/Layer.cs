@@ -1,4 +1,7 @@
-﻿namespace EM.GIS.MBTiles
+﻿using System;
+using System.Collections.Generic;
+
+namespace EM.GIS.MBTiles
 {
     /// <summary>
     /// 图层
@@ -24,6 +27,6 @@
         /// <summary>
         /// 属性集合
         /// </summary>
-        public List<Attribute> attributes { get; }=new List<Attribute>();
+        public List<Attribute<object>> attributes { get; }=new List<Attribute<object>>();
     }
 }

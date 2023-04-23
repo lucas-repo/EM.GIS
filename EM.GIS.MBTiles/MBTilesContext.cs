@@ -1,6 +1,8 @@
 ﻿
 using EM.SQLites;
+using System;
 using System.Diagnostics;
+using System.IO;
 using System.Reflection;
 using System.Text;
 
@@ -47,27 +49,6 @@ namespace EM.GIS.MBTiles
                 }
                 ret = new MBTilesContext(filename);
                 ret.Metadata.SetMetadataInfo(metadataInfo);
-            }
-            catch (Exception e)
-            {
-                Debug.WriteLine($"{nameof(CreateMBTilesContext)}失败，{e}");
-            }
-            return ret;
-        }
-        public static MBTilesContext? CreateMBTilesContext(string filename)
-        {
-            MBTilesContext? ret = null;
-            if (string.IsNullOrEmpty(filename))
-            {
-                return ret;
-            }
-            try
-            {
-                if (File.Exists(filename))
-                {
-                    File.Delete(filename);
-                }
-                ret = new MBTilesContext(filename);
             }
             catch (Exception e)
             {

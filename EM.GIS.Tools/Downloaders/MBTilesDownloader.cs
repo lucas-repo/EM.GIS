@@ -31,12 +31,13 @@ namespace EM.GIS.Tools
             }
             IEnumerable<IRasterDriver> rasterDrivers = dataSetFactory.GetRasterDrivers();
             Extensions = Path.GetExtension(outPath);
-            var drivers = rasterDrivers.Where(x => x.Name == Extensions);
+            var drivers = rasterDrivers.Where(x => x.Extensions == Extensions);
             foreach (var item in drivers)
             {
                 if (item is MBTilesDriver tilesDriver)
                 {
                     Driver = tilesDriver;
+                    break;
                 }
             }
             if (Driver == null)

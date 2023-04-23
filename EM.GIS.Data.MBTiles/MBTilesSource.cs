@@ -44,6 +44,7 @@ namespace EM.GIS.Data.MBTiles
             Name= metadataInfo.Name;
             Attribution = new Attribution();
         }
+
         /// <inheritdoc/>
         public Task<byte[]> GetTileAsync(TileInfo tileInfo)
         {

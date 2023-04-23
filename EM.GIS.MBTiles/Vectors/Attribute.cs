@@ -6,6 +6,10 @@ using System.Threading.Tasks;
 
 namespace EM.GIS.MBTiles
 {
+    /// <summary>
+    /// 属性
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
     public class Attribute<T>
     {
         /// <summary>

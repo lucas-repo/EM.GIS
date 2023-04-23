@@ -1,4 +1,7 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
 using System.Reflection;
 using EM.Bases;
 
@@ -116,7 +119,7 @@ namespace EM.GIS.MBTiles
             Description = description;
             Type = type;
             Version = version;
-            this.Json = json;
+            Json = json;
         }
 
         private void InitializeBounds(string str)
